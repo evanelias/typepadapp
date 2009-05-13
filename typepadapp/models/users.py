@@ -24,10 +24,10 @@ class User(typepad.User):
     if USER_CACHE_PERIOD:
         # Django-level caching of user objects
         @classmethod
-        def get_user(cls, userid):
+        def get_by_id(cls, userid):
             user = cache.get('user:%s' % userid)
             if user is None:
-                user = super(User, cls).get_user(userid)
+                user = super(User, cls).get_by_id(userid)
             else:
                 loc = user['location']
                 data = user['data']

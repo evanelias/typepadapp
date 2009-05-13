@@ -18,7 +18,7 @@ class UserProfile(models.Model):
 
     @property
     def user(self):
-        return User.get_user(self.user_id)
+        return User.get_by_id(self.user_id)
 
     class Meta:
         abstract = True

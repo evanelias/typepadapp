@@ -72,7 +72,7 @@ def discover_group():
     typepad.client.batch_request()
     # FIXME: handle failure here...
     try:
-        app = typepad.Application.get_application(settings.OAUTH_CONSUMER_KEY)
+        app = typepad.Application.get_by_consumer_key(settings.OAUTH_CONSUMER_KEY)
         typepad.client.complete_batch()
     except Exception, exc:
         log.error('Error loading Application %s: %s' % (settings.OAUTH_CONSUMER_KEY, str(exc)))

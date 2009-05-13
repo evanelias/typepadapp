@@ -38,4 +38,4 @@ class TypePadBackend(object):
 
     def get_user(self, user_id):
         """Return the authed TypePad user"""
-        return User.get_user(user_id)
+        return User.get_by_id(user_id)
