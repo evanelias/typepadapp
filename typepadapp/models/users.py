@@ -72,7 +72,6 @@ class User(typepad.User):
 
     @property
     def is_superuser(self):
-        # FIXME: eliminate settings.GROUP reference
         for admin in typepadapp.models.GROUP.admins():
             if self.atom_id == admin.source.atom_id:
                 return True
