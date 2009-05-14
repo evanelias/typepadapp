@@ -1,9 +1,12 @@
 import csv
 
 from django import http
+from django.conf import settings
 from django.contrib.auth import get_user
 
 import typepad
+import typepadapp.forms
+import typepadapp.templatetags.formfieldvalue
 
 
 def export_members(request):
@@ -47,6 +50,10 @@ def export_members(request):
     writer = csv.writer(response)
 
     labels = ['xid', 'display name', 'about me', 'interests']
+    if settings.AUTH_PROFILE_MODULE:
+        profile_form = typepadapp.forms.UserProfileForm()
+        for field in profile_form:
+            labels.append(field.label)
     writer.writerow(labels)
 
     for member in members:
@@ -58,6 +65,13 @@ def export_members(request):
                 row.append(item.encode("utf-8"))
             else:
                 row.append('')
+
+        if settings.AUTH_PROFILE_MODULE:
+            profile_form = typepadapp.forms.UserProfileForm(instance=member.get_profile())
+            for field in profile_form:
+                value = typepadapp.templatetags.formfieldvalue.value_of_field(field)
+                row.append(value)
+
         writer.writerow(row)
 
     return response
