@@ -102,7 +102,7 @@ try:
     APPLICATION, GROUP = discover_group()
 except Exception:
     import sys
-    if 'manage.py' not in sys.argv or 'runserver' in sys.argv:
+    if 'manage.py' not in ' '.join(sys.argv) or 'runserver' in sys.argv:
         raise
 
 
