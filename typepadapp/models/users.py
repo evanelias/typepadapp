@@ -72,10 +72,7 @@ class User(typepad.User):
 
     @property
     def is_superuser(self):
-        # FIXME: eliminate reference to a global GROUP variable; we should
-        # be testing using the group in the context of the active request
-        # since we eventually want to support multiple groups on a single
-        # install.
+        # FIXME: use request's group once we have per-request groups
         for admin in typepadapp.models.GROUP.admins():
             if self.atom_id == admin.source.atom_id:
                 return True
