@@ -8,17 +8,17 @@ import typepad
 
 def export_members(request):
     """ Export a list of all members of a group as a CSV file."""
-    
+
     offset = 1
     typepad.client.batch_request()
     request.user = get_user(request)
     members = request.group.memberships.filter(start_index=offset, member=True)
     typepad.client.complete_batch()
-    
+
     if not request.user.is_superuser:
         # just pretend this page doesn't exist
         raise http.Http404
-    
+
     # convert to user list
     members = [member.source for member in members]
     ids = [member.id for member in members] # xids of members, not needed if cmp did user ids
