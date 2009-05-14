@@ -64,7 +64,7 @@ def authorize(request):
 
     # store the token key / secret in the database so we can recover
     # it later if the session expires
-    token, created = Token.objects.get_or_create(session_sync_token=request.GET['session_sync_token'], key=access_token.key, secret=access_token.secret)
+    token, created = Token.objects.get_or_create(session_sync_token=request.GET['session_sync_token'], defaults={'key': access_token.key, 'secret': access_token.secret})
     if not created:
         token.key = access_token.key
         token.secret = access_token.secret
