@@ -1,5 +1,6 @@
 import re
 from django.core.urlresolvers import reverse, NoReverseMatch
+from django.utils.translation import ugettext as _
 from urlparse import urljoin
 
 import typepad
@@ -41,6 +42,10 @@ class Asset(typepad.Asset):
     def type_id(self):
         if not self.object_types: return None
         return self.object_types[0].split(':')[2].lower()
+
+    @property
+    def type_label(self):
+        return _(self.type_id)
 
     @property
     def is_comment(self):
