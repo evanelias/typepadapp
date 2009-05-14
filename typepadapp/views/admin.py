@@ -1,7 +1,10 @@
 import csv
+
 from django import http
 from django.contrib.auth import get_user
+
 import typepad
+
 
 def export_members(request):
     """ Export a list of all members of a group as a CSV file."""
