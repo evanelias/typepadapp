@@ -3,18 +3,12 @@ from django.template import RequestContext
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseServerError, HttpResponseForbidden, HttpResponseNotAllowed
 from django.utils.http import urlquote
 from django.contrib.auth.decorators import login_required
-from django.views import debug
 from urlparse import urljoin
 
 from os import path
 
 from typepadapp.utils.paginator import FinitePaginator, EmptyPage
 import typepad
-
-import settings
-
-view_settings = dict(((k.lower(), v) for (k, v) in
-                        debug.get_safe_settings().iteritems()))
 
 class GenericView(HttpResponse):
     """
@@ -35,7 +29,6 @@ class GenericView(HttpResponse):
         super(GenericView, self).__init__()
 
         self.context = RequestContext(request)
-        self.context['settings'] = view_settings
 
         self.setup(request, *args, **kwargs)
 
