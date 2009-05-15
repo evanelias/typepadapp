@@ -39,6 +39,25 @@ def pithy_timesince(d, preposition=''):
     return label(since, d)
 
 @register.filter
+def is_relative(d):
+    '''
+        Filter to evaluate whether the given date is relative or not.
+    '''
+    if d is None:
+        return False
+    t = time.localtime()
+    if d.tzinfo:
+        tz = LocalTimezone(d)
+    else:
+        tz = None
+    now = datetime.datetime(t[0], t[1], t[2], t[3], t[4], t[5], tzinfo=tz)
+    # ignore microsecond part of 'd' since we removed it from 'now'
+    delta = now - (d - datetime.timedelta(0, 0, d.microsecond))
+    since = delta.days * 24 * 60 * 60 + delta.seconds
+    # timestamp is one week or less old
+    return since <= 60 * 60 * 24 * 7
+
+@register.filter
 def date_microformat(d):
     '''
         Microformat version of a date.
