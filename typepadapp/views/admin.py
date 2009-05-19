@@ -1,4 +1,5 @@
 import csv
+import StringIO
 
 from django import http
 from django.conf import settings
@@ -11,44 +12,19 @@ import typepadapp.templatetags.formfieldvalue
 
 def export_members(request):
     """ Export a list of all members of a group as a CSV file."""
-
-    offset = 1
-    typepad.client.batch_request()
-    request.user = get_user(request)
-    members = request.group.memberships.filter(start_index=offset, member=True)
-    typepad.client.complete_batch()
-
-    if not request.user.is_superuser:
-        # just pretend this page doesn't exist
-        raise http.Http404
-
-    # convert to user list
-    members = [member.source for member in members]
-    ids = [member.id for member in members] # xids of members, not needed if cmp did user ids
-
-    # wiggle room
-    new_offset = len(members) - 4
-    while new_offset > offset:
-        # moooooare
-        offset = new_offset
-        typepad.client.batch_request()
-        more = request.group.memberships.filter(start_index=offset, member=True)
-        typepad.client.complete_batch()
-        # stop if the result is an empty list
-        if not more.entries:
-            break
-        # add members to list
-        for m in more:
-            if m.source.id not in ids: # remove dupes
-                members.append(m.source)
-                ids.append(m.source.id)
-        new_offset = len(members) - 4
-
-    response = http.HttpResponse(mimetype='text/csv')
+    
+    response = http.HttpResponse(generate_members_csv(request), mimetype='text/csv')
     response['Content-Disposition'] = 'attachment; filename=membership.csv'
+    return response
 
-    writer = csv.writer(response)
+def generate_members_csv(request):
+    """CSV file generator for member data."""
 
+    # file-like obj for csv writing
+    mfile = StringIO.StringIO()
+    writer = csv.writer(mfile)
+
+    # label header row
     labels = ['xid', 'display name', 'about me', 'interests']
     if settings.AUTH_PROFILE_MODULE:
         profile_form = typepadapp.forms.UserProfileForm()
@@ -56,7 +32,65 @@ def export_members(request):
             labels.append(field.label)
     writer.writerow(labels)
 
+    # start the download prompt!
+    yield mfile.getvalue()
+
+    # fetch typepad api data
+    offset = 1
+    typepad.client.batch_request()
+    request.user = get_user(request)
+    members = request.group.memberships.filter(start_index=offset, member=True)
+    typepad.client.complete_batch()
+
+    # verify the user is an admin
+    if request.user.is_superuser:
+
+        # convert to user list
+        members = [member.source for member in members]
+        ids = [member.id for member in members] # xids of members, not needed if cmp did user ids
+
+        # output csv
+        mfile = get_members_csv(members)
+        yield mfile.getvalue()
+
+        # wiggle room
+        new_offset = len(ids) - 4
+        
+        # more pages of members
+        while new_offset > offset:
+
+            offset = new_offset
+
+            # fetch typepad api data
+            typepad.client.batch_request()
+            more = request.group.memberships.filter(start_index=offset, member=True)
+            typepad.client.complete_batch()
+
+            # stop if the result is an empty list
+            if not more.entries:
+                break
+
+            # add members to list
+            members = []
+            for m in more:
+                if m.source.id not in ids: # remove dupes
+                    members.append(m.source)
+                    ids.append(m.source.id)
+            
+            # output csv
+            mfile = get_members_csv(members)
+            yield mfile.getvalue()
+
+            new_offset = len(ids) - 4
+
+def get_members_csv(members):
+
+    mfile = StringIO.StringIO()
+    writer = csv.writer(mfile)
+
     for member in members:
+
+        # member data from typepad
         member_data = [member.id, member.display_name, member.about_me, ' '.join(member.interests)]
         row = []
         for item in member_data:
@@ -66,12 +100,13 @@ def export_members(request):
             else:
                 row.append('')
 
+        # member data from local profile
         if settings.AUTH_PROFILE_MODULE:
             profile_form = typepadapp.forms.UserProfileForm(instance=member.get_profile())
             for field in profile_form:
                 value = typepadapp.templatetags.formfieldvalue.value_of_field(field)
                 row.append(value)
-
+        
         writer.writerow(row)
 
-    return response
+    return mfile
