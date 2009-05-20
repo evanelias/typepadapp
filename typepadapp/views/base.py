@@ -1,14 +1,15 @@
+from urlparse import urljoin
+from os import path
+
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseServerError, HttpResponseForbidden, HttpResponseNotAllowed
 from django.utils.http import urlquote
 from django.contrib.auth.decorators import login_required
-from urlparse import urljoin
-
-from os import path
-
 from typepadapp.utils.paginator import FinitePaginator, EmptyPage
+
 import typepad
+
 
 class GenericView(HttpResponse):
     """
@@ -225,9 +226,7 @@ class TypePadView(GenericView):
         ``object_list`` member during the ``setup()`` or
         ``select_from_typepad()`` methods.
     limit: Assigned as the number of rows to select for the ``object_list``
-        member. This is typically set to ``paginate_by`` + 1, since the
-        pagination logic determines if an additional page is available based
-        on the presence of the extra object in ``object_list``.
+        member. This is typically set to ``paginate_by``.
     paginate_template: Assign a string to control the format of
         next, previous links.
     form: The Django form class that is to be used for any editable object
@@ -253,7 +252,6 @@ class TypePadView(GenericView):
         file path and extension.
     form: The value of the ``form_instance`` member.
     page_obj: Set when ``paginate_by`` member is assigned.
-    settings: The Django settings module.
     """
     paginate_by = None
     paginate_template = None
@@ -319,7 +317,7 @@ class TypePadView(GenericView):
             self.object_list = None
             pagenum = int(kwargs.get('page', 1))
             self.offset = (pagenum - 1) * self.paginate_by + 1
-            self.limit = self.paginate_by + 1
+            self.limit = self.paginate_by
 
         typepad.client.batch_request()
         self.select_typepad_user(request)
@@ -331,7 +329,7 @@ class TypePadView(GenericView):
             self.filter_object_list()
             link_template = self.paginate_template or urljoin(request.path, '/page/%d')
             paginator = FinitePaginator(self.object_list, self.paginate_by,
-                                        self.offset,
+                                        offset=self.offset,
                                         link_template=link_template)
             try:
                 self.context.update({ 'page_obj': paginator.page(pagenum) })
