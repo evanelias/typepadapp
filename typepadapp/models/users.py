@@ -24,10 +24,10 @@ class User(typepad.User):
     if USER_CACHE_PERIOD:
         # Django-level caching of user objects
         @classmethod
-        def get_by_id(cls, userid):
-            user = cache.get('user:%s' % userid)
+        def get_by_url_id(cls, url_id):
+            user = cache.get('user:%s' % url_id)
             if user is None:
-                user = super(User, cls).get_by_id(userid)
+                user = super(User, cls).get_by_url_id(url_id)
             else:
                 loc = user['location']
                 data = user['data']
@@ -40,7 +40,7 @@ class User(typepad.User):
             super(User, self).update_from_dict(data)
             if hasattr(self, '_location') and self._location is not None:
                 user = { 'data': self._originaldata, 'location': self._location }
-                cache.set('user:%s' % self.id, user, USER_CACHE_PERIOD)
+                cache.set('user:%s' % self.url_id, user, USER_CACHE_PERIOD)
                 if self.username is not None:
                     cache.set('user:%s' % self.username, user, USER_CACHE_PERIOD)
             return self
@@ -74,7 +74,7 @@ class User(typepad.User):
     def is_superuser(self):
         # FIXME: use request's group once we have per-request groups
         for admin in typepadapp.models.GROUP.admins():
-            if self.atom_id == admin.source.atom_id:
+            if self.id == admin.source.id:
                 return True
         return False
 
@@ -108,7 +108,7 @@ class User(typepad.User):
     def get_absolute_url(self):
         """Relative url to the user's member profile page."""
         try:
-            return reverse('member', args=[self.preferred_username or self.id])
+            return reverse('member', args=[self.preferred_username or self.url_id])
         except NoReverseMatch:
             return None
 
@@ -198,11 +198,11 @@ class User(typepad.User):
     assets = typepad.fields.Link(typepad.ListOf('Asset'))
 
     def group_events(self, group, start_index=1, max_results=settings.EVENTS_PER_PAGE):
-        return self.events.filter(by_group=group.id, start_index=start_index, max_results=max_results)
+        return self.events.filter(by_group=group, start_index=start_index, max_results=max_results)
 
     def group_assets(self, group, start_index=1, max_results=settings.EVENTS_PER_PAGE, type=None):
         args = {
-            'by_group': group.id,
+            'by_group': group,
             'start_index': start_index,
             'max_results': max_results,
         }
@@ -211,24 +211,16 @@ class User(typepad.User):
         return self.assets.filter(**args)
 
     def group_comments(self, group, start_index=1, max_results=settings.COMMENTS_PER_PAGE):
-        return self.comments.filter(by_group=group.id, start_index=start_index, max_results=max_results)
+        return self.comments.filter(by_group=group, start_index=start_index, max_results=max_results)
 
     def group_notifications(self, group, start_index=1, max_results=settings.EVENTS_PER_PAGE):
-        return self.notifications.filter(by_group=group.id, start_index=start_index, max_results=max_results)
+        return self.notifications.filter(by_group=group, start_index=start_index, max_results=max_results)
 
     def following(self, group=None, start_index=1, max_results=settings.MEMBERS_PER_WIDGET):
-        if group is None:
-            by_group = None
-        else:
-            by_group = group.id
-        return self.relationships.filter(following=True, by_group=by_group, start_index=start_index, max_results=max_results)
+        return self.relationships.filter(following=True, by_group=group, start_index=start_index, max_results=max_results)
 
     def followers(self, group=None, start_index=1, max_results=settings.MEMBERS_PER_WIDGET):
-        if group is None:
-            by_group = None
-        else:
-            by_group = group.id
-        return self.relationships.filter(follower=True, by_group=by_group, start_index=start_index, max_results=max_results)
+        return self.relationships.filter(follower=True, by_group=group, start_index=start_index, max_results=max_results)
 
     @property
     def feed_url(self):

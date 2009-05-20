@@ -34,7 +34,7 @@ class Asset(typepad.Asset):
     def get_absolute_url(self):
         """Relative url to the asset permalink page."""
         try:
-            return reverse('asset', args=[self.id])
+            return reverse('asset', args=[self.url_id])
         except NoReverseMatch:
             return None
 
@@ -62,7 +62,7 @@ class Asset(typepad.Asset):
     def feed_url(self):
         """URL for atom feed of comments for this asset."""
         try:
-            return reverse('feeds', kwargs={'url': 'comments/%s' % self.id})
+            return reverse('feeds', kwargs={'url': 'comments/%s' % self.url_id})
         except NoReverseMatch:
             return None
 
@@ -72,7 +72,7 @@ class Comment(typepad.Comment, Asset):
     def get_absolute_url(self):
         """Relative url to the comment anchor on the asset permalink page."""
         try:
-            return '%s#%s' % (reverse('asset', args=[self.in_reply_to.id]), self.id)
+            return '%s#%s' % (reverse('asset', args=[self.in_reply_to.url_id]), self.url_id)
         except NoReverseMatch:
             return None
 
