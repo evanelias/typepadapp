@@ -4,7 +4,6 @@ from urlparse import urljoin
 from django.conf import settings
 from django.contrib.auth.models import SiteProfileNotAvailable, ImproperlyConfigured
 from django.core.urlresolvers import reverse, NoReverseMatch
-from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.core.cache import cache
 
