@@ -342,10 +342,12 @@ class TypePadView(GenericView):
         """
         super(TypePadView, self).setup(request, *args, **kwargs)
 
-        if self.template_name:
+        # View parameter from view or template_name
+        view = kwargs.get('view', None)
+        if view is None and self.template_name:
             # foo/bar.html -> bar
             view = path.splitext(path.split(self.template_name)[1])[0]
-            self.context.update({ 'view': view })
+        self.context.update({ 'view': view })
 
         if self.form:
             # We should also accept 'POST' for form support
