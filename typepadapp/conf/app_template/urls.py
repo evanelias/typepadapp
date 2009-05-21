@@ -13,6 +13,6 @@ urlpatterns = patterns('%s.views' % app_dir,
 
 # Appends a static url for your theme
 urlpatterns += patterns('',
-    url(r'^static/themes/%s/(?P<path>.*)$' % app_dir, 'django.views.static.serve',
+    url(r'^static/themes/%s/(?P<path>.*)/?$' % app_dir, 'django.views.static.serve',
         kwargs={ 'document_root': theme_dir }),
 )
