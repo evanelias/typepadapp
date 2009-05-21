@@ -25,7 +25,7 @@ def generate_members_csv(request):
     writer = csv.writer(mfile)
 
     # label header row
-    labels = ['xid', 'display name', 'about me', 'interests']
+    labels = ['xid', 'display name', 'email', 'gender', 'location', 'about me', 'homepage', 'interests']
     if settings.AUTH_PROFILE_MODULE:
         profile_form = typepadapp.forms.UserProfileForm()
         for field in profile_form:
@@ -91,7 +91,7 @@ def get_members_csv(members):
     for member in members:
 
         # member data from typepad
-        member_data = [member.id, member.display_name, member.about_me, ' '.join(member.interests)]
+        member_data = [member.id, member.display_name, member.email, member.gender, member.location, member.about_me, member.homepage, ' '.join(member.interests)]
         row = []
         for item in member_data:
             if item:
