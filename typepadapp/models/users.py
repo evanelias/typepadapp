@@ -164,7 +164,6 @@ class User(typepad.User):
         SiteProfileNotAvailable if this site does not allow profiles.
         """
         # user profile class from settings
-        from django.conf import settings
         if not getattr(settings, 'AUTH_PROFILE_MODULE', False):
             raise SiteProfileNotAvailable
         try:
