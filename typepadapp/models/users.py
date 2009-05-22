@@ -2,6 +2,7 @@ import re
 from urlparse import urljoin
 
 from django.conf import settings
+from django.db import models
 from django.contrib.auth.models import SiteProfileNotAvailable, ImproperlyConfigured
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.utils.translation import ugettext_lazy as _
