@@ -1,5 +1,6 @@
 from urlparse import urljoin
 from os import path
+import re
 
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -10,6 +11,19 @@ from typepadapp.utils.paginator import FinitePaginator, EmptyPage
 
 import typepad
 
+
+def parse_etags(etag_str):
+    """
+    Parses a string with one or several etags passed in If-None-Match and
+    If-Match headers by the rules in RFC 2616. Returns a list of etags
+    without surrounding double quotes (") and unescaped from \<CHAR>.
+    """
+    etags = re.findall(r'(?:W/)?"((?:\\.|[^"])*)"', etag_str)
+    if not etags:
+        # etag_str has wrong format, treat it as an opaque string then
+        return [etag_str]
+    etags = [e.decode('string_escape') for e in etags]
+    return etags
 
 class GenericView(HttpResponse):
     """
@@ -271,7 +285,7 @@ class TypePadView(GenericView):
         """
         from django.contrib.auth import get_user
         request.user = get_user(request)
-        self.context.update({'user': request.user, 'request':request})
+        self.context.update({'user': request.user, 'request': request})
 
     def select_from_typepad(self, request, *args, **kwargs):
         """
@@ -332,7 +346,7 @@ class TypePadView(GenericView):
                                         offset=self.offset,
                                         link_template=link_template)
             try:
-                self.context.update({ 'page_obj': paginator.page(pagenum) })
+                self.context['page_obj'] = paginator.page(pagenum)
             except EmptyPage:
                 raise Http404
 
@@ -347,7 +361,7 @@ class TypePadView(GenericView):
         if view is None and self.template_name:
             # foo/bar.html -> bar
             view = path.splitext(path.split(self.template_name)[1])[0]
-        self.context.update({ 'view': view })
+        self.context['view'] = view
 
         if self.form:
             # We should also accept 'POST' for form support
@@ -358,7 +372,7 @@ class TypePadView(GenericView):
             else:
                 self.form_instance = self.form()
 
-            self.context.update({ 'form': self.form_instance })
+            self.context['form'] = self.form_instance
 
         if request.method == 'GET':
             self.typepad_request(request, *args, **kwargs)
