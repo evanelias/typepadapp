@@ -30,6 +30,7 @@ def gp_signed_url(url, params):
     req.sign_request(oauth.OAuthSignatureMethod_HMAC_SHA1(), consumer, token)
     return req.to_url()
 
+
 def get_session_synchronization_url(self, callback_url=None):
     # oauth GET params for session synchronization
     # since the request comes from a script tag
