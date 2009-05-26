@@ -72,7 +72,7 @@ class UserAgentMiddleware:
         This middleware needs to be after the session middleware.
         """
 
-        request.oauth_client = OAuthClient()
+        request.oauth_client = OAuthClient(request.application)
         typepad.client.clear_credentials()
 
         # Make sure there's a nonce in the session to use
@@ -99,10 +99,70 @@ class UserAgentMiddleware:
         return None
 
 
-class ApplicationMiddleware:
-    
+class ApplicationMiddleware(object):
+
+    def __init__(self):
+        self.application = None
+        self.group = None
+
+    def discover_group(self, request):
+        # TODO: pick a group based on the request, not global settings.
+
+        log = logging.getLogger('.'.join((self.__module__, self.__class__.__name__)))
+
+        log.info('Loading group info...')
+        raise Exception("EXPLOSION OF FLAVOR")
+        app, group = None, None
+
+        # FIXME: Shouldn't need to do oauth manually here
+        consumer = oauth.OAuthConsumer(settings.OAUTH_CONSUMER_KEY, settings.OAUTH_CONSUMER_SECRET)
+        token = oauth.OAuthToken(settings.OAUTH_GENERAL_PURPOSE_KEY, settings.OAUTH_GENERAL_PURPOSE_SECRET)
+        backend = urlparse(settings.BACKEND_URL)
+        typepad.client.clear_credentials()
+        typepad.client.add_credentials(consumer, token, domain=backend[1])
+
+        typepad.client.batch_request()
+        # FIXME: handle failure here...
+        try:
+            app = typepad.Application.get_by_api_key(settings.TYPEPAD_API_KEY)
+            typepad.client.complete_batch()
+        except Exception, exc:
+            log.error('Error loading Application %s: %s' % (settings.OAUTH_CONSUMER_KEY, str(exc)))
+            raise
+
+        group = app.owner
+
+        # FIXME: shouldn't need to do a separate batch request for the group here
+        # we already have the group data through APPLICATION.owner...
+        typepad.client.batch_request()
+        try:
+            group.admin_list = group.memberships.filter(admin=True)
+            typepad.client.complete_batch()
+        except Exception, exc:
+            log.error('Error loading Group %s: %s', app.owner.id, str(exc))
+            raise
+
+        log.info("Running for group: %s", group.display_name)
+
+        if settings.SESSION_COOKIE_NAME is None:
+            settings.SESSION_COOKIE_NAME = "sg_%s" % group.id
+
+        self.application = app
+        self.group = group
+        return app, group
+
     def process_request(self, request):
         """Adds the application and group to the request."""
-        request.application = typepadapp.models.APPLICATION
-        request.group = typepadapp.models.GROUP
+
+        if self.application is None or self.group is None:
+            self.discover_group(request)
+
+        # TODO: Don't pretend these are singletons once we always pull them
+        # from the request.
+        typepadapp.models.GROUP = self.group
+        typepadapp.models.APPLICATION = self.application
+
+        request.application = self.application
+        request.group = self.group
+
         return None

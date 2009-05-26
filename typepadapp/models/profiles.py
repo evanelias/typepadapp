@@ -1,5 +1,5 @@
 from django.db import models
-from typepadapp.models import User
+from typepadapp.models.users import User
 
 
 class UserProfile(models.Model):

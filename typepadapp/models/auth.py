@@ -1,3 +1,4 @@
+import logging
 import urllib
 
 from django.conf import settings
@@ -9,11 +10,10 @@ import typepadapp.models
 
 class OAuthClient(typepad.OAuthClient):
 
-    def __init__(self):
+    def __init__(self, app):
         self.set_consumer(settings.OAUTH_CONSUMER_KEY, secret = settings.OAUTH_CONSUMER_SECRET,)
         self.callback_url = settings.OAUTH_CALLBACK_URL
 
-        app = typepadapp.models.APPLICATION
         self.request_token_url = app.oauth_request_token
         self.access_token_url = app.oauth_access_token_endpoint
         self.authorization_url = app.oauth_authorization_page

@@ -5,6 +5,9 @@ from users import *
 from profiles import *
 
 
+APPLICATION, GROUP = None, None
+
+
 ## TODO move this
 import logging
 import tempfile
@@ -56,54 +59,6 @@ def configure_typepad_client():
         typepad.TypePadObject.batch_requests = False
 
 configure_typepad_client()
-
-
-def discover_group():
-    log.info('Loading group info...')
-    app, group = None, None
-
-    # FIXME: Shouldn't need to do oauth manually here
-    consumer = oauth.OAuthConsumer(settings.OAUTH_CONSUMER_KEY, settings.OAUTH_CONSUMER_SECRET)
-    token = oauth.OAuthToken(settings.OAUTH_GENERAL_PURPOSE_KEY, settings.OAUTH_GENERAL_PURPOSE_SECRET)
-    backend = urlparse(settings.BACKEND_URL)
-    typepad.client.clear_credentials()
-    typepad.client.add_credentials(consumer, token, domain=backend[1])
-
-    typepad.client.batch_request()
-    # FIXME: handle failure here...
-    try:
-        app = typepad.Application.get_by_api_key(settings.TYPEPAD_API_KEY)
-        typepad.client.complete_batch()
-    except Exception, exc:
-        log.error('Error loading Application %s: %s' % (settings.OAUTH_CONSUMER_KEY, str(exc)))
-        raise
-
-    group = app.owner
-
-    # FIXME: shouldn't need to do a separate batch request for the group here
-    # we already have the group data through APPLICATION.owner...
-    typepad.client.batch_request()
-    try:
-        group.admin_list = group.memberships.filter(admin=True)
-        typepad.client.complete_batch()
-    except Exception, exc:
-        log.error('Error loading Group %s: %s', app.owner.id, str(exc))
-        raise
-
-    log.info("Running for group: %s", group.display_name)
-
-    if settings.SESSION_COOKIE_NAME is None:
-        settings.SESSION_COOKIE_NAME = "sg_%s" % group.id
-
-    return app, group
-
-
-try:
-    APPLICATION, GROUP = discover_group()
-except Exception:
-    import sys
-    if 'manage.py' not in ' '.join(sys.argv) or 'runserver' in sys.argv:
-        raise
 
 
 def clear_client_request(signal, sender, **kwargs):
