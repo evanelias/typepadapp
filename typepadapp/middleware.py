@@ -111,7 +111,6 @@ class ApplicationMiddleware(object):
         log = logging.getLogger('.'.join((self.__module__, self.__class__.__name__)))
 
         log.info('Loading group info...')
-        raise Exception("EXPLOSION OF FLAVOR")
         app, group = None, None
 
         # FIXME: Shouldn't need to do oauth manually here
