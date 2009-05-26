@@ -220,6 +220,13 @@ class User(typepad.User):
 
     def followers(self, group=None, start_index=1, max_results=settings.MEMBERS_PER_WIDGET):
         return self.relationships.filter(follower=True, by_group=group, start_index=start_index, max_results=max_results)
+    
+    @property
+    def edit_url(self):
+        try:
+            return reverse('edit_profile_url')
+        except NoReverseMatch:
+            return None
 
     @property
     def feed_url(self):
