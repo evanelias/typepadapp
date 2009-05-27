@@ -21,7 +21,7 @@ def register(request):
     Fetch request token then redirect to authorization page.
     """
     # fetch request token
-    client = OAuthClient()
+    client = OAuthClient(request.application)
     token = client.fetch_request_token()
 
     # redirect to authorization url
@@ -52,7 +52,7 @@ def authorize(request):
     del request.session['request_token']
 
     # exchange request token for access token
-    client = OAuthClient()
+    client = OAuthClient(request.application)
     client.set_token_from_string(request_token)
     access_token = client.fetch_access_token()
 
@@ -169,7 +169,7 @@ def synchronize(request):
                     # get stuck in a loop.
                     request.session['lost_session_sync_token'] = session_sync_token
                     return http.HttpResponseRedirect(next)
-            client = OAuthClient()
+            client = OAuthClient(request.application)
             client.token = token
 
             # Everything's copasetic. Authorize and login user.
