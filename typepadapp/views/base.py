@@ -7,6 +7,9 @@ from django.template import RequestContext
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseServerError, HttpResponseForbidden, HttpResponseNotAllowed
 from django.utils.http import urlquote
 from django.contrib.auth.decorators import login_required
+from django.contrib.syndication.feeds import Feed
+from django.utils.feedgenerator import Atom1Feed
+
 from typepadapp.utils.paginator import FinitePaginator, EmptyPage
 
 import typepad
@@ -406,3 +409,35 @@ class TypePadView(GenericView):
         if self.template_name is None:
             return super(TypePadView, self).get(request, *args, **kwargs)
         return self.render_to_response(self.template_name)
+
+
+class TypePadFeed(Feed):
+    """ A subclass of the Django ``Feed`` class that handles selecting data
+    from the TypePad client library. """
+
+    feed_type = Atom1Feed
+
+    def get_object(self, *args, **kwargs):
+        typepad.client.batch_request()
+        self.select_from_typepad(*args, **kwargs)
+        typepad.client.complete_batch()
+        return getattr(self, 'object', None)
+
+    def select_from_typepad(self, *args, **kwargs):
+        pass
+
+def TypePadAssetFeed(TypePadFeed):
+    """ A subclass of the ``TypePadFeed`` class that handles serving
+    Asset items. """
+
+    def item_link(self, asset):
+        return asset.get_absolute_url()
+
+    def item_author_name(self, asset):
+        return asset.author.display_name
+
+    def item_author_link(self, asset):
+        return asset.author.get_absolute_url()
+
+    def item_pubdate(self, asset):
+        return asset.published
