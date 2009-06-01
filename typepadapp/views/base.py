@@ -426,7 +426,7 @@ class TypePadFeed(Feed):
     def select_from_typepad(self, *args, **kwargs):
         pass
 
-def TypePadAssetFeed(TypePadFeed):
+class TypePadAssetFeed(TypePadFeed):
     """ A subclass of the ``TypePadFeed`` class that handles serving
     Asset items. """
 
