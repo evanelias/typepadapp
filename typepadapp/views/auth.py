@@ -9,7 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse, NoReverseMatch
 from oauth import oauth
 
-from typepadapp.models import OAuthClient, Token, APPLICATION
+from typepadapp.models import OAuthClient, Token
 
 
 log = logging.getLogger('typepadapp.views.auth')
@@ -191,7 +191,7 @@ def logout(request):
     from django.contrib.auth import logout
     logout(request)
     # redirect to logout of typepad
-    return http.HttpResponseRedirect(APPLICATION.signout_page)
+    return http.HttpResponseRedirect(request.application.signout_page)
 
 
 try:
