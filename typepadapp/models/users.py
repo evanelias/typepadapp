@@ -77,10 +77,12 @@ class User(typepad.User):
             if self.id == admin.source.id:
                 return True
         return False
-    
+
     @property
     def is_featured_member(self):
-        return self.url_id == settings.FEATURED_MEMBER
+        if settings.FEATURED_MEMBER is None: return False
+        return settings.FEATURED_MEMBER in (self.xid,
+            self.preferred_username)
 
     @property
     def date_joined(self):
