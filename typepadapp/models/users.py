@@ -252,6 +252,14 @@ class User(typepad.User):
             return None
     
     @property
+    def typepad_membership_management_url(self):
+        try:
+            return self.links['membership-management-page'].href
+        except (TypeError, KeyError):
+            # fail silently?
+            return None
+    
+    @property
     def typepad_frame_url(self):
         # TODO get this from the API response?
         return self.links['follow-frame-content'].href
