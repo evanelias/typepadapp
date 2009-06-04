@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from distutils.core import setup
+from setuptools import setup
 setup(
     name='typepadapp',
     version='1.0',
@@ -10,5 +10,7 @@ setup(
 
     packages=['typepadapp'],
     provides=['typepadapp'],
+    include_package_data=True,
+    zip_safe=False,
     requires=['Django(>=1.0.2)', 'typepad'],
 )
