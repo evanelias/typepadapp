@@ -131,7 +131,7 @@ class Video(typepad.Video, Asset):
         except KeyError:
             l = typepad.Link()
             l.rel = 'enclosure'
-            l.href = value
+            l.html = value
             links.add(l)
 
     html = property(get_html, set_html)
