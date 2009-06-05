@@ -1,0 +1,104 @@
+#debug-toolbar {
+    font-size: 12px;
+    position: absolute; 
+    top: 5px; 
+    left: 5px; 
+    border: 1px solid black; 
+    background-color: #333; 
+    color: white;
+    z-index: 1000000000;
+    -moz-opacity: 0.75; 
+    max-width: 99%;
+}
+#debug-toolbar:hover {
+    -moz-opacity: 1.0;
+}
+#debug-toolbar.visible {
+    -moz-opacity: 1.0;
+}
+#debug-summary:hover {
+    cursor: pointer;
+}
+#debug-toolbar a {
+    color: #f7c757;
+}
+#debug-toolbar a:hover {
+    color: #aaa;
+}
+#debug-toolbar #debug-details a {
+    color: #333;
+}
+#debug-toolbar #debug-details a:hover {
+    color: #f7c757;
+}
+#debug-summary {
+    margin: 5px;
+    margin-right: 25px;
+    line-height: 1.5em;
+}
+#debug-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+.stat {
+    font-weight: bold;
+}
+#debug-details {
+    margin-top: 5px;
+    color: black;
+}
+.debug-request-summary {
+    line-height: 2em;
+    padding: 0 5px;
+}
+.debug-subrequest-summary {
+    line-height: 2em;
+    padding: 0 10px;
+}
+.debug-request-summary:hover {
+    background-color: #555;
+    cursor: pointer;
+}
+.debug-subrequest-summary:hover {
+    background-color: #555;
+}
+.debug-request-even {
+    background-color: #9dcc49;
+}
+.debug-request-odd {
+    background-color: #b9d977;
+}
+.debug-subrequest-body pre {
+    margin: 0;
+    padding: 0;
+}
+.debug-subrequest-body {
+    margin: 0;
+    max-height: 300px;
+    overflow: auto;
+    border: 1px solid #ccc;
+    background-color: white;
+}
+.debug-subrequest-stacktrace {
+    margin: 0 20px;
+    line-height: 1.5em;
+}
+.debug-filename, .debug-funcname {
+    font-weight: bold;
+    font-family: monospace;
+}
+.debug-strace-line {
+    text-indent: 20px;
+}
+.debug-lineno {
+    display: inline-block;
+    width: 60px;
+    font-weight: bold;
+}
+.debug-statement {
+    font-family: monospace;
+}
+.debug-subrequest-body .syntaxhighlighter {
+    margin: 0 !important;
+}
