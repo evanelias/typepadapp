@@ -87,7 +87,7 @@ class Post(typepad.Post, Asset):
         # Warning - this only handles create, not update
         # so don't call this more than once
         assert group, "group parameter is unassigned"
-        posts = group.post_assets
+        posts = group.post_assets.filter(max_results=0)
         post = posts.post(self)
         # TODO - did this used to return a post asset?? (needed for ajax)
         return post
@@ -104,7 +104,15 @@ class Audio(typepad.Audio, Asset):
 
 
 class Video(typepad.Video, Asset):
-    pass
+
+    def save(self, group=None):
+        # Warning - this only handles create, not update
+        # so don't call this more than once
+        assert group, "group parameter is unassigned"
+        videos = group.video_assets.filter(max_results=0)
+        video = videos.post(self)
+        # TODO - did this used to return a post asset?? (needed for ajax)
+        return video
 
 
 class Photo(typepad.Photo, Asset):
@@ -185,7 +193,7 @@ class LinkAsset(typepad.LinkAsset, Asset):
         # Warning - this only handles create, not update
         # so don't call this more than once
         assert group, "group parameter is unassigned"
-        links = group.link_assets
+        links = group.link_assets.filter(max_results=0)
         link = links.post(self)
         # TODO - did this used to return a post asset?? (needed for ajax)
         return link
