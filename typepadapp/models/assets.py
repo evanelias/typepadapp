@@ -105,6 +105,37 @@ class Audio(typepad.Audio, Asset):
 
 class Video(typepad.Video, Asset):
 
+    def get_html(self):
+        try:
+            return self.links['enclosure'].html
+        except TypeError:
+            # No links at all yet.
+            pass
+        except KeyError:
+            # There's no 'target' link.
+            pass
+        return
+
+    def set_html(self, value):
+        # FIXME: I don't like accessing __dict__ like this, but for promise
+        # objects, getattr(self, 'links') attempts delivery, which isn't
+        # appropriate for new objects that aren't even in the cloud yet.
+        try:
+            links = self.__dict__['links']
+        except KeyError:
+            links = typepad.LinkSet()
+            self.links = links
+
+        try:
+            links['enclosure'].html = value
+        except KeyError:
+            l = typepad.Link()
+            l.rel = 'enclosure'
+            l.href = value
+            links.add(l)
+
+    html = property(get_html, set_html)
+
     def save(self, group=None):
         # Warning - this only handles create, not update
         # so don't call this more than once
