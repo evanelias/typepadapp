@@ -8,6 +8,7 @@ import settings
 from typepadapp import signals
 from remoteobjects import fields
 from remoteobjects.promise import ListObject
+import typepadapp.models
 
 
 class ListObjectSignalDispatcher(object):
@@ -51,6 +52,10 @@ class Asset(typepad.Asset):
     def is_comment(self):
         return self.type_id == 'comment'
 
+    @property
+    def is_local(self):
+        return typepadapp.models.GROUP.id in self.groups
+
     def get_comments(self, start_index=1, max_results=settings.COMMENTS_PER_PAGE):
         return self.comments.filter(start_index=start_index, max_results=max_results)
 
@@ -58,13 +63,20 @@ class Asset(typepad.Asset):
     def user(self):
         return self.author
 
-    @property
-    def feed_url(self):
-        """URL for atom feed of comments for this asset."""
+    def link_relation(self, relation):
         try:
-            return reverse('feeds', kwargs={'url': 'comments/%s' % self.url_id})
-        except NoReverseMatch:
-            return None
+            links = self.__dict__['links']
+        except KeyError:
+            links = typepad.LinkSet()
+            self.links = links
+
+        try:
+            return links[relation]
+        except KeyError:
+            l = typepad.Link()
+            l.rel = relation
+            links.add(l)
+            return l
 
 
 class Comment(typepad.Comment, Asset):
@@ -106,35 +118,20 @@ class Audio(typepad.Audio, Asset):
 class Video(typepad.Video, Asset):
 
     def get_html(self):
-        try:
-            return self.links['enclosure'].html
-        except TypeError:
-            # No links at all yet.
-            pass
-        except KeyError:
-            # There's no 'target' link.
-            pass
-        return
+        return self.link_relation('enclosure').html
 
     def set_html(self, value):
-        # FIXME: I don't like accessing __dict__ like this, but for promise
-        # objects, getattr(self, 'links') attempts delivery, which isn't
-        # appropriate for new objects that aren't even in the cloud yet.
-        try:
-            links = self.__dict__['links']
-        except KeyError:
-            links = typepad.LinkSet()
-            self.links = links
-
-        try:
-            links['enclosure'].html = value
-        except KeyError:
-            l = typepad.Link()
-            l.rel = 'enclosure'
-            l.html = value
-            links.add(l)
+        self.link_relation('enclosure').html = value
 
     html = property(get_html, set_html)
+
+    def get_link(self):
+        return self.link_relation('enclosure').href
+
+    def set_link(self, value):
+        self.link_relation('enclosure').href = value
+
+    link = property(get_link, set_link)
 
     def save(self, group=None):
         # Warning - this only handles create, not update
@@ -190,33 +187,10 @@ class LinkAsset(typepad.LinkAsset, Asset):
         return link
 
     def get_link(self):
-        try:
-            return self.links['target'].href
-        except TypeError:
-            # No links at all yet.
-            pass
-        except KeyError:
-            # There's no 'target' link.
-            pass
-        return
+        return self.link_relation('target').href
 
     def set_link(self, value):
-        # FIXME: I don't like accessing __dict__ like this, but for promise
-        # objects, getattr(self, 'links') attempts delivery, which isn't
-        # appropriate for new objects that aren't even in the cloud yet.
-        try:
-            links = self.__dict__['links']
-        except KeyError:
-            links = typepad.LinkSet()
-            self.links = links
-
-        try:
-            links['target'].href = value
-        except KeyError:
-            l = typepad.Link()
-            l.rel = 'target'
-            l.href = value
-            links.add(l)
+        self.link_relation('target').href = value
 
     link = property(get_link, set_link)
 
