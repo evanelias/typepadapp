@@ -4,7 +4,7 @@ from django.utils.translation import ugettext as _
 from urlparse import urljoin
 
 import typepad
-import settings
+from django.conf import settings
 from typepadapp import signals
 from remoteobjects import fields
 from remoteobjects.promise import ListObject
