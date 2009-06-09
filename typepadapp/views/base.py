@@ -2,9 +2,9 @@ from urlparse import urljoin
 from os import path
 import re
 
+from django import http
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseServerError, HttpResponseForbidden, HttpResponseNotAllowed
 from django.utils.http import urlquote
 from django.contrib.auth.decorators import login_required
 from django.contrib.syndication.feeds import Feed
@@ -28,7 +28,7 @@ def parse_etags(etag_str):
     etags = [e.decode('string_escape') for e in etags]
     return etags
 
-class GenericView(HttpResponse):
+class GenericView(http.HttpResponse):
     """
     A base view class for TypePadView.
 
@@ -52,7 +52,7 @@ class GenericView(HttpResponse):
 
         obj = self.conditional_dispatch(request, *args, **kwargs)
 
-        if isinstance(obj, HttpResponse):
+        if isinstance(obj, http.HttpResponse):
             self._update(obj)
         else:
             self.content = obj
@@ -98,7 +98,7 @@ class GenericView(HttpResponse):
         method that was sent to the server.
         """
         if request.method.lower() not in (method.lower() for method in self.methods):
-            return False, HttpResponseNotAllowed(self.methods)
+            return False, http.HttpResponseNotAllowed(self.methods)
         return True, None
 
     def conditional_dispatch(self, request, *args, **kwargs):
@@ -351,7 +351,7 @@ class TypePadView(GenericView):
             try:
                 self.context['page_obj'] = paginator.page(pagenum)
             except EmptyPage:
-                raise Http404
+                raise http.Http404
 
     def setup(self, request, *args, **kwargs):
         """
