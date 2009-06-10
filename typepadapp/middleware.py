@@ -182,7 +182,7 @@ class ConfigurationMiddleware(object):
     def __init__(self):
         # If we're not in debug mode, disable this middleware.
         if not settings.DEBUG:
-            raise MiddlewareNotUsedException
+            raise MiddlewareNotUsed
 
     def process_request(self, request):
         # If any of the OAUTH_* settings are empty, or don't exist, raise an IncompleteConfiguration
