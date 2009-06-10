@@ -33,7 +33,7 @@ jQuery(function($) {
         close: function() {
             $(document).trigger('close.potionDebug');
             return false;
-        },
+        }
     });
     $(document).bind('close.potionDebug', function() {
         $('#debug-toolbar').remove()
