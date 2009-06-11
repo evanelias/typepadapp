@@ -43,3 +43,9 @@ def truncatechars(value, length):
     if len(value) <= length:
         return value
     return value[:length] + '...'
+
+
+@register.filter
+def sanitizetags(value):
+    import feedparser
+    return feedparser._sanitizeHTML(value, 'utf8')
