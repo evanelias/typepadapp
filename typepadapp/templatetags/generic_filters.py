@@ -1,13 +1,16 @@
-from django.template import defaultfilters
-from django import template
 import re
 
+from django import template
+
+
 register = template.Library()
+
 
 @register.filter
 def regex_search(s, pattern):
     """Finds if a pattern in the string."""
     return re.search(pattern, s)
+
 
 @register.filter
 def regex_starts_with(s, pattern):
@@ -19,10 +22,12 @@ def regex_starts_with(s, pattern):
         return re.search(pattern, s).start() == 0
     return None
 
+
 @register.filter
 def split(s, delim):
     """Python string split."""
     return s.split(delim)
+
 
 @register.filter
 def truncatechars(value, length):
