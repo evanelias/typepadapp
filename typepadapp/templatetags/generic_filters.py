@@ -1,6 +1,7 @@
 import re
 
 from django import template
+import feedparser
 
 
 register = template.Library()
@@ -45,7 +46,47 @@ def truncatechars(value, length):
     return value[:length] + '...'
 
 
+class Sanitizer(feedparser._HTMLSanitizer):
+
+    nul_re = re.compile(r'\x00')
+    comma_decimal_entity_re = re.compile(r'&#0*58[^0-9]')
+    comma_hex_entity_re = re.compile(r'&#x0*3[Aa][^a-fA-F0-9]')
+    space_re = re.compile(r'\s+')
+    nonscheme_character_re = re.compile(r'[^a-zA-Z0-9\+]')
+    ends_in_script_re = re.compile(r'script$')
+    has_numeric_entity_re = re.compile(r'&#')
+
+    def feed(self, value):
+        value = re.sub(self.nul_re, '', value)
+        feedparser._HTMLSanitizer.feed(self, value)
+
+    def is_safe_href(self, href):
+        href = re.sub(self.nul_re, '', href)
+        href = re.sub(self.comma_decimal_entity_re, ':', href)
+        href = re.sub(self.comma_hex_entity_re, ':', href)
+        if ':' not in href:
+            return True
+
+        scheme = href.split(':', 1)[0]
+        scheme = re.sub(self.space_re, '', scheme)
+        if (re.search(self.nonscheme_character_re, scheme)
+            or re.search(self.ends_in_script_re, scheme)
+            or re.search(self.has_numeric_entity_re, scheme)):
+            return False
+
+        return True
+
+    def normalize_attrs(self, attr):
+        attr = feedparser._HTMLSanitizer.normalize_attrs(self, attr)
+        attr = [(k, v) for k, v in attr
+                if k not in ('href', 'src', 'dynsrc')
+                    or self.is_safe_href(v)]
+        return attr
+
+
 @register.filter
 def sanitizetags(value):
-    import feedparser
-    return feedparser._sanitizeHTML(value, 'utf8')
+    s = Sanitizer('utf-8')
+    s.feed(value)
+    data = s.output().strip().replace('\r\n', '\n')
+    return data
