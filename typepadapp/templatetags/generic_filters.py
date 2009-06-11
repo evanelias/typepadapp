@@ -90,3 +90,4 @@ def sanitizetags(value):
     s.feed(value)
     data = s.output().strip().replace('\r\n', '\n')
     return data
+sanitizetags.is_safe = True
