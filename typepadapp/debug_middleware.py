@@ -1,13 +1,17 @@
 import os
-import django
 import SocketServer
 import traceback
-import typepad
 from time import time
-from batchhttp import client
+
+import django
+from django.conf import settings
 from django.utils.encoding import smart_unicode
 from django.template.loader import render_to_string
 from django.core.signals import request_started
+from django.core.exceptions import MiddlewareNotUsed
+
+from batchhttp import client
+import typepad
 from typepad import client as tp_client
 
 try:
@@ -20,7 +24,8 @@ This module contains some stats tracking middleware that is useful in auditing
 the number of requests being made per page and tracking down performance problems.
 It is not thread-safe, and may expose sensitive information about your site.
 
-Do NOT use this module in production.
+Do NOT use this module in production. This middleware will disable itself
+when DEBUG is set to False in your Django settings module.
 
 """
 
@@ -31,12 +36,14 @@ _HTML_TYPES = ('text/html', 'application/xhtml+xml')
 django_path = os.path.realpath(os.path.dirname(django.__file__))
 socketserver_path = os.path.realpath(os.path.dirname(SocketServer.__file__))
 
+
 def same_path_prefix(p1, p2):
     for part1, part2 in zip(os.path.dirname(os.path.realpath(p1)).split(os.sep),
                             os.path.dirname(os.path.realpath(p2)).split(os.sep)):
         if part1 != part2:
             return False
     return True
+
 
 def tidy_stacktrace(strace, ignore_after=None):
     """ 
@@ -194,6 +201,10 @@ class DebugToolbar(object):
 
 
 class DebugToolbarMiddleware(object):
+    def __init__(self):
+        # If we're not in debug mode, disable this middleware.
+        if not settings.DEBUG:
+            raise MiddlewareNotUsed
 
     def process_request(self, request):
         """Setup the request monitor."""
