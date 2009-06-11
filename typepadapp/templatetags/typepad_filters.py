@@ -13,3 +13,12 @@ def morelink(entry, wordcount):
         more = '<br/><br/><a href="%s">continue reading...</a>' % entry.get_absolute_url()
         return mark_safe(more)
     return ''
+
+
+@register.filter
+def greaterthan(num1, num2):
+    try:
+        return int(num1) > int(num2)
+    except:
+        return False
+
