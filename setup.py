@@ -12,5 +12,5 @@ setup(
     provides=['typepadapp'],
     include_package_data=True,
     zip_safe=False,
-    requires=['Django(>=1.0.2)', 'typepad'],
+    requires=['Django(>=1.0.2)', 'typepad', 'FeedParser'],
 )
