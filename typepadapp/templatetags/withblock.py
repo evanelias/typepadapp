@@ -10,20 +10,11 @@ class WithblockNode(template.Node):
 
     def render(self, context):
         value = self.value_nodes.render(context)
-
-        # TODO: use a context push here
         variable_name = self.as_node.variable_name
-        undefined = object()
-        orig_value = context.get(variable_name, undefined)
-
+        context.push()
         context[variable_name] = value
         result = self.template_nodes.render(context)
-
-        if orig_value is undefined:
-            del context[variable_name]
-        else:
-            context[variable_name] = orig_value
-
+        context.pop()
         return result
 
 @register.tag
