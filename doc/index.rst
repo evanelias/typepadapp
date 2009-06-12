@@ -6,6 +6,9 @@
 ``typepadapp`` — core support for TypePad cloud applications
 ============================================================
 
+The ``typepadapp`` Django application provides all the necessary underpinnings
+for you to build TypePad cloud applications.
+
 Contents:
 
 .. toctree::
