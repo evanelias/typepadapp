@@ -1,6 +1,8 @@
 import re
 
 from django import template
+from django.utils.safestring import mark_safe
+
 import feedparser
 
 
@@ -89,5 +91,4 @@ def sanitizetags(value):
     s = Sanitizer('utf-8')
     s.feed(value)
     data = s.output().strip().replace('\r\n', '\n')
-    return data
-sanitizetags.is_safe = True
+    return mark_safe(data)
