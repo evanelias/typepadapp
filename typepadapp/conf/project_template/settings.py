@@ -36,6 +36,8 @@ TEMPLATE_DIRS = (
 INSTALLED_APPS += (
 )
 
+THEME = 'motion'
+
 
 # Import a local settings file
 # Create a local_settings.py to override any settings in this file
