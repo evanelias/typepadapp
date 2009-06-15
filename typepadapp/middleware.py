@@ -111,8 +111,6 @@ class ApplicationMiddleware(object):
         self.group = None
 
     def discover_group(self, request):
-        # TODO: pick a group based on the request, not global settings.
-
         log = logging.getLogger('.'.join((self.__module__, self.__class__.__name__)))
 
         log.info('Loading group info...')
@@ -167,8 +165,6 @@ class ApplicationMiddleware(object):
                 else:
                     raise
 
-        # TODO: Don't pretend these are singletons once we always pull them
-        # from the request.
         typepadapp.models.GROUP = self.group
         typepadapp.models.APPLICATION = self.application
 

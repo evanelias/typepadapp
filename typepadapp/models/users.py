@@ -72,7 +72,6 @@ class User(typepad.User):
 
     @property
     def is_superuser(self):
-        # FIXME: use request's group once we have per-request groups
         for admin in typepadapp.models.GROUP.admins():
             if self.id == admin.source.id:
                 return True
