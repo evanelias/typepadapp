@@ -124,7 +124,6 @@ class ApplicationMiddleware(object):
         typepad.client.add_credentials(consumer, token, domain=backend[1])
 
         typepad.client.batch_request()
-        # FIXME: handle failure here...
         try:
             app = typepad.Application.get_by_api_key(settings.TYPEPAD_API_KEY)
             typepad.client.complete_batch()
@@ -134,8 +133,6 @@ class ApplicationMiddleware(object):
 
         group = app.owner
 
-        # FIXME: shouldn't need to do a separate batch request for the group here
-        # we already have the group data through APPLICATION.owner...
         typepad.client.batch_request()
         try:
             group.admin_list = group.memberships.filter(admin=True)
