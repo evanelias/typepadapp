@@ -212,9 +212,12 @@ class DebugToolbarMiddleware(object):
         self.toolbar.start_timer()
 
     def process_response(self, request, response):
-        self.toolbar.stop_timer()
-        if response['content-type'].split(';')[0] in _HTML_TYPES:
-            response.content = replace_insensitive(smart_unicode(response.content), 
-                                                   u'</body>', 
-                                                   smart_unicode(self.toolbar.render_toolbar() + '</body>'))
+        # Request might not have a toolbar if process_request was bypassed by an 
+        # earlier piece of middleware returning a response.
+        if hasattr(request, 'toolbar'):
+            self.toolbar.stop_timer()
+            if response['content-type'].split(';')[0] in _HTML_TYPES:
+                response.content = replace_insensitive(smart_unicode(response.content), 
+                                                       u'</body>', 
+                                                       smart_unicode(self.toolbar.render_toolbar() + '</body>'))
         return response
