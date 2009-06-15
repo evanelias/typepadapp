@@ -252,6 +252,14 @@ class User(typepad.User):
             return None
     
     @property
+    def typepad_edit_url(self):
+        try:
+            return self.links['profile-edit-page'].href
+        except (TypeError, KeyError):
+            # fail silently?
+            return None
+    
+    @property
     def typepad_membership_management_url(self):
         try:
             return self.links['membership-management-page'].href
