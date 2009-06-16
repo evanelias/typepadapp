@@ -12,8 +12,7 @@ class UserProfile(models.Model):
         profile model that extends this one, and add it to your
         AUTH_PROFILE_MODULE setting.
     """
-    # TypePad user XID, this field is required
-    ## TODO how long does this need to be?
+
     user_id = models.CharField(max_length=100, unique=True, null=False, blank=False)
 
     @property
