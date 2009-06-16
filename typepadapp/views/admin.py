@@ -17,6 +17,7 @@ def export_members(request):
     response['Content-Disposition'] = 'attachment; filename=membership.csv'
     return response
 
+
 def generate_members_csv(request):
     """CSV file generator for member data."""
 
@@ -25,7 +26,7 @@ def generate_members_csv(request):
     writer = csv.writer(mfile)
 
     # label header row
-    labels = ['xid', 'display name', 'email', 'gender', 'location', 'about me', 'homepage', 'interests']
+    labels = ['xid', 'display name', 'email', 'joined', 'gender', 'location', 'about me', 'homepage', 'interests']
     if settings.AUTH_PROFILE_MODULE:
         profile_form = typepadapp.forms.UserProfileForm()
         for field in profile_form:
@@ -46,7 +47,7 @@ def generate_members_csv(request):
     if request.user.is_superuser:
 
         # convert to user list
-        ids = [member.source.id for member in members] # xids of members, not needed if cmp did user ids
+        ids = [member.source.id for member in members]
 
         # output csv
         mfile = get_members_csv(members)
@@ -82,6 +83,7 @@ def generate_members_csv(request):
 
             new_offset = len(ids) - 4
 
+
 def get_members_csv(members):
 
     mfile = StringIO.StringIO()
@@ -89,16 +91,23 @@ def get_members_csv(members):
 
     for membership in members:
         member = membership.source
-        # TODO: add creation date to the export; date is in membership.status.created
+
+        member_types = membership.status.types
+        join_date = None
+        for member_type in member_types:
+            if member_type.uri == "tag:api.typepad.com,2009:Member":
+                join_date = member_type.created
+
         # member data from typepad
         member_data = [member.xid,
             member.display_name, member.email,
+            join_date,
             member.gender, member.location, member.about_me,
             member.homepage, ', '.join(member.interests)]
         row = []
         for item in member_data:
             if item:
-                # csv pukes on unicode, convert to utf-8
+                # csv doesn't want unicode instances, so encode into str's
                 row.append(item.encode("utf-8"))
             else:
                 row.append('')
