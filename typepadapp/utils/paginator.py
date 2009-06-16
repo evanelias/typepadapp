@@ -56,5 +56,7 @@ class FinitePage(Page):
         """Returns the 1-based index of the first object on this page,
         relative to total objects in the paginator.
         """
-        ## TODO should this holler if you haven't defined the offset?
-        return self.paginator.offset
+        offset = self.paginator.offset
+        if offset is None:
+            raise ValueError("Can't determine start index of paginator with no offset")
+        return offset
