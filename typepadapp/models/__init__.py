@@ -16,6 +16,7 @@ from urlparse import urlparse
 
 import httplib2
 from django.conf import settings
+from django.core.cache import cache
 import django.core.signals
 from oauth import oauth
 
@@ -45,12 +46,27 @@ configure_logging()
 log = logging.getLogger('typepadapp.models')
 
 
+class DjangoHttplib2Cache(object):
+
+    """Adapts the Django low-level caching API to the httplib2 HTTP cache
+    interface, passing through the supported calls after prefixing all keys
+    with ``httpcache_``."""
+
+    def get(self, key):
+        return cache.get('httpcache_%s' % (key,))
+
+    def set(self, key, value):
+        cache.set('httpcache_%s' % (key,), value)
+
+    def delete(self, key):
+        cache.delete('httpcache_%s' % (key,))
+
+
 def configure_typepad_client():
     typepad.client.endpoint = settings.BACKEND_URL
 
-    log.info('Configuring caching')
-    # FIXME: Should the cache directory vary based on the group xid?
-    typepad.client.cache = httplib2.FileCache(tempfile.mkdtemp(prefix='httpcache-'))
+    log.info('Configuring HTTP caching')
+    typepad.client.cache = DjangoHttplib2Cache()
 
     if settings.TYPEPAD_COOKIES:
         typepad.client.cookies.update(settings.TYPEPAD_COOKIES)
