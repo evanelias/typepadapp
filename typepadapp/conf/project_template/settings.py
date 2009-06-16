@@ -12,10 +12,6 @@ PROJECT_DIR = os.path.basename(os.path.dirname(__file__))
 
 MEDIA_ROOT = os.path.join(ROOT_DIR, 'static')
 
-TEMPLATE_DIRS = (
-    ROOT_DIR,
-)
-
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
 )
