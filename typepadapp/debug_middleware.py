@@ -218,7 +218,6 @@ class DebugToolbarMiddleware(object):
         if hasattr(request, 'toolbar'):
             request.toolbar.stop_timer()
             if response['content-type'].split(';')[0] in _HTML_TYPES:
-                print "we're going to do it!"
                 response.content = replace_insensitive(smart_unicode(response.content), 
                                                        u'</body>', 
                                                        smart_unicode(request.toolbar.render_toolbar(request) + '</body>'))
