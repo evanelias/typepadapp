@@ -1,9 +1,12 @@
 import logging
-import httplib2
 from urlparse import urlparse
+
+from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
+import httplib2
+
 import typepad
 from typepadapp.models import User
-import settings
 
 
 class TypePadBackend(object):
@@ -28,10 +31,7 @@ class TypePadBackend(object):
         u = User.get_self(http=http)
         try:
             typepad.client.complete_batch()
-        # TODO: only catch what we expect to go wrong so we still see unexpected exceptions
-        except Exception, exc:
-            logging.exception(exc)
-            from django.contrib.auth.models import AnonymousUser
+        except (User.Unauthorized, User.Forbidden):
             u = AnonymousUser()
 
         return u
