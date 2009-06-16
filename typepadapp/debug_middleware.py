@@ -7,6 +7,7 @@ import django
 from django.conf import settings
 from django.utils.encoding import smart_unicode
 from django.template.loader import render_to_string
+from django.template import RequestContext
 from django.core.signals import request_started
 from django.core.exceptions import MiddlewareNotUsed
 
@@ -194,10 +195,10 @@ class DebugToolbar(object):
     def requests(self):
         return tp_client.requests
 
-    def render_toolbar(self):
+    def render_toolbar(self, request):
         return render_to_string('debug_toolbar.html', {
             'toolbar': self,
-        })
+        }, context_instance=RequestContext(request))
 
 
 class DebugToolbarMiddleware(object):
@@ -208,16 +209,17 @@ class DebugToolbarMiddleware(object):
 
     def process_request(self, request):
         """Setup the request monitor."""
-        self.toolbar = DebugToolbar(request)
-        self.toolbar.start_timer()
+        request.toolbar = DebugToolbar(request)
+        request.toolbar.start_timer()
 
     def process_response(self, request, response):
         # Request might not have a toolbar if process_request was bypassed by an 
         # earlier piece of middleware returning a response.
         if hasattr(request, 'toolbar'):
-            self.toolbar.stop_timer()
+            request.toolbar.stop_timer()
             if response['content-type'].split(';')[0] in _HTML_TYPES:
+                print "we're going to do it!"
                 response.content = replace_insensitive(smart_unicode(response.content), 
                                                        u'</body>', 
-                                                       smart_unicode(self.toolbar.render_toolbar() + '</body>'))
+                                                       smart_unicode(request.toolbar.render_toolbar(request) + '</body>'))
         return response
