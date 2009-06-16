@@ -13,6 +13,7 @@ from oauth import oauth
 import typepad
 from typepadapp.models.auth import OAuthClient
 import typepadapp.models
+from batchhttp.client import NonBatchResponseError
 
 
 class IncompleteConfiguration(Exception): pass
@@ -171,6 +172,41 @@ class ApplicationMiddleware(object):
         return None
 
 
+class AuthorizationExceptionMiddleware(object):
+    """Middleware to catch authorization exceptions raised by the
+    batchhttp library."""
+
+    def __init__(self):
+        # If we're not using batch requests, disable this middleware.
+        if not settings.BATCH_REQUESTS:
+            raise MiddlewareNotUsed
+
+    def process_exception(self, request, exception):
+        if hasattr(request, 'user') and request.user.is_authenticated() and \
+            isinstance(exception, NonBatchResponseError) and \
+            exception.status in (401, 403):
+
+            # Got a 4XX error. Log the user out (destroy session),
+            # forget their OAuth token, and 302 them back to the 
+            # current page as an anonymous user.
+
+            from django.contrib.auth import logout
+            from typepadapp.models import Token
+
+            current_token = request.session.get('oauth_token', None)
+            logout(request)
+            if current_token is not None:
+                try:
+                    token = Token.objects.get(key=current_token.key)
+                except Token.DoesNotExist:
+                    pass
+                else:
+                    token.delete()
+
+            from django.http import HttpResponseRedirect
+            return HttpResponseRedirect(request.build_absolute_uri())
+
+
 class ConfigurationMiddleware(object):
     def __init__(self):
         # If we're not in debug mode, disable this middleware.
@@ -195,7 +231,7 @@ class ConfigurationMiddleware(object):
             # TODO: Make sure MySQL/PostgreSQL/other databases raise a similar error...
             # TODO: This doesn't seem to be very helpful at the moment since this method
             # is only called for exceptions in view functions, and the session middleware
-            # triggers this exceptoin.
+            # triggers this exception.
             if isinstance(ex, DatabaseError) and 'no such table' in ex.message:
                 return incomplete_configuration(request)
 
