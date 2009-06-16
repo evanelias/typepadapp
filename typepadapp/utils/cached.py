@@ -7,7 +7,6 @@ class CachedProperty(object):
         The object with the cached property
         must also have an id property.
         This is still very much in-progress.
-        TODO add update?
     """
 
     def __init__(self, func):
