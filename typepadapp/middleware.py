@@ -16,9 +16,6 @@ import typepadapp.models
 from batchhttp.client import NonBatchResponseError
 
 
-class IncompleteConfiguration(Exception): pass
-
-
 def gp_signed_url(url, params):
     """
     Generate a signed URL using the applications OAuth general purpose token.
@@ -155,13 +152,7 @@ class ApplicationMiddleware(object):
         """Adds the application and group to the request."""
 
         if self.application is None or self.group is None:
-            try:
-                self.discover_group(request)
-            except IncompleteConfiguration:
-                if settings.DEBUG:
-                    return incomplete_configuration(request)
-                else:
-                    raise
+            self.discover_group(request)
 
         typepadapp.models.GROUP = self.group
         typepadapp.models.APPLICATION = self.application
@@ -214,26 +205,14 @@ class ConfigurationMiddleware(object):
             raise MiddlewareNotUsed
 
     def process_request(self, request):
-        # If any of the OAUTH_* settings are empty, or don't exist, raise an IncompleteConfiguration
-        # error.
+        # If any of the OAUTH_* settings are empty, or don't exist, return the
+        # Motion-specific "It worked!" page.
         try:
             if not (settings.OAUTH_CONSUMER_KEY and settings.OAUTH_CONSUMER_SECRET and
                     settings.OAUTH_GENERAL_PURPOSE_KEY and settings.OAUTH_GENERAL_PURPOSE_SECRET):
                 return incomplete_configuration(request)
         except AttributeError:
             return incomplete_configuration(request)
-
-    def process_exception(self, request, ex):
-        if settings.DEBUG:
-            # Debug middleware to catch any DatabaseError that is raised and contains
-            # the phrase 'no such table'. This is usually triggered by a change to the
-            # application's models without a subsequent syncdb.
-            # TODO: Make sure MySQL/PostgreSQL/other databases raise a similar error...
-            # TODO: This doesn't seem to be very helpful at the moment since this method
-            # is only called for exceptions in view functions, and the session middleware
-            # triggers this exception.
-            if isinstance(ex, DatabaseError) and 'no such table' in ex.message:
-                return incomplete_configuration(request)
 
 
 # Incomplete configuration view.
