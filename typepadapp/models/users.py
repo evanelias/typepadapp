@@ -268,7 +268,6 @@ class User(typepad.User):
     
     @property
     def typepad_frame_url(self):
-        # TODO get this from the API response?
         return self.links['follow-frame-content'].href
 
     @property
