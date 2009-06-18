@@ -60,8 +60,7 @@ def get_oauth_identification_url(self, next):
         'callback_next': self.build_absolute_uri(next),
         'signin': '1',
     }
-    # TODO: same question as above w/ urlencoding.
-    callback_url = '%s?%s' % (self.build_absolute_uri(reverse('synchronize')), '&'.join(['='.join(i) for i in params.items()]))
+    callback_url = '%s?%s' % (self.build_absolute_uri(reverse('synchronize')), urlencode(params))
     return gp_signed_url(self.oauth_client.oauth_identification_url, { 'callback_url': callback_url })
 
 
