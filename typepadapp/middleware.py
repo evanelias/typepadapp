@@ -42,9 +42,7 @@ def get_session_synchronization_url(self, callback_url=None):
             'callback_nonce': self.session.get('callback_nonce'),
             'callback_next': self.build_absolute_uri(),
         }
-        # TODO: Er, seems like we should be urlencoding the params here but that breaks things. Giving up on figuring out why that is for the moment.
-        #callback_url = '%s?%s' % (self.build_absolute_uri(reverse('synchronize')), urlencode(params))
-        callback_url = '%s?%s' % (self.build_absolute_uri(reverse('synchronize')), '&'.join(['='.join(i) for i in params.items()]))
+        callback_url = '%s?%s' % (self.build_absolute_uri(reverse('synchronize')), urlencode(params))
 
     current_token = self.session.get('oauth_token', None)
     if current_token:

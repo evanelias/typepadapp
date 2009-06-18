@@ -1,9 +1,14 @@
+import cgi
 import os
 import unittest
+from urllib import urlencode, quote
+import urlparse
 from xml.dom import Node
 from xml.dom.minidom import parse
 
+from django.conf import settings
 from django.template import Context, Template
+from oauth import oauth
 
 
 class SanitizeTestsMeta(type):
@@ -140,3 +145,48 @@ class SanitizeTests(unittest.TestCase):
 
     def test_feedparser_script_cdata(self):
         pass
+
+
+class OAuthTests(unittest.TestCase):
+
+    def build_oauth_url(self, callback_url):
+        consumer = oauth.OAuthConsumer(settings.OAUTH_CONSUMER_KEY, settings.OAUTH_CONSUMER_SECRET)
+        token = oauth.OAuthToken(settings.OAUTH_GENERAL_PURPOSE_KEY, settings.OAUTH_GENERAL_PURPOSE_SECRET)
+        req = oauth.OAuthRequest.from_consumer_and_token(
+            consumer,
+            token=token,
+            http_method='GET',
+            http_url='http://example.com/',
+            parameters=dict(callback_url=callback_url),
+        )
+        req.sign_request(oauth.OAuthSignatureMethod_HMAC_SHA1(), consumer, token)
+        return req.to_url()
+
+    def cb_from_url(self, oauth_url):
+        parts = list(urlparse.urlparse(oauth_url))
+        queryargs = cgi.parse_qs(parts[4], keep_blank_values=True)
+        queryargs = dict([(k, v[0]) for k, v in queryargs.iteritems()])
+        return queryargs['callback_url']
+
+    def assertCallback(self, cb, reason=None):
+        oauth_url = self.build_oauth_url(cb)
+        if quote(cb, safe='') not in oauth_url:
+            self.fail(reason)  # quoted cb url is not in oauth url
+        if not cb == self.cb_from_url(oauth_url):
+            self.fail(reason)  # cb url doesn't decode from oauth url
+
+    def test_callback_url_encoding(self):
+        import logging
+        logging.critical('oauth url: %s', self.build_oauth_url('http://test.example.com/?asfdasf=xy'))
+        self.assertCallback('moose', 'simple string (not an URL) encodes right')
+        self.assertCallback('http://test.example.com/', 'simple url encodes right')
+        self.assertCallback('http://test.example.com/?asfdasf=xy', 'url with query args encodes right')
+        self.assertCallback('http://test.example.com/?next=http%3A%2F%2Ftest.example.com%2F%3Fawesome/',
+            'url with encoded URL for a query arg encodes right')
+
+        params = {
+            'callback_nonce': 'awesomeface',
+            'callback_next':  'http://test.example.com/some/full/request/?hi=a&param=here',
+        }
+        cb_url = '%s?%s' % ('http://test.example.com/', urlencode(params))
+        self.assertCallback(cb_url, 'url with query encoded with urllib.urlencode encodes right')
