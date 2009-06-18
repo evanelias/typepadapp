@@ -8,6 +8,7 @@ from django.conf import settings
 from typepadapp import signals
 from remoteobjects import fields
 from remoteobjects.promise import ListObject
+from remoteobjects.http import HttpObject
 import typepadapp.models
 
 
@@ -138,9 +139,16 @@ class Video(typepad.Video, Asset):
         # so don't call this more than once
         assert group, "group parameter is unassigned"
         videos = group.video_assets
-        video = videos.post(self)
-        # TODO - did this used to return a post asset?? (needed for ajax)
-        return video
+        try:
+            video = videos.post(self)
+        except HttpObject.ServerError:
+            # Bad video?
+            ## TODO add this error system?
+            # raise UserError('You have entered a URL that is either invalid or for a video that can no longer be found.')
+            print 'Bad bad video URL!'
+        else:
+            # TODO - did this used to return a post asset?? (needed for ajax)
+            return video
 
 
 class Photo(typepad.Photo, Asset):
