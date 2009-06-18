@@ -150,8 +150,8 @@ class SanitizeTests(unittest.TestCase):
 class OAuthTests(unittest.TestCase):
 
     def build_oauth_url(self, callback_url):
-        consumer = oauth.OAuthConsumer(settings.OAUTH_CONSUMER_KEY, settings.OAUTH_CONSUMER_SECRET)
-        token = oauth.OAuthToken(settings.OAUTH_GENERAL_PURPOSE_KEY, settings.OAUTH_GENERAL_PURPOSE_SECRET)
+        consumer = oauth.OAuthConsumer('dcca1df94b730d5c883bf29841a87b9a', 'y2t81yvi')
+        token = oauth.OAuthToken('CstxlJQb9xx7zs0k', 'zlYiYGJcYO9Kn7HK')
         req = oauth.OAuthRequest.from_consumer_and_token(
             consumer,
             token=token,
@@ -176,8 +176,6 @@ class OAuthTests(unittest.TestCase):
             self.fail(reason)  # cb url doesn't decode from oauth url
 
     def test_callback_url_encoding(self):
-        import logging
-        logging.critical('oauth url: %s', self.build_oauth_url('http://test.example.com/?asfdasf=xy'))
         self.assertCallback('moose', 'simple string (not an URL) encodes right')
         self.assertCallback('http://test.example.com/', 'simple url encodes right')
         self.assertCallback('http://test.example.com/?asfdasf=xy', 'url with query args encodes right')
