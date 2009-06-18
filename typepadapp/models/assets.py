@@ -101,9 +101,7 @@ class Post(typepad.Post, Asset):
         # so don't call this more than once
         assert group, "group parameter is unassigned"
         posts = group.post_assets
-        post = posts.post(self)
-        # TODO - did this used to return a post asset?? (needed for ajax)
-        return post
+        posts.post(self)
 
 
 class Audio(typepad.Audio, Asset):
@@ -140,15 +138,12 @@ class Video(typepad.Video, Asset):
         assert group, "group parameter is unassigned"
         videos = group.video_assets
         try:
-            video = videos.post(self)
+            videos.post(self)
         except HttpObject.ServerError:
             # Bad video?
             ## TODO add this error system?
             # raise UserError('You have entered a URL that is either invalid or for a video that can no longer be found.')
             print 'Bad bad video URL!'
-        else:
-            # TODO - did this used to return a post asset?? (needed for ajax)
-            return video
 
 
 class Photo(typepad.Photo, Asset):
@@ -207,9 +202,7 @@ class LinkAsset(typepad.LinkAsset, Asset):
         # so don't call this more than once
         assert group, "group parameter is unassigned"
         links = group.link_assets
-        link = links.post(self)
-        # TODO - did this used to return a post asset?? (needed for ajax)
-        return link
+        links.post(self)
 
 
 class Event(typepad.Event):
