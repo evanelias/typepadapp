@@ -141,7 +141,6 @@ class Video(typepad.Video, Asset):
             videos.post(self)
         except HttpObject.ServerError:
             # Bad video?
-            ## TODO add this error system?
             # raise UserError('You have entered a URL that is either invalid or for a video that can no longer be found.')
             print 'Bad bad video URL!'
 
