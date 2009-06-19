@@ -111,7 +111,7 @@ class ApplicationMiddleware(object):
         log.info('Loading group info...')
         app, group = None, None
 
-        # FIXME: Shouldn't need to do oauth manually here
+        # Grab the group and app with the default credentials.
         consumer = oauth.OAuthConsumer(settings.OAUTH_CONSUMER_KEY, settings.OAUTH_CONSUMER_SECRET)
         token = oauth.OAuthToken(settings.OAUTH_GENERAL_PURPOSE_KEY, settings.OAUTH_GENERAL_PURPOSE_SECRET)
         backend = urlparse(settings.BACKEND_URL)
