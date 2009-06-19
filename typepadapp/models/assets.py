@@ -1,10 +1,11 @@
 import re
-from django.core.urlresolvers import reverse, NoReverseMatch
-from django.utils.translation import ugettext as _
 from urlparse import urljoin
 
-import typepad
+from django.core.urlresolvers import reverse, NoReverseMatch
+from django.utils.translation import ugettext as _
 from django.conf import settings
+
+import typepad
 from typepadapp import signals
 from remoteobjects import fields
 from remoteobjects.promise import ListObject
@@ -35,9 +36,15 @@ class Asset(typepad.Asset):
 
     def get_absolute_url(self):
         """Relative url to the asset permalink page."""
+        if self.is_local:
+            try:
+                return reverse('asset', args=[self.url_id])
+            except NoReverseMatch:
+                pass
+
         try:
-            return reverse('asset', args=[self.url_id])
-        except NoReverseMatch:
+            return self.links['alternate'].href
+        except KeyError:
             return None
 
     @property
@@ -47,14 +54,18 @@ class Asset(typepad.Asset):
 
     @property
     def type_label(self):
+        """ Provides a localized string identifying the type of asset. """
         return _(self.type_id)
 
     @property
     def is_comment(self):
+        """ Boolean property identifying whether the asset is a comment or not. """
         return self.type_id == 'comment'
 
     @property
     def is_local(self):
+        """ Boolean property identifying whether the asset belongs to the
+        group assigned to typepadapp.models.GROUP. """
         return typepadapp.models.GROUP.id in self.groups
 
     def get_comments(self, start_index=1, max_results=settings.COMMENTS_PER_PAGE):
@@ -62,9 +73,15 @@ class Asset(typepad.Asset):
 
     @property
     def user(self):
+        """ An alias for the author property. """
         return self.author
 
     def link_relation(self, relation):
+        """ A method that yields a Link object of the specified relation
+        from the asset's 'links' member.
+
+        If the relation does not exist, one is added and the empty Link
+        object is returned to be populated. """
         try:
             links = self.__dict__['links']
         except KeyError:
@@ -83,7 +100,7 @@ class Asset(typepad.Asset):
 class Comment(typepad.Comment, Asset):
 
     def get_absolute_url(self):
-        """Relative url to the comment anchor on the asset permalink page."""
+        """Relative URL to the comment anchor on the asset permalink page."""
         try:
             return '%s#%s' % (reverse('asset', args=[self.in_reply_to.url_id]), self.url_id)
         except NoReverseMatch:
@@ -161,16 +178,16 @@ class LinkAsset(typepad.LinkAsset, Asset):
     @property
     def link_title(self):
         """ Returns a title suitable for displaying the link asset title.
+
         This handles the case where a link asset has a link (which is
         a required field) but no title. If no actual title exists for
-        the link, we will display a cleaned-up version of the URL itself
-        (eliminating the 'http'/'https' protocol, any credentials that
-        may be present, any query parameters and any trailing slash
-        and obvious index page names).
+        the link, a cleaned-up version of the URL itself (eliminating the
+        'http'/'https' protocol, any credentials that may be present, any
+        query parameters and any trailing slash and obvious index page names).
 
-        Another approach may be to attempt to retrieve the title
-        of the HTML that may be returned from the link, but this would be
-        an option upon creation of the asset, not upon rendering.
+        Another approach may be to attempt to retrieve the title of the HTML
+        that may be returned from the link, but this would be an option upon
+        creation of the asset, not upon rendering.
         """
         try:
             title = self.title
