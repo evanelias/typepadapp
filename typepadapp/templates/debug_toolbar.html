@@ -2,21 +2,12 @@
     // When jQuery is sourced, it's going to overwrite whatever might be in the
     // '$' variable, so store a reference of it in a temporary variable...
     var _$ = window.$;
-    if (typeof jQuery == 'undefined') {
-        var jquery_url = '/static/jquery/jquery.js';
-        document.write(unescape('%3Cscript src="' + jquery_url + '" type="text/javascript"%3E%3C/script%3E'));
-    }
+    if (typeof jQuery == 'undefined')
+        document.write(unescape('%3Cscript src="{{ settings.media_url }}typepadapp/js/jquery/jquery.js" type="text/javascript"%3E%3C/script%3E'));
 </script>
-{% comment %}
-<link rel="stylesheet" type="text/css" href="http://alexgorbatchev.com/pub/sh/2.0.296/styles/shCore.css" />
-<link rel="stylesheet" type="text/css" href="http://alexgorbatchev.com/pub/sh/2.0.296/styles/shThemeDefault.css" />
-<script type="text/javascript" src="http://alexgorbatchev.com/pub/sh/2.0.296/scripts/shCore.js"></script>
-<script type="text/javascript" src="http://alexgorbatchev.com/pub/sh/2.0.296/scripts/shBrushJScript.js"></script>
-<script type="text/javascript" src="http://alexgorbatchev.com/pub/sh/2.0.296/scripts/shBrushPlain.js"></script>
-{% endcomment %}
-<script type="text/javascript" src="/static/typepadapp/js/debug.js"></script>
+<script type="text/javascript" src="{{ settings.media_url }}typepadapp/js/debug.js"></script>
 <style type="text/css">
-    @import url(/static/typepadapp/css/debug.css);
+    @import url({{ settings.media_url }}typepadapp/css/debug.css);
 </style>
 <div id="debug-toolbar">
     <div id="debug-summary">
@@ -64,7 +55,7 @@
                             <a href="#" class="subrequest-display-payload">payload</a>
                         </div>
                         <div class="debug-subrequest-body" style="display: none;">
-                            <pre class="brush: {% ifequal subrequest.stats.content_type "application/json" %}js{% else %}plain{% endifequal %}">{{ subrequest.stats.body }}</pre>
+                            <pre>{{ subrequest.stats.body }}</pre>
                         </div>
                         <ul class="debug-subrequest-stacktrace" style="display: none;">
                             {% for trace in subrequest.opened_stack %}
@@ -92,8 +83,4 @@
 <script type="text/javascript" charset="utf-8">
     // Now that jQuery is done loading, put the '$' variable back to what it was...
     var $ = _$;
-{% comment %}
-    SyntaxHighlighter.defaults['auto-links'] = false;
-    SyntaxHighlighter.all();
-{% endcomment %}
 </script>
