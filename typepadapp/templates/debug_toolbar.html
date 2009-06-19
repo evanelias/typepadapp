@@ -20,15 +20,41 @@
 </style>
 <div id="debug-toolbar">
     <div id="debug-summary">
-        <span>Requests: <span class="stat">{{ toolbar.batch_request_count }}</span> batch / <span class="stat">{{ toolbar.subrequest_count }}</span> sub, <span class="stat">{{ toolbar.request_time }}</span>ms</span><br/>
-        <span>{{ toolbar.time_summary }}</span>
+        <div class="debug-info">Debug Information</div>
+        <dl>
+            <dt>Requests</dt><dd>{{ toolbar.batch_request_count }} batch / {{ toolbar.subrequest_count }} sub</dd>
+            {% if toolbar.typepad_version and toolbar.typepad_revision %}
+            <dt>TypePad Version</dt><dd>{{ toolbar.typepad_version }}-{{ toolbar.typepad_revision }}</dd>
+            {% endif %}
+            {% if toolbar.typepad_webserver %}
+            <dt>TypePad Backend</dt><dd>{{ toolbar.typepad_webserver }}</dd>
+            {% endif %}
+            <dt>Total time</dt><dd>{{ toolbar.total_time|floatformat:4 }}s</dd>
+            <dt>Request time</dt><dd>{{ toolbar.request_time|floatformat:4 }}s</dd>
+            <dt>CPU time</dt><dd>{{ toolbar.cpu_time|floatformat:4 }}s</dd>
+            {% if toolbar.typepad_time %}
+            <dt>TypePad time</dt><dd>{{ toolbar.typepad_time|floatformat:4 }}s</dd>
+            {% endif %}
+            {% if request.user.is_authenticated %}
+            <dt>User</dt><dd>{{ request.user.url_id }}</dd>
+            {% endif %}
+            {% if toolbar.typepad_query_count %}
+            <dt>DB Queries</dt><dd>{{ toolbar.typepad_query_count }}</dd>
+            {% endif %}
+        </dl>
         <a href="#" id="debug-close">X</a>
     </div>
     <div id="debug-details" style="display: none;">
         <ul id="debug-requests">
             {% for request in toolbar.requests %}
             <li class="debug-request {% cycle 'debug-request-odd' 'debug-request-even' %}">
-                <div class="debug-request-summary">Batch Request: {{ request.stats.subrequests|length }} subrequests [{{ request.stats.time|stringformat:".3f" }} seconds]</div>
+                <div class="debug-request-summary">
+                    <span>Batch Request: {{ request.stats.subrequests|length }} subrequests [{{ request.stats.time|stringformat:".3f" }} seconds]</span>
+                    <a href="#" class="debug-request-display-subrequests">subrequests</a>
+                    {% if request.stats.typepad_db_queries %}
+                    <a href="#" class="debug-request-display-dbqueries">db queries</a>
+                    {% endif %}
+                </div>
                 <ul class="debug-subrequests" style="display: none;">
                 {% for subrequest in request.stats.subrequests %}
                     <li class="debug-subrequest {% cycle 'debug-subrequest-odd' 'debug-subrequest-even' %}">
@@ -50,6 +76,14 @@
                         </ul>
                     </li>
                 {% endfor %}
+                </ul>
+                <ul class="debug-dbqueries" style="display: none;">
+                    {% for query in request.stats.typepad_db_queries %}
+                    <li class="debug-query {% cycle 'debug-query-odd' 'debug-query-even' %}">
+                        <span class="debug-query-short">{{ query|truncatewords:7 }}</span>
+                        <span class="debug-query-full" style="display: none;">{{ query }}</span>
+                    </li>
+                    {% endfor %}
                 </ul>
             {% endfor %}
         </ul>

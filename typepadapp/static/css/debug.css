@@ -1,20 +1,54 @@
 #debug-toolbar {
-    font-size: 12px;
+    font-size: 10px;
+    font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Verdana, sans-serif;
+    padding: 0 10px;
     position: absolute; 
     top: 5px; 
     left: 5px; 
-    border: 1px solid black; 
+    border: 1px solid #CCC;
     background-color: #333; 
     color: white;
     z-index: 1000000000;
-    -moz-opacity: 0.75; 
-    max-width: 99%;
+    -moz-opacity: 0.85; 
+    -webkit-opacity: 0.85;
+    max-width: 95%;
+    cursor: pointer;
 }
 #debug-toolbar:hover {
-    -moz-opacity: 1.0;
+    -moz-opacity: 0.9;
+    -webkit-opacity: 0.9;
 }
 #debug-toolbar.visible {
     -moz-opacity: 1.0;
+    -webkit-opacity: 1.0;
+}
+#debug-toolbar .debug-info {
+    border-bottom: 1px solid #666;
+    font-size: 11px;
+    font-weight: bold;
+    margin: 5px 0;
+    padding-bottom: 5px;
+    text-align: center;
+    text-shadow: #000 0px 1px 2px;
+}
+#debug-toolbar dl {
+    margin: 5px 0;
+    overflow: hidden;
+    padding: 0px;
+    text-shadow: #000 0px 1px 2px;
+}
+#debug-toolbar dt {
+    float: left;
+    margin: 0px;
+    padding: 0px;
+    text-align: right;
+    width: 95px;
+}
+#debug-toolbar dd {
+    color: #CCC;
+    margin: 0 0 0 100px;
+    padding: 0px;
+    width: 90px;
 }
 #debug-summary:hover {
     cursor: pointer;
@@ -32,8 +66,7 @@
     color: #f7c757;
 }
 #debug-summary {
-    margin: 5px;
-    margin-right: 25px;
+    margin: 5px 0;
     line-height: 1.5em;
 }
 #debug-close {
@@ -45,7 +78,7 @@
     font-weight: bold;
 }
 #debug-details {
-    margin-top: 5px;
+    margin: 5px 0;
     color: black;
 }
 .debug-request-summary {
@@ -63,10 +96,19 @@
 .debug-subrequest-summary:hover {
     background-color: #555;
 }
-.debug-request-even {
+.debug-query {
+    font-size: 110%;
+    line-height: 1.5em;
+    padding: 5px 10px;
+}
+.debug-query:hover {
+    background-color: #555;
+    cursor: pointer;
+}
+.debug-request-even, .debug-query-even {
     background-color: #9dcc49;
 }
-.debug-request-odd {
+.debug-request-odd, .debug-query-odd {
     background-color: #b9d977;
 }
 .debug-subrequest-body pre {
@@ -81,6 +123,7 @@
     background-color: white;
 }
 .debug-subrequest-stacktrace {
+    font-size: 110%;
     margin: 0 20px;
     line-height: 1.5em;
 }

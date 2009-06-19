@@ -17,8 +17,12 @@ jQuery(function($) {
                 }
                 return false;
             });
-            $('#debug-toolbar .debug-request-summary').click(function() {
-                $(this).parent().children('.debug-subrequests').toggle();
+            $('#debug-toolbar .debug-request-display-subrequests').click(function() {
+                $(this).parent().parent().children('.debug-subrequests').toggle();
+                return false;
+            });
+            $('#debug-toolbar .debug-request-display-dbqueries').click(function() {
+                $(this).parent().parent().children('.debug-dbqueries').toggle();
                 return false;
             });
             $('#debug-toolbar a.subrequest-display-payload').click(function() {
@@ -28,6 +32,10 @@ jQuery(function($) {
             $('#debug-toolbar a.subrequest-display-stacktrace').click(function() {
                 $(this).parent().parent().children('.debug-subrequest-stacktrace').toggle();
                 return false;
+            });
+            $('#debug-toolbar .debug-query').click(function() {
+                $(this).children('.debug-query-short').toggle();
+                $(this).children('.debug-query-full').toggle();
             });
         },
         close: function() {

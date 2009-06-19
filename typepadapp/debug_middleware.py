@@ -118,17 +118,34 @@ class BatchRequestStatTracker(client.BatchRequest):
     Replacement for BatchRequest that stores stats in `self.stats`.
     """
 
+    def __init__(self):
+        super(BatchRequestStatTracker, self).__init__()
+        self.stats = {}
+
     def process(self, *args, **kwargs):
         start = time()
         try:
             return super(BatchRequestStatTracker, self).process(*args, **kwargs)
         finally:
             stop = time()
-            self.stats = {
+            self.stats.update({
                 'count': len(self.requests),
                 'subrequests': [request for request in self.requests if request.executed],
                 'time': (stop - start),
-            }
+            })
+
+    def handle_response(self, http, response, content):
+        self.stats.update({
+            'typepad_version': response.get('x-debug-version'),
+            'typepad_revision': response.get('x-debug-revision'),
+            'typepad_webserver': response.get('x-webserver'),
+            'typepad_query_count': response.get('x-dbquery-count'),
+            'typepad_time': response.get('x-tpx-time'),
+            'typepad_db_queries': [value for key, value in response.iteritems() 
+                                    if key.startswith('x-dbquery') and not key.endswith('-count')],
+        })
+        return super(BatchRequestStatTracker, self).handle_response(http, response, content)
+
 client.BatchRequest = BatchRequestStatTracker
 
 
@@ -171,17 +188,16 @@ class DebugToolbar(object):
             self._start_rusage = resource.getrusage(resource.RUSAGE_SELF)
 
     def stop_timer(self):
-        self.total_time = (time() - self._start_time) * 1000
+        self.total_time = (time() - self._start_time)
         if self.has_resource:
             self._end_rusage = resource.getrusage(resource.RUSAGE_SELF)
 
-    def time_summary(self):
+    def cpu_time(self):
         if self.has_resource:
             utime = self._end_rusage.ru_utime - self._start_rusage.ru_utime
             stime = self._end_rusage.ru_stime - self._start_rusage.ru_stime
-            return 'Time: %0.2fms, %0.2fms CPU' % (self.total_time, (utime + stime) * 1000.0)
-        else:
-            return 'Time: %0.2fms' % self.total_time
+            return (utime + stime)
+        return ''
 
     def batch_request_count(self):
         return len(tp_client.requests)
@@ -190,10 +206,35 @@ class DebugToolbar(object):
         return sum([len(request.stats['subrequests']) for request in tp_client.requests])
 
     def request_time(self):
-        return "%.3f" % (sum([request.stats['time'] for request in tp_client.requests]) * 1000.0)
+        return sum([request.stats['time'] for request in tp_client.requests])
 
     def requests(self):
         return tp_client.requests
+
+    def typepad_query_count(self):
+        "The total number of queries performed by the backend for all batch requests."
+        return sum([int(request.stats['typepad_query_count']) for request in tp_client.requests if 'typepad_query_count' in request.stats])
+
+    def typepad_time(self):
+        return sum([float(request.stats['typepad_time']) for request in tp_client.requests if 'typepad_time' in request.stats])
+
+    def _get_typepad_stat(self, name):
+        """Tries to find the stat identified by `name` in a request. Assumption is
+        that the stat is the same for all subrequests so we return the first one."""
+        for request in tp_client.requests:
+            try:
+                return request.stats[name]
+            except KeyError:
+                pass
+
+    def typepad_version(self):
+        return self._get_typepad_stat('typepad_version')
+
+    def typepad_revision(self):
+        return self._get_typepad_stat('typepad_revision')
+
+    def typepad_webserver(self):
+        return self._get_typepad_stat('typepad_webserver')
 
     def render_toolbar(self, request):
         return render_to_string('debug_toolbar.html', {
