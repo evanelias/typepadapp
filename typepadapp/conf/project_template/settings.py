@@ -49,7 +49,7 @@ except ImportError:
 # Configure these based on settings.py and/or local_settings.py
 TYPEPAD_API_KEY = OAUTH_CONSUMER_KEY
 
-OAUTH_CALLBACK_URL = '%s/authorize/' % FRONTEND_URL
+OAUTH_CALLBACK_URL = '%sauthorize/' % FRONTEND_URL
 
 if 'TEMPLATE_DEBUG' not in locals():
     TEMPLATE_DEBUG = DEBUG
