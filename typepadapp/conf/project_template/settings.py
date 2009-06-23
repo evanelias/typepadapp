@@ -36,7 +36,6 @@ TEMPLATE_DIRS = (
 INSTALLED_APPS += (
 )
 
-
 # Import a local settings file
 # Create a local_settings.py to override any settings in this file
 # (such as DEBUG) on your local machine.
@@ -45,11 +44,6 @@ try:
     logging.info("also using settings from '%s.local_settings'" % PROJECT_DIR)
 except ImportError:
     pass
-
-# Configure these based on settings.py and/or local_settings.py
-TYPEPAD_API_KEY = OAUTH_CONSUMER_KEY
-
-OAUTH_CALLBACK_URL = '%sauthorize/' % FRONTEND_URL
 
 if 'TEMPLATE_DEBUG' not in locals():
     TEMPLATE_DEBUG = DEBUG
