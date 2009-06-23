@@ -1,7 +1,7 @@
 import logging
 import random
 from types import MethodType
-from urlparse import urlparse, urljoin
+from urlparse import urlparse
 from urllib import urlencode, quote
 
 from django.conf import settings
@@ -60,7 +60,7 @@ def get_oauth_identification_url(self, next):
         'callback_next': self.build_absolute_uri(next),
         'signin': '1',
     }
-    callback_url = '%s?%s' % (urljoin(settings.FRONTEND_URL, reverse('synchronize')[1:]), urlencode(params))
+    callback_url = '%s?%s' % (self.build_absolute_uri(reverse('synchronize')), urlencode(params))
     return gp_signed_url(self.oauth_client.oauth_identification_url, { 'callback_url': callback_url })
 
 
