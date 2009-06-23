@@ -120,7 +120,7 @@ class ApplicationMiddleware(object):
 
         typepad.client.batch_request()
         try:
-            app = typepad.Application.get_by_api_key(settings.TYPEPAD_API_KEY)
+            app = typepad.Application.get_by_api_key(settings.OAUTH_CONSUMER_KEY)
             typepad.client.complete_batch()
         except Exception, exc:
             log.error('Error loading Application %s: %s' % (settings.OAUTH_CONSUMER_KEY, str(exc)))
