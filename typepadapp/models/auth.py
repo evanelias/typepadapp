@@ -12,7 +12,6 @@ class OAuthClient(typepad.OAuthClient):
 
     def __init__(self, app):
         self.set_consumer(settings.OAUTH_CONSUMER_KEY, secret = settings.OAUTH_CONSUMER_SECRET,)
-        self.callback_url = settings.OAUTH_CALLBACK_URL
 
         self.request_token_url = app.oauth_request_token
         self.access_token_url = app.oauth_access_token_endpoint

@@ -25,7 +25,7 @@ def register(request):
     token = client.fetch_request_token()
 
     # redirect to authorization url
-    url = client.authorize_token()
+    url = client.authorize_token(request.build_absolute_uri(reverse('authorize')))
 
     request.session['request_token'] = token.to_string()
 
