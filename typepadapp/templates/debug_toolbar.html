@@ -26,9 +26,6 @@
             {% if toolbar.typepad_time %}
             <dt>TypePad time</dt><dd>{{ toolbar.typepad_time|floatformat:4 }}s</dd>
             {% endif %}
-            {% if request.user.is_authenticated %}
-            <dt>User</dt><dd>{{ request.user.url_id }}</dd>
-            {% endif %}
             {% if toolbar.typepad_query_count %}
             <dt>DB Queries</dt><dd>{{ toolbar.typepad_query_count }}</dd>
             {% endif %}
