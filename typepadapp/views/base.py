@@ -393,7 +393,7 @@ class TypePadView(GenericView):
             # If a form is present, but invalid, then issue the TypePad
             # requests for this view and invoke the GET handler for the
             # response.
-            if not self.form_instance.is_valid():
+            if not self.form_instance.is_valid() or request.flash.get('errors'):
                 self.typepad_request(request, *args, **kwargs)
                 response = self.get(request, *args, **kwargs)
         return response

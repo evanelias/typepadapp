@@ -7,6 +7,7 @@ from django.conf import settings
 
 import typepad
 from typepadapp import signals
+from typepadapp import TypePadAppException
 from remoteobjects import fields
 from remoteobjects.promise import ListObject
 from remoteobjects.http import HttpObject
@@ -158,8 +159,7 @@ class Video(typepad.Video, Asset):
             videos.post(self)
         except HttpObject.ServerError:
             # Bad video?
-            # raise UserError('You have entered a URL that is either invalid or for a video that can no longer be found.')
-            print 'Bad bad video URL!'
+            raise TypePadAppException(_('You have entered a URL that is either invalid or a URL for a video that can no longer be found.'))
 
 
 class Photo(typepad.Photo, Asset):
