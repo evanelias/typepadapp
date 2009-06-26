@@ -371,7 +371,7 @@ class TypePadView(GenericView):
             self.methods += ('POST', )
 
             if request.method == 'POST':
-                self.form_instance = self.form(request.POST)
+                self.form_instance = self.form(request.POST, request.FILES)
             else:
                 self.form_instance = self.form()
 
