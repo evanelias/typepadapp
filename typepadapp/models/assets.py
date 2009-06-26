@@ -7,7 +7,6 @@ from django.conf import settings
 
 import typepad
 from typepadapp import signals
-from typepadapp import TypePadAppException
 from remoteobjects import fields
 from remoteobjects.promise import ListObject
 from remoteobjects.http import HttpObject
@@ -134,6 +133,10 @@ class Audio(typepad.Audio, Asset):
 
 class Video(typepad.Video, Asset):
 
+    class ConduitError:
+        def __init__(self, message):
+            self.message = message
+
     def get_html(self):
         return self.link_relation('enclosure').html
 
@@ -159,7 +162,7 @@ class Video(typepad.Video, Asset):
             videos.post(self)
         except HttpObject.ServerError:
             # Bad video?
-            raise TypePadAppException(_('You have entered a URL that is either invalid or a URL for a video that can no longer be found.'))
+            raise self.ConduitError(_('You have entered a URL that is either invalid or a URL for a video that can no longer be found.'))
 
 
 class Photo(typepad.Photo, Asset):
