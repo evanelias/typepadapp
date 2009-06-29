@@ -406,9 +406,10 @@ class TypePadView(GenericView):
         is rendered as the response to the request. Otherwise, an
         empty HttpResponse is returned.
         """
-        if self.template_name is None:
+        template = view = kwargs.get('template_name', self.template_name)
+        if template is None:
             return super(TypePadView, self).get(request, *args, **kwargs)
-        return self.render_to_response(self.template_name)
+        return self.render_to_response(template)
 
 
 class TypePadFeed(Feed):
