@@ -176,6 +176,12 @@ class User(typepad.User):
             model = models.get_model(app_label, model_name)
         except (ImportError, ImproperlyConfigured):
             raise SiteProfileNotAvailable
+        if model is None:
+            error = 'Could not load configured profile model %s.models.%s' % (app_label, model_name)
+            if app_label not in settings.INSTALLED_APPS:
+                error = '%s. Is %r in INSTALLED_APPS?' % (error, app_label)
+            raise ImproperlyConfigured(error)
+
         try:
             # get the model by user_id field (instead of a user foreign key field)
             profile = model._default_manager.get(user_id__exact=self.id)
