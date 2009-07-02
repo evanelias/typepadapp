@@ -102,7 +102,7 @@ class Comment(typepad.Comment, Asset):
     def get_absolute_url(self):
         """Relative URL to the comment anchor on the asset permalink page."""
         try:
-            return '%s#%s' % (reverse('asset', args=[self.in_reply_to.url_id]), self.url_id)
+            return '%s#comment-%s' % (reverse('asset', args=[self.in_reply_to.url_id]), self.url_id)
         except NoReverseMatch:
             return None
 
@@ -241,3 +241,8 @@ class Event(typepad.Event):
     @property
     def is_added_favorite(self):
         return self.verb == 'tag:api.typepad.com,2009:AddedFavorite'
+
+    @property
+    def is_local_asset(self):
+        return self.object and isinstance(self.object, Asset) \
+            and self.object.is_local
