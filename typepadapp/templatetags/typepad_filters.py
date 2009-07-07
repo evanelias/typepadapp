@@ -19,6 +19,30 @@ def morelink(entry, wordcount):
 
 
 @register.filter
+def userpicbywidth(asset, width):
+    try:
+        return asset.links['rel__avatar'].link_by_width(int(width))
+    except:
+        return None
+
+
+@register.filter
+def enclosurebywidth(asset, width):
+    try:
+        return asset.links['rel__enclosure'].link_by_width(int(width))
+    except:
+        return None
+
+
+@register.filter
+def enclosurebymaxwidth(asset, width):
+    try:
+        return asset.links['rel__enclosure']['maxwidth__%d' % int(width)]
+    except:
+        return None
+
+
+@register.filter
 def greaterthan(num1, num2):
     try:
         return int(num1) > int(num2)
