@@ -440,18 +440,18 @@ class TypePadFeed(Feed):
         pass
 
 
-class TypePadAssetFeed(TypePadFeed):
+class TypePadEventFeed(TypePadFeed):
     """ A subclass of the ``TypePadFeed`` class that handles serving
     Asset items. """
 
-    def item_link(self, asset):
-        return asset.get_absolute_url()
+    def item_link(self, event):
+        return event.object.get_absolute_url()
 
-    def item_author_name(self, asset):
-        return asset.author.display_name
+    def item_author_name(self, event):
+        return event.actor.display_name
 
-    def item_author_link(self, asset):
-        return asset.author.get_absolute_url()
+    def item_author_link(self, event):
+        return event.actor.get_absolute_url()
 
-    def item_pubdate(self, asset):
-        return asset.published
+    def item_pubdate(self, event):
+        return event.published
