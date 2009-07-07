@@ -28,6 +28,7 @@ def parse_etags(etag_str):
     etags = [e.decode('string_escape') for e in etags]
     return etags
 
+
 class GenericView(http.HttpResponse):
     """
     A base view class for TypePadView.
@@ -48,9 +49,10 @@ class GenericView(http.HttpResponse):
 
         self.context = RequestContext(request)
 
-        self.setup(request, *args, **kwargs)
+        obj = self.setup(request, *args, **kwargs)
 
-        obj = self.conditional_dispatch(request, *args, **kwargs)
+        if not obj:
+            obj = self.conditional_dispatch(request, *args, **kwargs)
 
         if isinstance(obj, http.HttpResponse):
             self._update(obj)
@@ -337,7 +339,15 @@ class TypePadView(GenericView):
             self.limit = self.paginate_by
 
         typepad.client.batch_request()
+
         self.select_typepad_user(request)
+        # Issue this check here, since this is the earliest that
+        # we have a user context available
+        allowed, response = self._check_request_allowed(request, *args,
+                                                        **kwargs)
+        if not allowed:
+            return response
+
         self.select_from_typepad(request, *args, **kwargs)
         typepad.client.complete_batch()
 
@@ -378,7 +388,7 @@ class TypePadView(GenericView):
             self.context['form'] = self.form_instance
 
         if request.method == 'GET':
-            self.typepad_request(request, *args, **kwargs)
+            return self.typepad_request(request, *args, **kwargs)
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -394,7 +404,9 @@ class TypePadView(GenericView):
             # requests for this view and invoke the GET handler for the
             # response.
             if not self.form_instance.is_valid() or request.flash.get('errors'):
-                self.typepad_request(request, *args, **kwargs)
+                response = self.typepad_request(request, *args, **kwargs)
+                if response:
+                    return response
                 response = self.get(request, *args, **kwargs)
         return response
 
@@ -426,6 +438,7 @@ class TypePadFeed(Feed):
 
     def select_from_typepad(self, *args, **kwargs):
         pass
+
 
 class TypePadAssetFeed(TypePadFeed):
     """ A subclass of the ``TypePadFeed`` class that handles serving
