@@ -139,7 +139,7 @@ class ApplicationMiddleware(object):
         log.info("Running for group: %s", group.display_name)
 
         if settings.SESSION_COOKIE_NAME is None:
-            settings.SESSION_COOKIE_NAME = "sg_%s" % group.id
+            settings.SESSION_COOKIE_NAME = "sg_%s" % group.url_id
 
         self.application = app
         self.group = group
@@ -203,7 +203,7 @@ class ConfigurationMiddleware(object):
 
     def process_request(self, request):
         # If any of the OAUTH_* settings are empty, or don't exist, return the
-        # Motion-specific "It worked!" page.
+        # "It worked!" page.
         try:
             if not (settings.OAUTH_CONSUMER_KEY and settings.OAUTH_CONSUMER_SECRET and
                     settings.OAUTH_GENERAL_PURPOSE_KEY and settings.OAUTH_GENERAL_PURPOSE_SECRET):
@@ -256,7 +256,7 @@ CONFIGURATION_TEMPLATE = """
 <body>
 <div id="summary">
   <h1>It worked!</h1>
-  <h2>Congratulations on your new Motion-powered website.</h2>
+  <h2>Congratulations on your new TypePad-powered website.</h2>
 </div>
 
 <div id="instructions">
@@ -265,16 +265,16 @@ CONFIGURATION_TEMPLATE = """
     <li>Register your application on TypePad at <a href="#">[some url should go here]</a>, and get an application key and general purpose token.</li>
     <li>Edit the <code>OAUTH_*</code> settings in <code>{{ project_name }}/local_settings.py</code> to use your application's credentials.</li>
     <li>If you plan on using a database other than sqlite, edit the <code>DATABASE_*</code> settings in <code>{{ project_name }}/local_settings.py</code>.</li>
-    <li>Create new Motion apps to customize your site by running <code>python {{ project_name }}/manage.py typepadapp [appname]</code>.</li>
+    <li>Create new TypePad apps to customize your site by running <code>python {{ project_name }}/manage.py typepadapp [appname]</code>.</li>
     <li>Initialize your database by running <code>python {{ project_name }}/manage.py syncdb</code>.</li>
-    <li>Launch your Motion site by running <code>python {{ project_name }}/manage.py runserver</code>.</li>
+    <li>Launch your site by running <code>python {{ project_name }}/manage.py runserver</code>.</li>
   </ul>
 </div>
 
 <div id="explanation">
   <p>
     You're seeing this message because you have <code>DEBUG = True</code> in your
-    Django settings file and you haven't finished configuring this Motion installation.
+    Django settings file and you haven't finished configuring this installation.
     Get to work!
   </p>
 </div>
