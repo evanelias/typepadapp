@@ -1,6 +1,6 @@
 import datetime, time
 from gettext import ngettext
-from django.utils.translation import ngettext
+from django.utils.translation import ngettext, ugettext as _
 from django.template import defaultfilters
 from django import template
 
@@ -15,12 +15,12 @@ def pithy_timesince(d, preposition=''):
     if d is None:
         return None
     chunks = (
-      (60 * 60 * 24 * 365, lambda n, d: preposition+defaultfilters.date(d, 'M j')+', '+defaultfilters.date(d, 'Y')), # 1 year+
-      (60 * 60 * 24 * 7, lambda n, d: preposition+defaultfilters.date(d, 'M jS')), # 1 week+
-      (60 * 60 * 24, lambda n, d: '%d %s' % (n // (60 * 60 * 24), ngettext('day', 'days', n // (60 * 60 * 24))+' ago')), # 1 day+
-      (60 * 60, lambda n, d: '%d %s' % (n // (60 * 60), ngettext('hour', 'hours', n // (60 * 60))+' ago')), # 1 hour+
-      (60 * 2, lambda n, d: '%d %s' % (n // 60, 'min ago')), # 2 minutes+
-      (1, lambda n, d: 'just now!') # under 2 mins ago
+      (60 * 60 * 24 * 365, lambda n, d: _('%(prep)s %(date)s') % { 'prep': preposition, 'date': defaultfilters.date(d, 'M j, Y') }), # 1 year+
+      (60 * 60 * 24 * 7, lambda n, d: preposition + defaultfilters.date(d, 'M jS')), # 1 week+
+      (60 * 60 * 24, lambda n, d: '%d %s' % (n // (60 * 60 * 24), ngettext('day ago', 'days ago', n // (60 * 60 * 24)))), # 1 day+
+      (60 * 60, lambda n, d: '%d %s' % (n // (60 * 60), ngettext('hour ago', 'hours ago', n // (60 * 60)))), # 1 hour+
+      (60 * 2, lambda n, d: '%d %s' % (n // 60, ngettext('minute ago', 'minutes ago', n // 60))), # 2 minutes+
+      (1, lambda n, d: _('just now')) # under 2 mins ago
     )
     t = time.localtime()
     if d.tzinfo:
