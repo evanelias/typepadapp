@@ -46,6 +46,15 @@ class Asset(typepad.Asset):
             return self.links['alternate'].href
         except KeyError:
             return None
+    
+    @property
+    def feed_url(self):
+        """URL for atom feed of entry comments."""
+        try:
+            url = self.get_absolute_url().lstrip('/', 1) # remove starting /
+            return reverse('feeds', kwargs={'url': url})
+        except NoReverseMatch:
+            return None
 
     @property
     def type_id(self):
