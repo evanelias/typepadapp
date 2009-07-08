@@ -136,7 +136,7 @@ def synchronize(request):
         # Validate the request.
         if nonce != callback_nonce:
             # nonce's don't match, either a bug or someone's playing games
-            return http.HttpResponse("Nonce's don't match.", status=400)
+            return http.HttpResponseRedirect(next)
 
         oauth_request = oauth.OAuthRequest.from_request(request.method,
                                                         request.build_absolute_uri(),
