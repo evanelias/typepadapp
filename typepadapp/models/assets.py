@@ -169,9 +169,13 @@ class Video(typepad.Video, Asset):
         videos = group.video_assets
         try:
             videos.post(self)
-        except HttpObject.ServerError:
+        except HttpObject.ServerError, ex:
             # Bad video?
-            raise self.ConduitError(_('You have entered a URL that is either invalid or a URL for a video that can no longer be found.'))
+            try:
+                reason = ex.response_error
+            except AttributeError: # no reason from the API?
+                reason = _('You have entered a URL that is either invalid or a URL for a video that can no longer be found.')
+            raise self.ConduitError(reason)
 
 
 class Photo(typepad.Photo, Asset):
