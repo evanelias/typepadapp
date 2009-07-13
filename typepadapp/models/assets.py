@@ -51,7 +51,7 @@ class Asset(typepad.Asset):
     def feed_url(self):
         """URL for atom feed of entry comments."""
         try:
-            url = self.get_absolute_url().lstrip('/', 1) # remove starting /
+            url = self.get_absolute_url()[1:] # remove starting /
             return reverse('feeds', kwargs={'url': url})
         except NoReverseMatch:
             return None
