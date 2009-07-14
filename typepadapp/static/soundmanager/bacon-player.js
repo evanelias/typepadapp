@@ -184,10 +184,10 @@
   // Handlers
 
   $(function() {
-    $('.baconplayer .play, .baconplayer .pause').click(function() {
+    /*$('.baconplayer .play, .baconplayer .pause').click(function() {
       BaconPlayer.playOrPause(this.href)
       return false
-    })
+    })*/
 
     $('.baconplayer .progress').mousedown(function(e) {
       BaconPlayer.startDrag(e)
