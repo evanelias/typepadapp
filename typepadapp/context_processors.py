@@ -1,7 +1,5 @@
 from django.views import debug
 
-import settings
-
 view_settings = dict(((k.lower(), v) for (k, v) in
                         debug.get_safe_settings().iteritems()))
 
