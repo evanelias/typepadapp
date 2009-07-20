@@ -3,6 +3,7 @@ import hmac
 import logging
 import urllib
 
+from urlparse import urlparse, urlunparse
 from django import http
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -15,6 +16,19 @@ from typepadapp.models import OAuthClient, Token
 log = logging.getLogger('typepadapp.views.auth')
 
 
+def parameterize_url(url, params):
+    """
+    Adds query string parameters to a URL that may already contain a query string.
+    """
+    url = list(urlparse(url))
+    params = urllib.urlencode(params)
+    if url[4]:
+        url[4] = '%s&%s' % (url[4], params)
+    else:
+        url[4] = params
+    return urlunparse(url)
+
+
 def register(request):
     """ OAuth registration prep.
     
@@ -24,8 +38,11 @@ def register(request):
     client = OAuthClient(request.application)
     token = client.fetch_request_token()
 
-    # redirect to authorization url
-    url = client.authorize_token(request.build_absolute_uri(reverse('authorize')))
+    # redirect to authorization url, next param specifies final redirect URL.
+    callback = request.build_absolute_uri(reverse('authorize'))
+    next = request.GET.get('next', HOME_URL)
+    callback = parameterize_url(callback, {'next': next})
+    url = client.authorize_token(callback)
 
     request.session['request_token'] = token.to_string()
 
@@ -61,7 +78,6 @@ def authorize(request):
     authed_user = authenticate(oauth_client=client)
     login(request, authed_user)
 
-
     # store the token key / secret in the database so we can recover
     # it later if the session expires
     token, created = Token.objects.get_or_create(session_sync_token=request.GET['session_sync_token'], defaults={'key': access_token.key, 'secret': access_token.secret})
@@ -73,8 +89,8 @@ def authorize(request):
     # oauth token in authed user session
     request.session['oauth_token'] = token
 
-    # go home?
-    return http.HttpResponseRedirect(HOME_URL)
+    # go to next url, or home.
+    return http.HttpResponseRedirect(request.GET.get('next', HOME_URL))
 
 
 class StupidDataStore(oauth.OAuthDataStore):
@@ -121,7 +137,7 @@ def synchronize(request):
     nonce = request.GET.get('callback_nonce')
 
     if not nonce:
-        return http.HttpResponse('No nonce. WTF?')
+        return http.HttpResponse('No nonce.')
     else:
         callback_nonce = request.session.get('callback_nonce')
         if callback_nonce is not None:
@@ -150,6 +166,10 @@ def synchronize(request):
             # OAuth signature is invalid. Something's fishy. Don't log them in.
             return http.HttpResponse(ex.message, status=400)
 
+        # The register URL needs to retain the 'next' querystring param so we
+        # can redirect to the correct place once registeration is complete.
+        register_url = parameterize_url(reverse('register'), {'next': next})
+
         if session_sync_token:
             # If a token was returned, create a session loggin the user
             # in with the new token. Otherwise we just log the user out.
@@ -161,7 +181,7 @@ def synchronize(request):
                     # They clicked sign in, but we don't have the token
                     # so we redirect to the register auth flow so we're issued
                     # a new token.
-                    return http.HttpResponseRedirect(reverse('register'))
+                    return http.HttpResponseRedirect(register_url)
                 else:
                     # In this case we store the lost token in the user's session. In future
                     # session sync requests this "lost" token will be used instead of the
@@ -181,7 +201,7 @@ def synchronize(request):
                 # If there's no token returned and the user clicked 'signin' then
                 # they haven't auth'd this site to access their info. Send them
                 # to register instead.
-                return http.HttpResponseRedirect(reverse('register'))
+                return http.HttpResponseRedirect(register_url)
 
         return http.HttpResponseRedirect(next)
 
