@@ -5,7 +5,7 @@ from urlparse import urlparse
 
 import httplib2
 from django.conf import settings
-from django.core.cache import cache
+import django.core.cache
 import django.core.signals
 from django.utils.encoding import smart_unicode
 from oauth import oauth
@@ -40,21 +40,25 @@ class DjangoHttplib2Cache(object):
     interface, passing through the supported calls after prefixing all keys
     with ``httpcache_``."""
 
+    def __init__(self, cache=None):
+        if cache is None:
+            cache = django.core.cache.cache
+        self.cache = cache
+
     def get(self, key):
-        val = cache.get('httpcache_%s' % (key,))
-        if val is None:
-            return None
-        else:
-            if isinstance(val, basestring):
-                return smart_unicode(val, errors='replace')
-            else:
-                return val
+        val = self.cache.get('httpcache_%s' % (key,))
+        # Django's memcache backend upgrades everything to unicodes, so do
+        # the same for *every* backend, for compatibility.
+        return smart_unicode(val, errors='replace')
 
     def set(self, key, value):
-        cache.set('httpcache_%s' % (key,), value)
+        # Don't store invalid unicode strings.
+        if isinstance(value, str):
+            value = value.decode('utf8', 'replace')
+        self.cache.set('httpcache_%s' % (key,), value)
 
     def delete(self, key):
-        cache.delete('httpcache_%s' % (key,))
+        self.cache.delete('httpcache_%s' % (key,))
 
 
 def configure_typepad_client(**kwargs):
