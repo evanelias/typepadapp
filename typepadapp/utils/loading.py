@@ -7,6 +7,7 @@ import httplib2
 from django.conf import settings
 from django.core.cache import cache
 import django.core.signals
+from django.utils.encoding import smart_unicode
 from oauth import oauth
 
 import typepad
@@ -40,7 +41,14 @@ class DjangoHttplib2Cache(object):
     with ``httpcache_``."""
 
     def get(self, key):
-        return cache.get('httpcache_%s' % (key,))
+        val = cache.get('httpcache_%s' % (key,))
+        if val is None:
+            return None
+        else:
+            if isinstance(val, basestring):
+                return smart_unicode(val, errors='replace')
+            else:
+                return val
 
     def set(self, key, value):
         cache.set('httpcache_%s' % (key,), value)
