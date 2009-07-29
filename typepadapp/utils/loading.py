@@ -49,6 +49,8 @@ class DjangoHttplib2Cache(object):
         val = self.cache.get('httpcache_%s' % (key,))
         # Django's memcache backend upgrades everything to unicodes, so do
         # the same for *every* backend, for compatibility.
+        if val is None:
+            return val
         return smart_unicode(val, errors='replace')
 
     def set(self, key, value):
