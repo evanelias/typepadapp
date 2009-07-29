@@ -227,10 +227,14 @@ class User(typepad.User):
         return self.notifications.filter(by_group=group, start_index=start_index, max_results=max_results)
 
     def following(self, group=None, start_index=1, max_results=settings.MEMBERS_PER_WIDGET):
-        return self.relationships.filter(following=True, by_group=group, start_index=start_index, max_results=max_results)
+        if group is not None:
+            return self.relationships.filter(following=True, by_group=group, start_index=start_index, max_results=max_results)
+        return self.relationships.filter(following=True, start_index=start_index, max_results=max_results)
 
     def followers(self, group=None, start_index=1, max_results=settings.MEMBERS_PER_WIDGET):
-        return self.relationships.filter(follower=True, by_group=group, start_index=start_index, max_results=max_results)
+        if group is not None:
+            return self.relationships.filter(follower=True, by_group=group, start_index=start_index, max_results=max_results)
+        return self.relationships.filter(follower=True, start_index=start_index, max_results=max_results)
     
     @property
     def edit_url(self):
