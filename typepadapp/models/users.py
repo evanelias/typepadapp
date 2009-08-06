@@ -64,7 +64,7 @@ class User(typepad.User):
 
     @property
     def is_staff(self):
-        return self.is_superuser
+        return self.is_superuser or self.is_featured_member
 
     @property
     def is_active(self):
@@ -73,7 +73,7 @@ class User(typepad.User):
     @property
     def is_superuser(self):
         for admin in typepadapp.models.GROUP.admins():
-            if self.id == admin.source.id:
+            if self.id == admin.target.id:
                 return True
         return False
 
