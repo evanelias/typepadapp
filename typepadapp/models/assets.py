@@ -58,8 +58,9 @@ class Asset(typepad.Asset):
 
     @property
     def type_id(self):
-        if not self.object_types: return None
-        return self.object_types[0].split(':')[2].lower()
+        object_type = self.primary_object_type()
+        if object_type is None: return None
+        return object_type.split(':')[2].lower()
 
     @property
     def type_label(self):
