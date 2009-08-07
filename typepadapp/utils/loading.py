@@ -6,6 +6,7 @@ from urlparse import urlparse
 import httplib2
 from django.conf import settings
 import django.core.cache
+from django.core.cache.backends.base import InvalidCacheBackendError
 import django.core.signals
 from django.utils.encoding import smart_unicode
 from oauth import oauth
@@ -13,7 +14,7 @@ HAS_MEMCACHED = False
 try:
     import django.core.cache.backends.memcached as memcached
     HAS_MEMCACHED = True
-except ImportError:
+except InvalidCacheBackendError:
     pass
 
 import typepad
