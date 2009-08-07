@@ -9,6 +9,12 @@ import django.core.cache
 import django.core.signals
 from django.utils.encoding import smart_unicode
 from oauth import oauth
+HAS_MEMCACHED = False
+try:
+    import django.core.cache.backends.memcached as memcached
+    HAS_MEMCACHED = True
+except ImportError:
+    pass
 
 import typepad
 from typepadapp.signals import post_start
@@ -43,19 +49,23 @@ class DjangoHttplib2Cache(object):
     def __init__(self, cache=None):
         if cache is None:
             cache = django.core.cache.cache
+        self.is_memcached = HAS_MEMCACHED and isinstance(cache, memcached.CacheClass)
         self.cache = cache
 
     def get(self, key):
         val = self.cache.get('httpcache_%s' % (key,))
-        # Django's memcache backend upgrades everything to unicodes, so do
-        # the same for *every* backend, for compatibility.
-        if val is None:
-            return val
-        return smart_unicode(val, errors='replace')
+        # Django's memcache backend upgrades everything to unicode, so do
+        # handle it with care; httplib2 expects data to come back as
+        # bytes, not unicode
+        if self.is_memcached:
+            if val is None:
+                return val
+            return smart_unicode(val, errors='replace').encode('utf8')
+        return val
 
     def set(self, key, value):
         # Don't store invalid unicode strings.
-        if isinstance(value, str):
+        if self.is_memcached and isinstance(value, str):
             value = value.decode('utf8', 'replace')
         self.cache.set('httpcache_%s' % (key,), value)
 
