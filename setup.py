@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 setup(
     name='typepadapp',
-    version='1.0',
+    version='1.1',
     description='Base for TypePad cloud apps',
     author='Six Apart',
     author_email='python@sixapart.com',
