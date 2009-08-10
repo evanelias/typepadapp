@@ -35,6 +35,14 @@ def enclosurebywidth(asset, width):
 
 
 @register.filter
+def enclosurebysize(asset, size):
+    try:
+        return asset.links['rel__enclosure'].link_by_size(int(size))
+    except:
+        return None
+
+
+@register.filter
 def enclosurebymaxwidth(asset, width):
     try:
         return asset.links['rel__enclosure']['maxwidth__%d' % int(width)]
