@@ -47,7 +47,7 @@ def generate_members_csv(request):
     if request.user.is_superuser:
 
         # convert to user list
-        ids = [member.source.id for member in members]
+        ids = [member.target.id for member in members]
 
         # output csv
         mfile = get_members_csv(members)
@@ -73,9 +73,9 @@ def generate_members_csv(request):
             # add members to list
             members = []
             for m in more:
-                if m.source.id not in ids: # remove dupes
+                if m.target.id not in ids: # remove dupes
                     members.append(m)
-                    ids.append(m.source.id)
+                    ids.append(m.target.id)
 
             # output csv
             mfile = get_members_csv(members)
@@ -90,13 +90,18 @@ def get_members_csv(members):
     writer = csv.writer(mfile)
 
     for membership in members:
-        member = membership.source
+        member = membership.target
 
         member_types = membership.status.types
         join_date = None
         for member_type in member_types:
             if member_type.uri == "tag:api.typepad.com,2009:Member":
-                join_date = member_type.created
+                # FIXME: bug in trunk is breaking 'created' member; catch this
+                # exception for now; can remove once case 87833 is resolved.
+                try:
+                    join_date = member_type.created
+                except:
+                    pass
 
         # member data from typepad
         member_data = [member.xid,
