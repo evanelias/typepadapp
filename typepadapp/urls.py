@@ -4,6 +4,9 @@ from django.conf.urls.defaults import *
 app_path = os.path.dirname(__file__)
 media_dir = os.path.join(app_path, 'static')
 
+handler500 = 'typepadapp.views.exception.server_error'
+handler404 = 'typepadapp.views.exception.page_not_found'
+
 # auth pages
 urlpatterns = patterns('typepadapp.views.auth',
     url(r'^login/?$', 'login', name='login'),

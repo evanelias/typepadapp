@@ -1,7 +1,5 @@
 from django.conf.urls.defaults import *
-
-handler500 = 'motion.views.handle_exception'
-handler404 = 'motion.views.handle_not_found'
+from typepadapp.urls import handler500, handler404
 
 urlpatterns = patterns('',
     (r'^', include('motion.urls')),

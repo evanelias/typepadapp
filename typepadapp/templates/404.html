@@ -1,0 +1,22 @@
+{% load i18n %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" id="sixapart-standard">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="generator" content="TypePad API Application" />
+    <link rel="stylesheet" href="{{ settings.media_url }}typepadapp/css/exception.css" type="text/css" />
+    <link rel="start" href="{% url home %}" title="Home" />
+    <link rel="shortcut icon" type="image/x-icon" href="http://6a.typepad.com/favicon.ico" />
+    <title>{% trans "Page not found." %}</title>
+</head>
+
+<body class="error">
+    <p>{% trans "Sorry, we can&rsquo;t find that page." %}
+    <a href="{% url home %}">{% trans "Return to the home page." %}</a></p>
+    <p><img src="{{ settings.media_url }}typepadapp/images/fail.png"
+        height="620" width="502" alt="{% trans "Sad sad spacegiraffe." %}"
+        title="{% trans "Sad sad spacegiraffe." %}" /></p>
+</body>
+</html>

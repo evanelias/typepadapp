@@ -1,0 +1,19 @@
+@import url(../../typepadapp/css/reset.css);
+
+body {
+    font-size: 62.5%;
+    font-family: "Helvetica Neue", Arial, Verdana;
+}
+p {
+    margin: 0 0 10px;
+}
+
+/* Error Page: 500.html */
+
+body.error {
+    background-color: #fff;
+    background-image: none;
+    margin-top: 20px;
+    text-align: center;
+    font-size: 12px;
+}
