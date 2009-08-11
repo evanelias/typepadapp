@@ -113,7 +113,8 @@ def get_members_csv(members):
         for item in member_data:
             if item:
                 # csv doesn't want unicode instances, so encode into str's
-                row.append(item.encode("utf-8"))
+                # cast to a str, since some items may be non-string (ie, datetime)
+                row.append(str(item).encode("utf-8"))
             else:
                 row.append('')
 
