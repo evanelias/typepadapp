@@ -96,12 +96,7 @@ def get_members_csv(members):
         join_date = None
         for member_type in member_types:
             if member_type.uri == "tag:api.typepad.com,2009:Member":
-                # FIXME: bug in trunk is breaking 'created' member; catch this
-                # exception for now; can remove once case 87833 is resolved.
-                try:
-                    join_date = member_type.created
-                except:
-                    pass
+                join_date = member_type.created
 
         # member data from typepad
         member_data = [member.xid,
