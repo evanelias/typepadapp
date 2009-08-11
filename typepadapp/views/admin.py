@@ -92,11 +92,11 @@ def get_members_csv(members):
     for membership in members:
         member = membership.target
 
-        member_types = membership.status.types
+        member_types = membership.created
         join_date = None
         for member_type in member_types:
-            if member_type.uri == "tag:api.typepad.com,2009:Member":
-                join_date = str(member_type.created)
+            if member_type == "tag:api.typepad.com,2009:Member":
+                join_date = str(member_types[member_type])
 
         # member data from typepad
         member_data = [member.xid,
