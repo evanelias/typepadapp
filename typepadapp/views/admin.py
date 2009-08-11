@@ -96,7 +96,7 @@ def get_members_csv(members):
         join_date = None
         for member_type in member_types:
             if member_type.uri == "tag:api.typepad.com,2009:Member":
-                join_date = member_type.created
+                join_date = str(member_type.created)
 
         # member data from typepad
         member_data = [member.xid,
@@ -108,8 +108,7 @@ def get_members_csv(members):
         for item in member_data:
             if item:
                 # csv doesn't want unicode instances, so encode into str's
-                # cast to a str, since some items may be non-string (ie, datetime)
-                row.append(str(item).encode("utf-8"))
+                row.append(item.encode("utf-8"))
             else:
                 row.append('')
 
