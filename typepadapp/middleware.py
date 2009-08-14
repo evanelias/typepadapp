@@ -1,10 +1,12 @@
 import logging
 import random
+import sys
 from types import MethodType
 from urlparse import urlparse
 from urllib import urlencode, quote
 
 from django.conf import settings
+from django.contrib.sessions.models import Session
 from django.core.urlresolvers import reverse
 from django.core.exceptions import MiddlewareNotUsed
 from django.db import DatabaseError
@@ -196,28 +198,47 @@ class AuthorizationExceptionMiddleware(object):
 
 
 class ConfigurationMiddleware(object):
+
+    log = logging.getLogger('.'.join((__name__, 'ConfigurationMiddleware')))
+
     def __init__(self):
         # If we're not in debug mode, disable this middleware.
         if not settings.DEBUG:
             raise MiddlewareNotUsed
 
     def process_request(self, request):
-        # If any of the OAUTH_* settings are empty, or don't exist, return the
-        # "It worked!" page.
+        return self.check_keys(request) or self.check_local_database(request)
+
+    def check_keys(self, request):
         try:
-            if not (settings.OAUTH_CONSUMER_KEY and settings.OAUTH_CONSUMER_SECRET and
-                    settings.OAUTH_GENERAL_PURPOSE_KEY and settings.OAUTH_GENERAL_PURPOSE_SECRET):
-                return incomplete_configuration(request)
+            if (settings.OAUTH_CONSUMER_KEY and settings.OAUTH_CONSUMER_SECRET and
+                settings.OAUTH_GENERAL_PURPOSE_KEY and settings.OAUTH_GENERAL_PURPOSE_SECRET):
+                return
         except AttributeError:
+            pass
+
+        self.log.debug('Showing incomplete configuration response due to missing keys')
+        return incomplete_configuration(request)
+
+    def check_local_database(self, request):
+        try:
+            Session.objects.count()
+        except Exception, exc:
+            exc_type, exc_value, tb = sys.exc_info()
+            self.log.debug('Showing incomplete configuration response due to uninitialized database (%s.%s: %s)',
+                exc_type.__module__, exc_type.__name__, str(exc_value))
             return incomplete_configuration(request)
 
 
-# Incomplete configuration view.
 def incomplete_configuration(request):
+    """Create an incomplete configuration error response."""
     from django.template import Template, Context
     from django.http import HttpResponse
 
-    "Create an incomplete configuration error response."
+    # We're returning this before session middleware runs, so fake the
+    # session set for djangoflash's process_response().
+    request.session = ()
+
     t = Template(CONFIGURATION_TEMPLATE, name='Incomplete configuration template')
     c = Context({
         'project_name': settings.SETTINGS_MODULE.split('.')[0]
