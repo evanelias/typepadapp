@@ -218,19 +218,18 @@ class ConfigurationMiddleware(object):
             pass
 
         self.log.debug('Showing incomplete configuration response due to missing keys')
-        return incomplete_configuration(request)
+        return incomplete_configuration(request, missing_keys=True)
 
     def check_local_database(self, request):
         try:
             Session.objects.count()
         except Exception, exc:
-            exc_type, exc_value, tb = sys.exc_info()
             self.log.debug('Showing incomplete configuration response due to uninitialized database (%s.%s: %s)',
-                exc_type.__module__, exc_type.__name__, str(exc_value))
-            return incomplete_configuration(request)
+                type(exc).__module__, type(exc).__name__, str(exc))
+            return incomplete_configuration(request, missing_database=True)
 
 
-def incomplete_configuration(request):
+def incomplete_configuration(request, **kwargs):
     """Create an incomplete configuration error response."""
     from django.template import Template, Context
     from django.http import HttpResponse
@@ -240,9 +239,10 @@ def incomplete_configuration(request):
     request.session = ()
 
     t = Template(CONFIGURATION_TEMPLATE, name='Incomplete configuration template')
-    c = Context({
-        'project_name': settings.SETTINGS_MODULE.split('.')[0]
-    })
+    c = Context(dict(
+        project_name=settings.SETTINGS_MODULE.split('.')[0],
+        **kwargs
+    ))
     return HttpResponse(t.render(c), mimetype='text/html')
 
 
@@ -266,6 +266,7 @@ CONFIGURATION_TEMPLATE = """
     thead th { padding:1px 6px 1px 3px; background:#fefefe; text-align:left; font-weight:normal; font-size:11px; border:1px solid #ddd; }
     tbody th { width:12em; text-align:right; color:#666; padding-right:.5em; }
     ul { margin-left: 2em; margin-top: 1em; }
+    li.thisone span { background-color: #e8ff66; }
     #summary { background: #e0ebff; }
     #summary h2 { font-weight: normal; color: #666; }
     #explanation { background:#eee; }
@@ -284,10 +285,10 @@ CONFIGURATION_TEMPLATE = """
   <p>Of course, you haven't actually done any work yet. Here's what to do next:</p>
   <ul>
     <li>Register your application on TypePad at <a href="#">[some url should go here]</a>, and get an application key and general purpose token.</li>
-    <li>Edit the <code>OAUTH_*</code> settings in <code>{{ project_name }}/local_settings.py</code> to use your application's credentials.</li>
+    <li{% if missing_keys %} class="thisone"{% endif %}><span>Edit the <code>OAUTH_*</code> settings in <code>{{ project_name }}/local_settings.py</code> to use your application's credentials.</span></li>
     <li>If you plan on using a database other than sqlite, edit the <code>DATABASE_*</code> settings in <code>{{ project_name }}/local_settings.py</code>.</li>
     <li>Create new TypePad apps to customize your site by running <code>python {{ project_name }}/manage.py typepadapp [appname]</code>.</li>
-    <li>Initialize your database by running <code>python {{ project_name }}/manage.py syncdb</code>.</li>
+    <li{% if missing_database %} class="thisone"{% endif %}><span>Initialize your database by running <code>python {{ project_name }}/manage.py syncdb</code>.</span></li>
     <li>Launch your site by running <code>python {{ project_name }}/manage.py runserver</code>.</li>
   </ul>
 </div>
