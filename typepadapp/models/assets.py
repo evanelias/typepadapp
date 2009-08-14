@@ -7,9 +7,7 @@ from django.conf import settings
 
 import typepad
 from typepadapp import signals
-from remoteobjects import fields
-from remoteobjects.promise import ListObject
-from remoteobjects.http import HttpObject
+from remoteobjects import fields, ListObject, RemoteObject
 import typepadapp.models
 
 
@@ -170,7 +168,7 @@ class Video(typepad.Video, Asset):
         videos = group.video_assets
         try:
             videos.post(self)
-        except HttpObject.ServerError, ex:
+        except RemoteObject.ServerError, ex:
             # Bad video?
             try:
                 reason = ex.response_error
