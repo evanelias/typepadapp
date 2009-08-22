@@ -90,9 +90,9 @@ class Asset(typepad.Asset):
 
         If the relation does not exist, one is added and the empty Link
         object is returned to be populated. """
-        try:
-            links = self.__dict__['links']
-        except KeyError:
+
+        links = self.links
+        if links is None:
             links = typepad.LinkSet()
             self.links = links
 
@@ -101,6 +101,7 @@ class Asset(typepad.Asset):
         except KeyError:
             l = typepad.Link()
             l.rel = relation
+            l.href = ''
             links.add(l)
             return l
 
@@ -222,6 +223,10 @@ class LinkAsset(typepad.LinkAsset, Asset):
 
     def get_link(self):
         return self.link_relation('target').href
+        # try:
+        #     return self.links['target'].href
+        # except:
+        #     return None
 
     def set_link(self, value):
         self.link_relation('target').href = value
