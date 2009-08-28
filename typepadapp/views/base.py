@@ -277,6 +277,7 @@ class TypePadView(GenericView):
     form = None
     template_name = None
     login_required = False
+    admin_required = False
 
     def __init__(self, request, *args, **kwargs):
         self.form_instance = None
@@ -313,10 +314,15 @@ class TypePadView(GenericView):
                                                             **kwargs)
         if not allowed:
             return allowed, response
-        if self.login_required:
+        if self.login_required or self.admin_required:
             response = login_required(lambda r: False)(request)
             if response:
                 return False, response
+            if self.admin_required:
+                # additionally, user must be an admin
+                if not request.user.is_superuser:
+                    # pretend this url doesn't exist?
+                    raise http.Http404
         return True, None
 
     def typepad_request(self, request, *args, **kwargs):
