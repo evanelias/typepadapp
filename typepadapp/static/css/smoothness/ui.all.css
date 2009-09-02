@@ -608,3 +608,10 @@ Generic ThemeRoller Classes
 /* Note: for resizable styles, use the styles listed above in the dialog section */
 
 
+.ui-dialog-overlay{ 
+    opacity:0.5; 
+    -moz-opacity:0.5;
+    filter: progid:DXImageTransform.Microsoft.Alpha(opacity=50);
+    background-color:#000; 
+} 
+
