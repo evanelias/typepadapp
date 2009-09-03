@@ -358,7 +358,7 @@ class TypePadView(GenericView):
         typepad.client.complete_batch()
 
         # Page parameter assignment
-        if self.paginate_by and self.object_list:
+        if self.paginate_by and self.object_list is not None:
             self.filter_object_list()
             link_template = self.paginate_template or urljoin(request.path, '/page/%d')
             paginator = FinitePaginator(self.object_list, self.paginate_by,
