@@ -393,8 +393,7 @@ class TypePadView(GenericView):
 
             self.context['form'] = self.form_instance
 
-        if request.method == 'GET':
-            return self.typepad_request(request, *args, **kwargs)
+        return self.typepad_request(request, *args, **kwargs)
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -410,9 +409,6 @@ class TypePadView(GenericView):
             # requests for this view and invoke the GET handler for the
             # response.
             if not self.form_instance.is_valid() or request.flash.get('errors'):
-                response = self.typepad_request(request, *args, **kwargs)
-                if response:
-                    return response
                 response = self.get(request, *args, **kwargs)
         return response
 
