@@ -4,6 +4,7 @@ import sys
 from types import MethodType
 from urlparse import urlparse
 from urllib import urlencode, quote
+import re
 
 from django.conf import settings
 from django.contrib.sessions.models import Session
@@ -73,6 +74,10 @@ class UserAgentMiddleware:
         the request. Otherwise, adds the app's own OAuth token.
         This middleware needs to be after the session middleware.
         """
+
+        # static requests don't require auth
+        if re.match('/?static/.*', request.path):
+            return None
 
         request.oauth_client = OAuthClient(request.application)
         typepad.client.clear_credentials()
