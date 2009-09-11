@@ -139,6 +139,15 @@ class Audio(typepad.Audio, Asset):
         except KeyError:
             pass
 
+    def save(self, url, file=None, group=None):
+        # Warning - this only handles create, not update
+        # so don't call this more than once
+        assert group, "group parameter is unassigned"
+        assert file, "file parameter is unassigned"
+        self.groups = [ group.id ]
+        typepad.api.browser_upload.upload(
+            self, file, post_type=self.type_id, redirect_to='http://example.com/none')
+
 
 class Video(typepad.Video, Asset):
 
@@ -188,6 +197,15 @@ class Photo(typepad.Photo, Asset):
         if not best: return None
         return best.href
 
+    def save(self, url, file=None, group=None):
+        # Warning - this only handles create, not update
+        # so don't call this more than once
+        assert group, "group parameter is unassigned"
+        assert file, "file parameter is unassigned"
+        self.groups = [ group.id ]
+        typepad.api.browser_upload.upload(
+            self, file, post_type=self.type_id, redirect_to='http://example.com/none')
+
 
 class LinkAsset(typepad.LinkAsset, Asset):
 
@@ -223,10 +241,6 @@ class LinkAsset(typepad.LinkAsset, Asset):
 
     def get_link(self):
         return self.link_relation('target').href
-        # try:
-        #     return self.links['target'].href
-        # except:
-        #     return None
 
     def set_link(self, value):
         self.link_relation('target').href = value
