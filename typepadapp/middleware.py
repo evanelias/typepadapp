@@ -67,7 +67,7 @@ def get_oauth_identification_url(self, next):
     return gp_signed_url(self.oauth_client.oauth_identification_url, { 'callback_url': callback_url })
 
 
-class UserAgentMiddleware:
+class UserAgentMiddleware(object):
 
     def process_request(self, request):
         """For a logged-in user, adds an authed http object to
