@@ -31,36 +31,38 @@
   // Show me the Bacon.
 
   BaconPlayer = {
-    sound  : null,
-    playing: false,
+    // TODO make the sound an object with a soundmanager?
+    sounds : {},
+    durationTimingTimers: {},
+    playing: {},
 
     // returns "playing" or "paused"
-    playOrPause: function(soundFile) {
-      if (!this.sound) this.initSound(soundFile)
-      return this.playing ? this.pause() : this.play()
+    playOrPause: function(id, soundFile) {
+      if (!this.sounds[id]) this.initSound(id, soundFile)
+      return this.playing[id] ? this.pause(id) : this.play(id)
     },
 
-    play: function() {
-      if (!this.sound) return
+    play: function(id) {
+      if (!this.sounds[id]) return
 
-      this.playing = true
-      this.sound.play()
-      $('.baconplayer .play, .baconplayer .pause').toggle()
+      this.playing[id] = true
+      this.sounds[id].play()
+      this.playPauseButtons(id).toggle()
       return "playing"
     },
 
-    pause: function() {
-      if (!this.sound) return
+    pause: function(id) {
+      if (!this.sounds[id]) return
 
-      this.playing = false
-      this.sound.pause()
-      $('.baconplayer .play, .baconplayer .pause').toggle()
+      this.playing[id] = false
+      this.sounds[id].pause()
+      this.playPauseButtons(id).toggle()
       return "paused"
     },
 
-    initSound: function(soundFile) {
-      this.sound = soundManager.createSound({
-        id: 'baconplayer',
+    initSound: function(id, soundFile) {
+      this.sounds[id] = soundManager.createSound({
+        id: id,
         url: soundFile,
         whileplaying: function() {
           BaconPlayer.moveProgressBar(this)
@@ -74,43 +76,41 @@
           BaconPlayer.setDurationTiming(this, true)
         }
       })
+      this.playing[id] = false
     },
 
     moveProgressBar: function(sound) {
       var completed = sound.position / sound.durationEstimate
-      $('.baconplayer .inner-progress').width(this.progressBar.width() * completed)
+      $('#' + sound.sID + ' .inner-progress').width(this.progressBar(sound.sID).width() * completed)
     },
 
     moveLoadingBar: function(sound) {
       var completed = sound.bytesLoaded / sound.bytesTotal
-      $('.baconplayer .loading-progress').width(this.progressBar.width() * completed)
+      $('#' + sound.sID + ' .loading-progress').width(this.progressBar(sound.sID).width() * completed)
     },
 
     setPositionTiming: function(sound) {
       var time = millisecondsToTime(sound.position)
-      $('.baconplayer .position').text(time)
+      $('#' + sound.sID + ' .position').text(time)
     },
 
     setDurationTiming: function(sound, force) {
-      if (!force && this.durationTimingTimer) return
+      if (!force && this.durationTimingTimers[sound.sID]) return
 
       // only re-set this once every few seconds to avoid annoyance
-      this.durationTimingTimer = setTimeout(function() {
+      this.durationTimingTimers[sound.sID] = setTimeout(function() {
         BaconPlayer.setDurationTiming(sound)
-        BaconPlayer.durationTimingTimer = null
+        BaconPlayer.durationTimingTimers[sound.sID] = null
       }, 2000)
 
       var time = millisecondsToTime(sound.durationEstimate)
-      $('.baconplayer .duration').text(time)
+      $('#' + sound.sID + ' .duration').text(time)
     },
 
-    get progressBar() {
-      return $('.baconplayer .progress')
-    },
+    setPosition: function(id, e) {
 
-    setPosition: function(e) {
-      var target = this.progressBar[0],
-           sound = this.sound,
+      var target = this.progressBar(id)[0],
+           sound = this.sounds[id],
                x = parseInt(e.clientX)
 
       // play sound at this position
@@ -120,23 +120,26 @@
     },
 
     startDrag: function(e) {
-      if (this.dragging || !this.sound) return
+      id = $(e.currentTarget).parent().attr('id')
+
+      if (this.dragging || !this.sounds[id]) return
 
       this.attachDragHandlers()
-      this.dragging = true
-      this.pause()
-      this.setPosition(e)
+      this.dragging = id // track dragged sound id
+      this.pause(id)
+      this.setPosition(id, e)
     },
 
     drag: function(e) {
-      this.setPosition(e)
+      this.setPosition(this.dragging, e)
     },
 
     stopDrag: function(e) {
+      id = this.dragging
       this.removeDragHandlers()
-      this.dragging = false
-      this.setPosition(e)
-      this.play()
+      this.dragging = null
+      this.setPosition(id, e)
+      this.play(id)
     },
 
     attachDragHandlers: function() {
@@ -152,7 +155,15 @@
     removeDragHandlers: function() {
       $(document).unbind('mousemove.baconplayer')
       $(document).unbind('mouseup.baconplayer')
-    }
+    },
+    
+    playPauseButtons: function(id) {
+      return $('#' + id + ' .play, #' + id + ' .pause')
+    },
+    
+    progressBar: function(id) {
+      return $('#' + id + ' .progress')
+    },
   }
 
   ////

@@ -1,7 +1,7 @@
 {% load i18n %}
-<div class="baconplayer preview audio">
-    <a href="#" class="play" title="{% trans "play" %}" onclick="BaconPlayer.playOrPause('{{ link }}'); return false;"></a>
-    <a href="#" class="pause" title="{% trans "pause" %}" onclick="BaconPlayer.playOrPause('{{ link }}'); return false;"></a>
+<div id="{{ id }}" class="baconplayer preview audio">
+    <a href="#" class="play" title="{% trans "play" %}" onclick="BaconPlayer.playOrPause('{{ id }}', '{{ link }}'); return false;"></a>
+    <a href="#" class="pause" title="{% trans "pause" %}" onclick="BaconPlayer.playOrPause('{{ id }}', '{{ link }}'); return false;"></a>
     <div class="progress">
       <div class="title">{{ title }}</div>
       <span class="timing">
