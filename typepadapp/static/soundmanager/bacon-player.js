@@ -45,6 +45,10 @@
     play: function(id) {
       if (!this.sounds[id]) return
 
+      // pause any other audio files
+      $.each(this.playing, function(i) {
+        if (this == true) BaconPlayer.pause(i)
+      })
       this.playing[id] = true
       this.sounds[id].play()
       this.playPauseButtons(id).toggle()
