@@ -167,7 +167,7 @@
     
     progressBar: function(id) {
       return $('#' + id + ' .progress')
-    },
+    }
   }
 
   ////
