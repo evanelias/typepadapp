@@ -64,7 +64,8 @@ def get_oauth_identification_url(self, next):
         'signin': '1',
     }
     callback_url = '%s?%s' % (self.build_absolute_uri(reverse('synchronize')), urlencode(params))
-    return gp_signed_url(self.oauth_client.oauth_identification_url, { 'callback_url': callback_url })
+    return gp_signed_url(self.oauth_client.oauth_identification_url,
+        { 'callback_url': callback_url, 'target_object': self.group.id })
 
 
 class UserAgentMiddleware(object):
@@ -127,13 +128,18 @@ class ApplicationMiddleware(object):
 
         typepad.client.batch_request()
         try:
-            app = typepad.Application.get_by_api_key(settings.OAUTH_CONSUMER_KEY)
+            api_key = typepad.ApiKey.get_by_api_key(
+                settings.OAUTH_CONSUMER_KEY)
+            token = typepad.AuthToken.get_by_key_and_token(
+                settings.OAUTH_CONSUMER_KEY,
+                settings.OAUTH_GENERAL_PURPOSE_KEY)
             typepad.client.complete_batch()
         except Exception, exc:
             log.error('Error loading Application %s: %s' % (settings.OAUTH_CONSUMER_KEY, str(exc)))
             raise
 
-        group = app.owner
+        app = api_key.owner
+        group = token.target
 
         typepad.client.batch_request()
         try:

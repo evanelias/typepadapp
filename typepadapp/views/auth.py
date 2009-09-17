@@ -42,7 +42,7 @@ def register(request):
     callback = request.build_absolute_uri(reverse('authorize'))
     next = request.GET.get('next', HOME_URL)
     callback = parameterize_url(callback, {'next': next})
-    url = client.authorize_token(callback)
+    url = client.authorize_token(callback, { 'target_object': request.group.id })
 
     request.session['request_token'] = token.to_string()
 
@@ -211,7 +211,10 @@ def logout(request):
     from django.contrib.auth import logout
     logout(request)
     # redirect to logout of typepad
-    return http.HttpResponseRedirect(request.application.signout_page)
+    url = request.application.signout_page
+    url = parameterize_url(url, { 'callback_url':
+        request.build_absolute_uri(HOME_URL) })
+    return http.HttpResponseRedirect(url)
 
 
 try:
