@@ -139,7 +139,7 @@ class Audio(typepad.Audio, Asset):
         except KeyError:
             pass
 
-    def save(self, url, file=None, group=None):
+    def save(self, file=None, group=None):
         # Warning - this only handles create, not update
         # so don't call this more than once
         assert group, "group parameter is unassigned"
@@ -197,7 +197,7 @@ class Photo(typepad.Photo, Asset):
         if not best: return None
         return best.href
 
-    def save(self, url, file=None, group=None):
+    def save(self, file=None, group=None):
         # Warning - this only handles create, not update
         # so don't call this more than once
         assert group, "group parameter is unassigned"
