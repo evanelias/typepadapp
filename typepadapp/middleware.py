@@ -295,7 +295,7 @@ CONFIGURATION_TEMPLATE = """
 <div id="instructions">
   <p>Of course, you haven't actually done any work yet. Here's what to do next:</p>
   <ul>
-    <li>Register your application on TypePad at <a href="#">[some url should go here]</a>, and get an application key and general purpose token.</li>
+    <li>Register your application on TypePad at <a href="http://www.typepad.com/account/access/api_key">http://www.typepad.com/account/access/api_key</a>, and get an application key and general purpose token.</li>
     <li{% if missing_keys %} class="thisone"{% endif %}><span>Edit the <code>OAUTH_*</code> settings in <code>{{ project_name }}/local_settings.py</code> to use your application's credentials.</span></li>
     <li>If you plan on using a database other than sqlite, edit the <code>DATABASE_*</code> settings in <code>{{ project_name }}/local_settings.py</code>.</li>
     <li>Create new TypePad apps to customize your site by running <code>python {{ project_name }}/manage.py typepadapp [appname]</code>.</li>
