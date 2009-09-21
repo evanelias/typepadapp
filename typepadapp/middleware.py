@@ -146,7 +146,7 @@ class ApplicationMiddleware(object):
             group.admin_list = group.memberships.filter(admin=True)
             typepad.client.complete_batch()
         except Exception, exc:
-            log.error('Error loading Group %s: %s', app.owner.id, str(exc))
+            log.error('Error loading Group %s: %s', group.id, str(exc))
             raise
 
         log.info("Running for group: %s", group.display_name)
