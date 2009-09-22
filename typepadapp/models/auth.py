@@ -6,6 +6,7 @@ from django.db import models
 
 import typepad
 import typepadapp.models
+from oauth import oauth
 
 
 class OAuthClient(typepad.OAuthClient):
@@ -20,7 +21,7 @@ class OAuthClient(typepad.OAuthClient):
         self.oauth_identification_url = app.oauth_identification_page
 
 
-class Token(models.Model):
+class Token(models.Model, oauth.OAuthToken):
     """ Local database storage for user
         OAuth tokens.
     """
