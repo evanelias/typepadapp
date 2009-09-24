@@ -65,15 +65,16 @@ def register(request):
     """
     # fetch request token
     client = OAuthClient(request.application)
-    token = client.fetch_request_token()
 
     # redirect to authorization url, next param specifies final redirect URL.
     callback = request.build_absolute_uri(reverse('authorize'))
     next = request.GET.get('next', HOME_URL)
     callback = parameterize_url(callback, {'next': next})
-    url = client.authorize_token(callback, { 'target_object': request.group.id })
 
+    token = client.fetch_request_token(callback)
     request.session['request_token'] = token.to_string()
+
+    url = client.authorize_token({ 'target_object': request.group.id })
 
     return http.HttpResponseRedirect(url)
 
@@ -100,7 +101,8 @@ def authorize(request):
     # exchange request token for access token
     client = OAuthClient(request.application)
     client.set_token_from_string(request_token)
-    access_token = client.fetch_access_token()
+    verifier = request.GET.get('oauth_verifier')
+    access_token = client.fetch_access_token(verifier=verifier)
 
     # authorize and login user
     from django.contrib.auth import authenticate, login
