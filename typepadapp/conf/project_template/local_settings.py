@@ -3,8 +3,6 @@ TEMPLATE_DEBUG = DEBUG
 
 FRONTEND_URL = 'http://127.0.0.1:8000'
 
-BACKEND_URL = 'https://api.typepad.com.tpapi-stage-tp.dev.sixapart.com'
-
 # TypePad API access configuration.
 OAUTH_CONSUMER_KEY           = ''
 OAUTH_CONSUMER_SECRET        = ''
