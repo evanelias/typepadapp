@@ -5,4 +5,4 @@ Django==1.0.2-final
 FeedParser
 -e git://github.com/sixapart/remoteobjects#egg=remoteobjects
 -e git://github.com/sixapart/batchhttp#egg=batchhttp
--e git+ssh://git@github.com/sixapart/typepad.git#egg=typepad
+-e git+ssh://git@github.com/sixapart/python-typepad-api.git#egg=typepad
