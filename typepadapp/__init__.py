@@ -27,3 +27,16 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+"""
+
+typepadapp provides a basis for TypePad API applications built with Django.
+
+"""
+
+__version__ = '1.1a1'
+__date__ = '28 September 2009'
+__author__ = 'Six Apart Ltd.'
+__credits__ = """Brad Choate
+Leah Culver
+Mike Malone
+Mark Paschal"""
