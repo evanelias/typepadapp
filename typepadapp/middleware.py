@@ -83,7 +83,8 @@ def get_session_synchronization_url(self, callback_url=None):
         current_token = self.session.get('lost_session_sync_token', '')
 
     return gp_signed_url(self.oauth_client.session_sync_url,
-                         { 'callback_url': callback_url, 'session_sync_token': current_token })
+                         { 'callback_url': callback_url, 'session_sync_token': current_token,
+                           'target_object': self.group.id })
 
 
 def get_oauth_identification_url(self, next):
