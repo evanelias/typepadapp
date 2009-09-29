@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright (c) 2009 Six Apart Ltd.
 # All rights reserved.
 #
@@ -27,16 +29,9 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""
+import typepadapp
 
-typepadapp provides a basis for TypePad API applications built with Django.
-
-"""
-
-__version__ = '1.1a1'
-__date__ = '28 September 2009'
-__author__ = 'Six Apart Ltd.'
-__credits__ = """Brad Choate
-Leah Culver
-Mike Malone
-Mark Paschal"""
+readme = file('README.rst', 'w')
+readme.write(typepadapp.__doc__.strip())
+readme.write("\n")
+readme.close()

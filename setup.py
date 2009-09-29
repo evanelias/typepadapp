@@ -30,13 +30,28 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from setuptools import setup, find_packages
+from os.path import join, dirname
 setup(
     name='typepadapp',
-    version='1.1',
+    version='1.1a1',
     description='Base for TypePad cloud apps',
     author='Six Apart',
     author_email='python@sixapart.com',
     url='http://code.sixapart.com/svn/typepadapp/',
+
+    long_description=open(join(dirname(__file__), 'README.rst')).read(),
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Environment :: Console',
+        'Environment :: Web Environment',
+        'Framework :: Django',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: POSIX',
+        'Programming Language :: Python',
+        'Topic :: Internet :: WWW/HTTP',
+    ],
 
     packages=find_packages(),
     provides=['typepadapp'],
