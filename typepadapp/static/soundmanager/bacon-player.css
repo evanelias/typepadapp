@@ -1,0 +1,55 @@
+/* AUDIO PLAYER */
+div.baconplayer.audio {
+    overflow: hidden;
+    background: #444;
+    padding: 6px;
+    font-family:"Helvetica Neue",Arial,Verdana;
+    line-height: 1;
+}
+.audio .play,
+.audio .pause {
+    float: left;
+    height: 18px;
+    width: 18px;
+}
+.audio .play {
+    background: url(icon_play.gif) no-repeat;
+}
+.audio .pause {
+    display: none;    
+    background: url(icon_pause.gif) no-repeat;
+}
+.audio .title,
+.audio .progress .timing, {
+    display: inline;
+}
+.audio .title {
+    float: left;
+    padding-left: 8px;
+    padding-top: 2px;
+}
+.audio .progress .timing {
+    float: right;
+    padding-right: 8px;
+    padding-top: 2px;
+}
+.audio .progress {
+    margin-left: 24px;
+    background: #7d7d7d;
+}
+.audio .progress .inner-progress {
+    background: #ddd;
+    width: 0;
+    height: 18px;
+}
+.audio .progress .loading-progress {
+    background: #aaa;
+    width: 0;
+}
+div.audio,
+.audio .progress,
+.audio .progress .inner-progress,
+.audio .progress .loading-progress {
+    -webkit-border-radius: 1px;
+    -moz-border-radius: 1px;
+}

@@ -1,0 +1,147 @@
+#debug-toolbar {
+    font-size: 10px;
+    font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Verdana, sans-serif;
+    padding: 0 10px;
+    position: absolute; 
+    top: 5px; 
+    left: 5px; 
+    border: 1px solid #CCC;
+    background-color: #333; 
+    color: white;
+    z-index: 1000000000;
+    -moz-opacity: 0.85; 
+    -webkit-opacity: 0.85;
+    max-width: 95%;
+    cursor: pointer;
+}
+#debug-toolbar:hover {
+    -moz-opacity: 0.9;
+    -webkit-opacity: 0.9;
+}
+#debug-toolbar.visible {
+    -moz-opacity: 1.0;
+    -webkit-opacity: 1.0;
+}
+#debug-toolbar .debug-info {
+    border-bottom: 1px solid #666;
+    font-size: 11px;
+    font-weight: bold;
+    margin: 5px 0;
+    padding-bottom: 5px;
+    text-align: center;
+    text-shadow: #000 0px 1px 2px;
+}
+#debug-toolbar dl {
+    margin: 5px 0;
+    overflow: hidden;
+    padding: 0px;
+    text-shadow: #000 0px 1px 2px;
+}
+#debug-toolbar dt {
+    float: left;
+    margin: 0px;
+    padding: 0px;
+    text-align: right;
+    width: 95px;
+}
+#debug-toolbar dd {
+    color: #CCC;
+    margin: 0 0 0 100px;
+    padding: 0px;
+    width: 90px;
+}
+#debug-summary:hover {
+    cursor: pointer;
+}
+#debug-toolbar a {
+    color: #f7c757;
+}
+#debug-toolbar a:hover {
+    color: #aaa;
+}
+#debug-toolbar #debug-details a {
+    color: #333;
+}
+#debug-toolbar #debug-details a:hover {
+    color: #f7c757;
+}
+#debug-summary {
+    margin: 5px 0;
+    line-height: 1.5em;
+}
+#debug-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+.stat {
+    font-weight: bold;
+}
+#debug-details {
+    margin: 5px 0;
+    color: black;
+}
+.debug-request-summary {
+    line-height: 2em;
+    padding: 0 5px;
+}
+.debug-subrequest-summary {
+    line-height: 2em;
+    padding: 0 10px;
+}
+.debug-request-summary:hover {
+    background-color: #555;
+    cursor: pointer;
+}
+.debug-subrequest-summary:hover {
+    background-color: #555;
+}
+.debug-query {
+    font-size: 110%;
+    line-height: 1.5em;
+    padding: 5px 10px;
+}
+.debug-query:hover {
+    background-color: #555;
+    cursor: pointer;
+}
+.debug-request-even, .debug-query-even {
+    background-color: #9dcc49;
+}
+.debug-request-odd, .debug-query-odd {
+    background-color: #b9d977;
+}
+.debug-subrequest-body pre {
+    margin: 0;
+    padding: 0;
+}
+.debug-subrequest-body {
+    margin: 0;
+    max-height: 300px;
+    overflow: auto;
+    border: 1px solid #ccc;
+    background-color: white;
+}
+.debug-subrequest-stacktrace {
+    font-size: 110%;
+    margin: 0 20px;
+    line-height: 1.5em;
+}
+.debug-filename, .debug-funcname {
+    font-weight: bold;
+    font-family: monospace;
+}
+.debug-strace-line {
+    text-indent: 20px;
+}
+.debug-lineno {
+    display: inline-block;
+    width: 60px;
+    font-weight: bold;
+}
+.debug-statement {
+    font-family: monospace;
+}
+.debug-subrequest-body .syntaxhighlighter {
+    margin: 0 !important;
+}

@@ -1,0 +1,32 @@
+/* Custom stylesheet */
+
+/* You can start from scratch, or import the Motion default theme as a starting point. */
+@import url("../motion/style.css");
+
+/* assigned to body tag */
+.design-background {
+    /* background: #0099B9 url(YOUR_URL_HERE) fixed no-repeat top left; */
+}
+.design-compose-background {
+    /* background: #9AE4E8 url(YOUR_URL_HERE) fixed no-repeat top left !important; */
+}
+/* assigned to #banner #banner-header a */
+.design-logo {
+    /* background-image: url(YOUR_URL_HERE) !important; */
+}
+/* assigned to #pagebody */
+.design-content-color {
+    /* color: #f00; */
+}
+/* assigned to #pagebody */
+.design-content-font {
+    /* font-family: "Comic Sans MS" !important; */
+}
+/* assigned to #pagebody */
+.design-content-border, h2, h3 {
+    /* border-color: #0f0 !important; */
+}
+/* applied to headings; notably widgets, etc. */
+.design-highlight-color {
+    /* color: #00f !important; */
+}
