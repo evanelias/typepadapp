@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Copyright (c) 2009 Six Apart Ltd.
 # All rights reserved.
 #
@@ -29,33 +27,25 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from setuptools import setup, find_packages
-from os.path import join, dirname
-setup(
-    name='typepadapp',
-    version='1.1a1',
-    description='Base for TypePad cloud apps',
-    author='Six Apart',
-    author_email='python@sixapart.com',
-    url='http://github.com/sixapart/typepadapp',
+"""
 
-    long_description=open(join(dirname(__file__), 'README.rst')).read(),
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'Environment :: Console',
-        'Environment :: Web Environment',
-        'Framework :: Django',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: MacOS :: MacOS X',
-        'Operating System :: POSIX',
-        'Programming Language :: Python',
-        'Topic :: Internet :: WWW/HTTP',
-    ],
+A Sphinx extension to autodocument __init__ methods.
 
-    packages=find_packages(),
-    provides=['typepadapp'],
-    include_package_data=True,
-    zip_safe=False,
-    requires=['Django(>=1.0.2)', 'typepad', 'FeedParser'],
-)
+"""
+
+
+import logging
+
+def document_init_methods(app, what, name, obj, skip, options):
+    if not skip:
+        return
+    if name != '__init__':
+        return
+    if not getattr(obj, '__doc__', None):
+        return
+
+    # Don't skip it.
+    return False
+
+def setup(app):
+    app.connect('autodoc-skip-member', document_init_methods)
