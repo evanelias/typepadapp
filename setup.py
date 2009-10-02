@@ -31,15 +31,21 @@
 
 from setuptools import setup
 from os.path import join, dirname
+
+try:
+    long_description = open(join(dirname(__file__), 'README.rst')).read()
+except Exception:
+    long_description = None
+
 setup(
     name='typepadapp',
     version='1.0',
-    description='Base for TypePad cloud apps',
+    description='A helper Django app for making TypePad applications',
     author='Six Apart',
     author_email='python@sixapart.com',
     url='http://github.com/sixapart/typepadapp',
 
-    long_description=open(join(dirname(__file__), 'README.rst')).read(),
+    long_description=long_description,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
