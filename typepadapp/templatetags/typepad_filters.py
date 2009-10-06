@@ -42,13 +42,13 @@ def morelink(entry, wordcount):
     """
     content = strip_tags(entry.content)
     if template.defaultfilters.wordcount(content) > wordcount:
-        more = '<br/><br/><a href="%s">continue reading...</a>' % entry.get_absolute_url()
+        more = '<p class="more-link"><a href="%s">continue reading...</a></p>' % entry.get_absolute_url()
         return mark_safe(more)
     return ''
 
 
 @register.filter
-def userpicbywidth(asset, width):
+def userpicbywidth(asset, width=0):
     try:
         return asset.links['rel__avatar'].link_by_width(int(width))
     except:
@@ -56,7 +56,7 @@ def userpicbywidth(asset, width):
 
 
 @register.filter
-def enclosurebywidth(asset, width):
+def enclosurebywidth(asset, width=0):
     try:
         return asset.links['rel__enclosure'].link_by_width(int(width))
     except:
@@ -64,7 +64,7 @@ def enclosurebywidth(asset, width):
 
 
 @register.filter
-def enclosurebysize(asset, size):
+def enclosurebysize(asset, size=0):
     try:
         return asset.links['rel__enclosure'].link_by_size(int(size))
     except:
@@ -72,7 +72,7 @@ def enclosurebysize(asset, size):
 
 
 @register.filter
-def enclosurebymaxwidth(asset, width):
+def enclosurebymaxwidth(asset, width=0):
     try:
         return asset.links['rel__enclosure']['maxwidth__%d' % int(width)]
     except:
