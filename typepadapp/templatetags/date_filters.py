@@ -45,7 +45,7 @@ def pithy_timesince(d, preposition=''):
         return None
     chunks = (
       (60 * 60 * 24 * 365, lambda n, d: _('%(prep)s %(date)s') % { 'prep': preposition, 'date': defaultfilters.date(d, 'M j, Y') }), # 1 year+
-      (60 * 60 * 24 * 7, lambda n, d: preposition + defaultfilters.date(d, 'M jS')), # 1 week+
+      (60 * 60 * 24 * 7, lambda n, d: _('%(prep)s %(date)s') % { 'prep': preposition, 'date': defaultfilters.date(d, 'M jS') }), # 1 week+
       (60 * 60 * 24, lambda n, d: '%d %s' % (n // (60 * 60 * 24), ngettext('day ago', 'days ago', n // (60 * 60 * 24)))), # 1 day+
       (60 * 60, lambda n, d: '%d %s' % (n // (60 * 60), ngettext('hour ago', 'hours ago', n // (60 * 60)))), # 1 hour+
       (60 * 2, lambda n, d: '%d %s' % (n // 60, ngettext('minute ago', 'minutes ago', n // 60))), # 2 minutes+
