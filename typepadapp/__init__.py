@@ -33,7 +33,7 @@ typepadapp provides a basis for TypePad API applications built with Django.
 
 """
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 __date__ = '2 October 2009'
 __author__ = 'Six Apart Ltd.'
 __credits__ = """Brad Choate
