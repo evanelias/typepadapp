@@ -1,7 +1,7 @@
 simplejson==2.0.9
 httplib2==0.5.0
 oauth==1.0.1
-Django==1.0.2-final
+Django==1.1.1
 FeedParser
 -e git://github.com/sixapart/remoteobjects#egg=remoteobjects
 -e git://github.com/sixapart/batchhttp#egg=batchhttp
