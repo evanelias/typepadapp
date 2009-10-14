@@ -39,6 +39,9 @@ class Command(startproject.Command):
     help = "Creates a TypePad Django project directory structure for the given project name in the current directory."
 
     def handle_label(self, project_name, **options):
+        helper = startproject.copy_helper
         startproject.copy_helper = my_copy_helper
-        super(Command, self).handle_label(project_name, **options)
-        startproject.copy_helper = copy_helper
+        try:
+            super(Command, self).handle_label(project_name, **options)
+        finally:
+            startproject.copy_helper = helper
