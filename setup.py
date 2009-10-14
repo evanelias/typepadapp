@@ -37,7 +37,7 @@ setup(
     description='Base for TypePad cloud apps',
     author='Six Apart',
     author_email='python@sixapart.com',
-    url='http://code.sixapart.com/svn/typepadapp/',
+    url='http://github.com/sixapart/typepadapp',
 
     long_description=open(join(dirname(__file__), 'README.rst')).read(),
     classifiers=[
@@ -57,5 +57,5 @@ setup(
     provides=['typepadapp'],
     include_package_data=True,
     zip_safe=False,
-    requires=['Django(>=1.0.2)', 'typepad', 'FeedParser'],
+    requires=['Django(>=1.1.1)', 'typepad', 'FeedParser'],
 )

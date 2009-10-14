@@ -83,6 +83,11 @@ class DjangoHttplib2Cache(object):
         self.cache = cache
 
     def get(self, key):
+        # for our http cache, this is typically for things we don't
+        # even want to cache, like OAuth communications
+        if len(key) > 250:
+            return None
+
         val = self.cache.get('httpcache_%s' % (key,))
         # Django's memcache backend upgrades everything to unicode, so do
         # handle it with care; httplib2 expects data to come back as
@@ -90,16 +95,23 @@ class DjangoHttplib2Cache(object):
         if self.is_memcached:
             if val is None:
                 return val
-            return smart_unicode(val, errors='replace').encode('utf8')
+            if isinstance(val, str):
+                return smart_unicode(val, errors='replace').encode('utf8')
         return val
 
     def set(self, key, value):
+        if len(key) > 250:
+            return
+
         # Don't store invalid unicode strings.
         if self.is_memcached and isinstance(value, str):
             value = value.decode('utf8', 'replace')
         self.cache.set('httpcache_%s' % (key,), value)
 
     def delete(self, key):
+        if len(key) > 250:
+            return
+
         self.cache.delete('httpcache_%s' % (key,))
 
 

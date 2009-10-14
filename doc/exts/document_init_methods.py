@@ -27,61 +27,25 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from django import template
-from django.utils.safestring import mark_safe
-from django.utils.html import strip_tags
+"""
+
+A Sphinx extension to autodocument __init__ methods.
+
+"""
 
 
-register = template.Library()
+import logging
 
-@register.filter
-def morelink(entry, wordcount):
-    """
-    Display a 'continue reading...' link if the entry contains
-    more words than the supplied wordcount.
-    """
-    content = strip_tags(entry.content)
-    if template.defaultfilters.wordcount(content) > wordcount:
-        more = '<p class="more-link"><a href="%s">continue reading...</a></p>' % entry.get_absolute_url()
-        return mark_safe(more)
-    return ''
+def document_init_methods(app, what, name, obj, skip, options):
+    if not skip:
+        return
+    if name != '__init__':
+        return
+    if not getattr(obj, '__doc__', None):
+        return
 
+    # Don't skip it.
+    return False
 
-@register.filter
-def userpicbywidth(asset, width=0):
-    try:
-        return asset.links['rel__avatar'].link_by_width(int(width))
-    except:
-        return None
-
-
-@register.filter
-def enclosurebywidth(asset, width=0):
-    try:
-        return asset.links['rel__enclosure'].link_by_width(int(width))
-    except:
-        return None
-
-
-@register.filter
-def enclosurebysize(asset, size=0):
-    try:
-        return asset.links['rel__enclosure'].link_by_size(int(size))
-    except:
-        return None
-
-
-@register.filter
-def enclosurebymaxwidth(asset, width=0):
-    try:
-        return asset.links['rel__enclosure']['maxwidth__%d' % int(width)]
-    except:
-        return None
-
-
-@register.filter
-def greaterthan(num1, num2):
-    try:
-        return int(num1) > int(num2)
-    except:
-        return False
+def setup(app):
+    app.connect('autodoc-skip-member', document_init_methods)

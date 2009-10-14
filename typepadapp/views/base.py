@@ -227,7 +227,7 @@ class GenericView(http.HttpResponse):
         """
         pass
 
-    def render_to_response(self, template, more_context=None):
+    def render_to_response(self, template, more_context=None, **kwargs):
         """
         A shortcut method that runs the render_to_response
         Django shortcut.
@@ -239,7 +239,7 @@ class GenericView(http.HttpResponse):
         if more_context:
             self.context.push()
             self.context.update(more_context)
-        results = render_to_response(template, self.context)
+        results = render_to_response(template, context_instance=self.context, **kwargs)
         if more_context:
             self.context.pop()
         return results
