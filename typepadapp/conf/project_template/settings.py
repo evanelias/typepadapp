@@ -5,6 +5,10 @@ import os
 import logging
 from motion.settings import *
 
+# Setup template caching
+from typepadapp import cached_templates
+cached_templates.setup()
+
 DEBUG = False
 
 ROOT_DIR = os.path.split(__file__)[0]
