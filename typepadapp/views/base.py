@@ -328,7 +328,7 @@ class TypePadView(GenericView):
         """
         pass
 
-    def filter_object_list(self):
+    def filter_object_list(self, request):
         """
         Empty method used for any filtering of objects returned by the API.
         """
@@ -388,7 +388,7 @@ class TypePadView(GenericView):
 
         # Page parameter assignment
         if self.paginate_by and self.object_list is not None:
-            self.filter_object_list()
+            self.filter_object_list(request)
             link_template = self.paginate_template or urljoin(request.path, '/page/%d')
             paginator = FinitePaginator(self.object_list, self.paginate_by,
                                         offset=self.offset,
