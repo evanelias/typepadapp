@@ -203,7 +203,8 @@ class CachedTypePadList(object):
                 cache.set(list_key, ids)
 
             log.debug("calling filling function for list with key %s" % list_key)
-            items = func(obj, *args, callback=cache_callback, **kwargs)
+            kwargs['callback'] = cache_callback
+            items = func(obj, *args, **kwargs)
             # this is so our callback reference doesn't disappear
             items._cache_callback = cache_callback
             return items
