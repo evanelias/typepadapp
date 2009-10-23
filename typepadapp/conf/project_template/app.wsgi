@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import os, site
+import os, site, sys
 
 # Remember original sys.path.
 prev_sys_path = list(sys.path)

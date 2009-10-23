@@ -31,15 +31,21 @@
 
 from setuptools import setup, find_packages
 from os.path import join, dirname
+
+try:
+    long_description = open(join(dirname(__file__), 'README.rst')).read()
+except Exception:
+    long_description = None
+
 setup(
     name='typepadapp',
     version='1.1a1',
-    description='Base for TypePad cloud apps',
+    description='A helper Django app for making TypePad applications',
     author='Six Apart',
     author_email='python@sixapart.com',
     url='http://github.com/sixapart/typepadapp',
 
-    long_description=open(join(dirname(__file__), 'README.rst')).read(),
+    long_description=long_description,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
@@ -57,5 +63,6 @@ setup(
     provides=['typepadapp'],
     include_package_data=True,
     zip_safe=False,
-    requires=['Django(>=1.0.2)', 'typepad', 'FeedParser'],
+    requires=['Django(>=1.1.1)', 'typepad(==1.1a1)', 'FeedParser'],
+    install_requires=['Django>=1.1.1', 'typepad==1.1a1', 'FeedParser'],
 )
