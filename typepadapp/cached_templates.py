@@ -41,7 +41,7 @@ app starts up. A good place to do this setup is in your project's settings.py.
 
 """
 
-from django.template import loader, loader_tags, NodeList, Template
+from django.template import loader, loader_tags, NodeList, Template, TemplateDoesNotExist, TemplateSyntaxError
 from django.template.context import Context
 from django.utils.safestring import mark_safe
 
