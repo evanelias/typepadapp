@@ -27,7 +27,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from functools import wraps
 import logging
 from django.core.cache import cache
 import typepad
@@ -52,7 +51,6 @@ class CachedTypePadObject(object):
     def __call__(self, func):
 
         @classmethod
-        @wraps(func)
         def wrapper(cls, *args, **kwargs):
             key = self.key_pattern % args[0]
             obj = cache.get(key)
@@ -138,7 +136,6 @@ class CachedTypePadList(object):
 
         self.list_key_pattern = self.list_key_pattern % func.__name__
 
-        @wraps(func)
         def wrapper(obj, *args, **kwargs):
             list_key = self.list_key_pattern % (obj.xid, obj.cache_prefix())
             group = kwargs.get('by_group', None)
