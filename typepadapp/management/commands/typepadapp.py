@@ -33,6 +33,7 @@ import sys
 from django.core.management.commands import startapp
 from django.core.management import CommandError
 
+
 def copy_helper(style, app_or_project, name, directory, other_name='', base_path=None):
     """
     Copies either a Django application layout template or a Django project
@@ -99,6 +100,7 @@ def copy_helper(style, app_or_project, name, directory, other_name='', base_path
             except OSError:
                 sys.stderr.write(style.NOTICE("Notice: Couldn't set permission bits on %s. You're probably using an uncommon filesystem setup. No problem.\n" % path_new))
 
+
 def _make_writeable(filename):
     """
     Make sure that the file is writeable. Useful if our source is
@@ -114,6 +116,7 @@ def _make_writeable(filename):
         new_permissions = stat.S_IMODE(st.st_mode) | stat.S_IWUSR
         os.chmod(filename, new_permissions)
 
+
 def my_copy_helper(style, app_or_project, name, directory, other_name=''):
     # we're assuming typepadapp application is two directories above our
     # command module file.
@@ -124,6 +127,7 @@ def my_copy_helper(style, app_or_project, name, directory, other_name=''):
     # temporarily changing the location of django to our typepadapp
     # application directory where it's app project template resides.
     copy_helper(style, app_or_project, name, directory, other_name='', base_path=typeapp_path)
+
 
 class Command(startapp.Command):
 
