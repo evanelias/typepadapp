@@ -119,8 +119,8 @@ def configure_typepad_client(**kwargs):
     typepad.client.endpoint = settings.BACKEND_URL
 
     log = logging.getLogger('typepadapp.utils.loading')
-    log.info('Configuring HTTP caching')
-    typepad.client.cache = DjangoHttplib2Cache()
+    # log.info('Configuring HTTP caching')
+    # typepad.client.cache = DjangoHttplib2Cache()
 
     if settings.TYPEPAD_COOKIES:
         typepad.client.cookies.update(settings.TYPEPAD_COOKIES)

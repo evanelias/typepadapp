@@ -29,6 +29,25 @@
 
 from django.dispatch import Signal
 
-post_save = Signal(providing_args=["instance"])
+asset_created = Signal(providing_args=["instance", "group", "parent"])
+asset_deleted = Signal(providing_args=["instance", "group", "parent"])
 
+favorite_created = Signal(providing_args=["instance", "group", "parent"])
+favorite_deleted = Signal(providing_args=["instance", "group", "parent"])
+
+# membership signals
+member_joined = Signal(providing_args=["instance", "group"])
+member_left = Signal(providing_args=["instance", "group"])
+member_banned = Signal(providing_args=["instance", "group"])
+member_unbanned = Signal(providing_args=["instance", "group"])
+
+# issued when app is starting up
 post_start = Signal(providing_args=[])
+
+# signals for forthcoming webhooks
+# issued when a relationship change occurs on typepad for a member in this group
+following_webhook = Signal(providing_args=["instance", "group"])
+# issued when user edits their profile on typepad
+profile_webhook = Signal(providing_args=["instance", "group"])
+# issued when group metadata and administrator list is modified on typepad
+group_webhook = Signal(providing_args=["group"])

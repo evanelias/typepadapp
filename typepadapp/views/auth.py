@@ -40,6 +40,7 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from oauth import oauth
 
 from typepadapp.models import OAuthClient, Token
+from typepadapp import signals
 
 
 log = logging.getLogger('typepadapp.views.auth')
@@ -116,6 +117,7 @@ def authorize(request):
         token.key = access_token.key
         token.secret = access_token.secret
         token.save()
+        signals.member_joined.send(sender=authorize, instance=authed_user)
 
     # oauth token in authed user session
     request.session['oauth_token'] = token

@@ -27,12 +27,57 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from django.core.cache import cache
+
 import typepad
-from typepadapp.utils.cached import cached_property
+from typepadapp.utils.cached import cached_list, cached_object
+from typepadapp.models.assets import Event
+from typepadapp import signals
+
 
 class Group(typepad.Group):
 
     admin_list = []
-
     def admins(self):
         return self.admin_list
+
+    # @cached_list(typepad.Relationship)
+    # def admins(self, **kwargs):
+    #     if typepad.client.batch_in_progress():
+    #         # add this to the existing batch request
+    #         return self.memberships.filter(admin=True, **kwargs)
+    # 
+    #     # create a new batch request for the admin list
+    #     typepad.client.batch_request()
+    #     ret = self.memberships.filter(admin=True, **kwargs)
+    #     typepad.client.complete_batch()
+    #     return ret
+
+    def cache_prefix(self):
+        key = 'cacheprefix:Group:%s' % self.xid
+        prefix = cache.get(key)
+        if prefix is None:
+            prefix = 1
+            cache.set(key, prefix)
+        return prefix
+
+    def cache_touch(self):
+        try:
+            cache.incr(str('cacheprefix:Group:%s' % self.xid))
+        except ValueError:
+            # ignore in the event that the prefix doesn't exist
+            pass
+
+    def event_stream(self, **kwargs):
+        # event_stream is a list of ids of event objects; to invalidate
+        # this list, use Group.cache_touch(); this will effectively clear
+        # any cached objects that are cached as a subset of the group
+        return self.events.filter(**kwargs)
+
+    def members(self, **kwargs):
+        return self.memberships.filter(member=True, **kwargs)
+
+# Cache population/invalidation
+Group.get_by_url_id = cached_object(Group, invalidate_signals=[signals.group_webhook])(Group.get_by_url_id)
+Group.event_stream = cached_list(Event, by_group=True, invalidate_signals=[signals.asset_created, signals.asset_deleted, signals.favorite_created, signals.favorite_deleted])(Group.event_stream)
+Group.members = cached_list(typepad.Relationship, by_group=True, invalidate_signals=[signals.member_banned, signals.member_unbanned, signals.member_joined, signals.member_left])(Group.members)
