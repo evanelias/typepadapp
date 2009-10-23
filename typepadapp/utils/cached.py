@@ -68,7 +68,8 @@ class CachedTypePadObject(object):
                 cache.set(key, obj)
 
             log.debug("calling filling function for object with key %s" % key)
-            obj = func(*args, callback=cache_callback, **kwargs)
+            kwargs['callback'] = cache_callback
+            obj = func(*args, **kwargs)
             # this is so our callback reference doesn't disappear
             obj._cache_callback = cache_callback
             return obj
