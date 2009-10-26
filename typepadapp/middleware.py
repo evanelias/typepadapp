@@ -143,8 +143,6 @@ class ApplicationMiddleware(object):
     def discover_group(self, request):
         log = logging.getLogger('.'.join((self.__module__, self.__class__.__name__)))
 
-        log.info('Loading group info...')
-
         # check for a cached app/group first
         app_key = 'application:%s' % settings.OAUTH_CONSUMER_KEY
         group_key = 'group:%s' % settings.OAUTH_CONSUMER_KEY
@@ -152,6 +150,8 @@ class ApplicationMiddleware(object):
         app = cache.get(app_key)
         group = cache.get(group_key)
         if app is None or group is None:
+            log.info('Loading group info...')
+
             # Grab the group and app with the default credentials.
             consumer = oauth.OAuthConsumer(settings.OAUTH_CONSUMER_KEY,
                 settings.OAUTH_CONSUMER_SECRET)
