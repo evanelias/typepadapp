@@ -37,21 +37,27 @@ from typepadapp import signals
 
 class Group(typepad.Group):
 
-    admin_list = []
-    def admins(self):
-        return self.admin_list
+    def __init__(self):
+        self.admin_list = None
 
-    # @cached_list(typepad.Relationship)
-    # def admins(self, **kwargs):
-    #     if typepad.client.batch_in_progress():
-    #         # add this to the existing batch request
-    #         return self.memberships.filter(admin=True, **kwargs)
-    # 
-    #     # create a new batch request for the admin list
-    #     typepad.client.batch_request()
-    #     ret = self.memberships.filter(admin=True, **kwargs)
-    #     typepad.client.complete_batch()
-    #     return ret
+    def admins(self):
+        if self.admin_list is None:
+            admin_list_key = 'group:%s:admin_list' % group.url_id
+
+            admin_list = cache.get(admin_list_key)
+            if admin_list is None:
+                typepad.client.batch_request()
+                try:
+                    admin_list = self.memberships.filter(admin=True)
+                    typepad.client.complete_batch()
+                except Exception, exc:
+                    log.error('Error loading admin list %s: %s', self.url_id, str(exc))
+                    raise
+
+                cache.set(admin_list_key, admin_list)
+                self.admin_list = admin_list
+
+        return self.admin_list
 
     def cache_prefix(self):
         key = 'cacheprefix:Group:%s' % self.xid
