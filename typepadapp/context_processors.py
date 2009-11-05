@@ -29,14 +29,19 @@
 
 from django.views import debug
 
-view_settings = dict(((k.lower(), v) for (k, v) in
-                        debug.get_safe_settings().iteritems()))
+view_settings_cache = {}
 
 def settings(request):
     """
     Provides a 'settings' context variable that is a subset of the
     Django settings module (the 'safe' settings).
     """
+
+    host = request.META['HTTP_HOST'].lower()
+    if host not in view_settings_cache:
+        view_settings_cache[host] = dict(((k.lower(), v) for (k, v) in
+                                           debug.get_safe_settings().iteritems()))
+
     return {
-        'settings': view_settings,
+        'settings': view_settings_cache[host],
     }

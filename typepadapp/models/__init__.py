@@ -34,7 +34,7 @@ from users import *
 from profiles import *
 
 
-APPLICATION, GROUP = None, None
+GROUP = None
 
 
 import typepadapp.signals
