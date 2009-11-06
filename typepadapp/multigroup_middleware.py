@@ -38,7 +38,9 @@ class GroupSettings(object):
         self.group_host = ''
 
     def __getattr__(self, name):
-        return self.group_settings.get(name, getattr(self.real_settings, name))
+        if name in self.group_settings:
+            return self.group_settings[name]
+        return getattr(self.real_settings, name)
 
     def get_all_members(self):
         return dir(self) + self.real_settings.get_all_members() + self.group_settings.keys()
