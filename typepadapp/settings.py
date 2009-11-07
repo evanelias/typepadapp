@@ -35,6 +35,10 @@ TYPEPAD_COOKIES = {}
 
 BATCH_REQUESTS = not os.getenv('TYPEPAD_BATCHLESS')
 
+FRONTEND_CACHING = True
+"""Setting that controls whether to use the Django caching framework for
+caching object data retrieved from the TypePad API."""
+
 EVENTS_PER_PAGE = 25
 COMMENTS_PER_PAGE = 50
 MEMBERS_PER_WIDGET = 30

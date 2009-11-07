@@ -41,8 +41,10 @@ from django.core.signals import request_started
 from django.core.exceptions import MiddlewareNotUsed
 
 from batchhttp import client
+
 import typepad
-from typepad import client as tp_client
+
+from typepadapp.signals import post_start
 
 try:
     import resource
@@ -138,6 +140,7 @@ class RequestStatTracker(client.Request):
             }
             return old_callback(uri, httpresponse, body)
         callback.alive = old_callback.alive
+        callback.orig_callback = old_callback
         self.callback = callback
 client.Request = RequestStatTracker
 
@@ -178,23 +181,26 @@ class BatchRequestStatTracker(client.BatchRequest):
 client.BatchRequest = BatchRequestStatTracker
 
 
-class TypePadClientStatTracker(typepad.TypePadClient):
-    """
-    Replacement for BatchClient that retains all executed requests in `self.requests`.
-    """
-    requests = []
+def get_typepad_client(superclass):
+    class TypePadClientStatTracker(superclass):
+        """
+        Replacement for BatchClient that retains all executed requests in `self.requests`.
+        """
+        requests = []
 
-    def batch_request(self):
-        request = super(TypePadClientStatTracker, self).batch_request()
-        request.opened_stack = tidy_stacktrace(traceback.extract_stack())
+        def batch_request(self):
+            request = super(TypePadClientStatTracker, self).batch_request()
+            request.opened_stack = tidy_stacktrace(traceback.extract_stack())
 
-    def complete_batch(self):
-        self.batchrequest.closed_stack = tidy_stacktrace(traceback.extract_stack())
-        self.requests.append(self.batchrequest)
-        super(TypePadClientStatTracker, self).complete_batch()
-tp_client.__class__ = TypePadClientStatTracker
+        def complete_batch(self):
+            self.batchrequest.closed_stack = tidy_stacktrace(traceback.extract_stack())
+            self.requests.append(self.batchrequest)
+            super(TypePadClientStatTracker, self).complete_batch()
+    return TypePadClientStatTracker
+
+
 def reset_requests(*args, **kwargs):
-    tp_client.requests = []
+    typepad.client.requests = []
 request_started.connect(reset_requests)
 
 
@@ -229,28 +235,28 @@ class DebugToolbar(object):
         return ''
 
     def batch_request_count(self):
-        return len(tp_client.requests)
+        return len(typepad.client.requests)
 
     def subrequest_count(self):
-        return sum([len(request.stats['subrequests']) for request in tp_client.requests])
+        return sum([len(request.stats['subrequests']) for request in typepad.client.requests])
 
     def request_time(self):
-        return sum([request.stats['time'] for request in tp_client.requests])
+        return sum([request.stats['time'] for request in typepad.client.requests])
 
     def requests(self):
-        return tp_client.requests
+        return typepad.client.requests
 
     def typepad_query_count(self):
         "The total number of queries performed by the backend for all batch requests."
-        return sum([int(request.stats['typepad_query_count']) for request in tp_client.requests if 'typepad_query_count' in request.stats])
+        return sum([int(request.stats['typepad_query_count']) for request in typepad.client.requests if 'typepad_query_count' in request.stats])
 
     def typepad_time(self):
-        return sum([float(request.stats['typepad_time']) for request in tp_client.requests if 'typepad_time' in request.stats])
+        return sum([float(request.stats['typepad_time']) for request in typepad.client.requests if 'typepad_time' in request.stats])
 
     def _get_typepad_stat(self, name):
         """Tries to find the stat identified by `name` in a request. Assumption is
         that the stat is the same for all subrequests so we return the first one."""
-        for request in tp_client.requests:
+        for request in typepad.client.requests:
             try:
                 return request.stats[name]
             except KeyError:
@@ -276,6 +282,9 @@ class DebugToolbarMiddleware(object):
         # If we're not in debug mode, disable this middleware.
         if not settings.DEBUG:
             raise MiddlewareNotUsed
+        else:
+            # Remap typepad.client's class to TypePadClientStatTracker
+            typepad.client.__class__ = get_typepad_client(typepad.client.__class__)
 
     def process_request(self, request):
         """Setup the request monitor."""

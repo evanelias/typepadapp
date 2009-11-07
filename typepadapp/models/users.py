@@ -40,8 +40,6 @@ from django.core.cache import cache
 import remoteobjects
 import typepad
 import typepadapp.models
-from typepadapp import signals
-from typepadapp.utils.cached import cached_list, cached_object
 
 
 class User(typepad.User):
@@ -210,31 +208,14 @@ class User(typepad.User):
         End Django User model properties and methods
     '''
 
-    assets = typepad.fields.Link(typepad.ListOf('Asset'))
-
     def group_events(self, group, start_index=1, max_results=None, **kwargs):
         if max_results is None:
             max_results = settings.EVENTS_PER_PAGE
         return self.events.filter(by_group=group, start_index=start_index,
             max_results=max_results, **kwargs)
 
-    def group_assets(self, group, start_index=1, max_results=None, type=None, **kwargs):
-        if max_results is None:
-            max_results = settings.EVENTS_PER_PAGE
-        kwargs.update({
-            'by_group': group,
-            'start_index': start_index,
-            'max_results': max_results,
-        })
-        if type is not None:
-            kwargs[type] = True
-        return self.assets.filter(**kwargs)
-
-    def group_comments(self, group, start_index=1, max_results=None, **kwargs):
-        if max_results is None:
-            max_results = settings.COMMENTS_PER_PAGE
-        return self.comments.filter(by_group=group, start_index=start_index,
-            max_results=max_results, **kwargs)
+    def group_memberships(self, group, **kwargs):
+        return self.memberships.filter(by_group=group, **kwargs)
 
     def group_notifications(self, group, start_index=1, max_results=None, **kwargs):
         if max_results is None:
@@ -259,9 +240,6 @@ class User(typepad.User):
                 start_index=start_index, max_results=max_results, **kwargs)
         return self.relationships.filter(follower=True,
             start_index=start_index, max_results=max_results, **kwargs)
-
-    def elsewhere(self, **kwargs):
-        return self.elsewhere_accounts.filter(**kwargs)
 
     @property
     def edit_url(self):
@@ -320,7 +298,7 @@ class User(typepad.User):
         return None
 
     def cache_prefix(self):
-        key = 'cacheprefix:User:%s' % self.xid
+        key = 'cacheprefix:User:%s' % (self.url_id or self.xid)
         prefix = cache.get(key)
         if prefix is None:
             prefix = 1
@@ -328,15 +306,48 @@ class User(typepad.User):
         return prefix
 
     def cache_touch(self):
-        cace.incr('cacheprefix:User:%s' % self.xid)
+        cace.incr('cacheprefix:User:%s' % (self.url_id or self.xid))
 
 
-# Cache support
-User.get_by_url_id = cached_object(User, invalidate_signals=[signals.member_banned, signals.member_unbanned])(User.get_by_url_id)
-User.group_notifications = cached_list(typepad.Event, invalidate_signals=[signals.asset_created, signals.asset_deleted])(User.group_notifications)
+### Caching support
 
-# We can't effectively signal to invalidate these lists because
-# follow/unfollow actions happen on typepad
-User.elsewhere = cached_list(typepad.ElsewhereAccount, invalidate_signals=[signals.profile_webhook])(User.elsewhere)
-User.following = cached_list(typepad.Relationship, invalidate_signals=[signals.following_webhook, signals.member_left, signals.member_joined])(User.following)
-User.followers = cached_list(typepad.Relationship, invalidate_signals=[signals.following_webhook, signals.member_left, signals.member_joined])(User.followers)
+if settings.FRONTEND_CACHING:
+    from typepadapp.caching import cache_link, cache_object, \
+        invalidate_link, invalidate_object
+    from typepadapp import signals
+
+    User.get_by_url_id = cache_object(User.get_by_url_id)
+    #signals.member_banned, signals.member_unbanned
+
+    User.events = cache_link(User.events)
+    user_events_invalidator = invalidate_link(
+        key=lambda sender, group=None, instance=None, **kwargs:
+            instance and instance.author and group and ("/users/%s/notifications/@by-group/%s.json" % \
+            (instance.author.xid, group.xid)),
+        signals=[signals.asset_created, signals.asset_deleted],
+        name="user notifications for group cache invalidation for asset_created/asset_deleted signals")
+
+    User.notifications = cache_link(User.notifications)
+    # signals.asset_created, signals.asset_deleted
+
+    # We can't effectively signal to invalidate these lists because
+    # follow/unfollow actions happen on typepad
+    User.memberships = cache_link(User.memberships)
+    # signals.member_left, signals.member_joined
+
+    User.elsewhere_accounts = cache_link(User.elsewhere_accounts)
+    # signals.profile_webhook
+
+    User.relationships = cache_link(User.relationships)
+    # signals.following_webhook, signals.member_left, signals.member_joined
+
+    # does these endpoints really work??
+    # User.comments = cache_link(User.comments)
+    # User.assets = cache_link(User.assets)
+
+    User.favorites = cache_link(User.favorites)
+    user_favorites_invalidator = invalidate_link(
+        key=lambda sender, instance=None, **kwargs:
+            instance and ("/users/%s/favorites/%s.json" % instance.author.xid, instance.xid),
+        signals=[signals.favorite_created, signals.favorite_deleted],
+        name="user favorites stream for favorite created/deleted signals")

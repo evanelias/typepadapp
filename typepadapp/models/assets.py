@@ -39,7 +39,6 @@ from remoteobjects import fields, ListObject, RemoteObject
 
 import typepad
 
-from typepadapp.utils.cached import cached_list, cached_object
 from typepadapp import signals
 import typepadapp.models
 
@@ -52,7 +51,7 @@ class ListObjectSignalDispatcher(object):
     """
     def post(self, obj, *args, **kwargs):
         super(ListObjectSignalDispatcher, self).post(obj, *args, **kwargs)
-        signals.asset_created.send(sender=self.__class__, instance=obj)
+        signals.post_save.send(sender=self.__class__, instance=obj)
 ListObject.__bases__ = (ListObjectSignalDispatcher,) + ListObject.__bases__
 
 
@@ -113,9 +112,6 @@ class Asset(typepad.Asset):
         if max_results is None:
             max_results = settings.COMMENTS_PER_PAGE
         return self.comments.filter(start_index=start_index, max_results=max_results, **kwargs)
-
-    def get_favorites(self, **kwargs):
-        return self.favorites.filter(**kwargs)
 
     @property
     def user(self):
@@ -333,11 +329,29 @@ class Event(typepad.Event):
 
 ### Cache support
 
-import logging
-cachelog = logging.getLogger('typepadapp.cache')
+if settings.FRONTEND_CACHING:
+    from typepadapp.caching import cache_link, cache_object, \
+        invalidate_link, invalidate_object
 
+    Asset.get_by_url_id = cache_object(Asset.get_by_url_id)
+    # cache invalidation of parent asset when a new comment is created
+    asset_invalidator = invalidate_object( \
+        key=lambda sender, parent=None, **kwargs: \
+            parent and "Asset:%s" % parent.xid,
+        signals=[signals.asset_created, signals.asset_deleted, signals.favorite_created, signals.favorite_deleted],
+        name="asset object invalidation for commenting/favoriting")
 
-# Cache support
-Asset.get_comments = cached_list(Comment, invalidate_signals=[signals.asset_created, signals.asset_deleted])(Asset.get_comments)
-Asset.get_by_url_id = cached_object(Asset, invalidate_signals=[signals.asset_created, signals.asset_deleted])(Asset.get_by_url_id)
-Asset.get_favorites = cached_list(Favorite, invalidate_signals=[signals.favorite_created, signals.favorite_deleted])(Asset.get_favorites)
+    Asset.comments = cache_link(Asset.comments)
+    asset_comments_invalidator = invalidate_link( \
+        key=lambda sender, parent=None, instance=None, **kwargs: \
+            isinstance(instance, Comment) and parent and "/assets/%s/comments.json" % parent.xid,
+        signals=[signals.asset_created, signals.asset_deleted],
+        name="asset comments list invalidation for commenting")
+
+    Asset.favorites = cache_link(Asset.favorites)
+    # cache invalidation for asset object cache when a favorite is created/deleted
+    asset_favorites_invalidator = invalidate_link( \
+        key=lambda sender, parent=None, **kwargs: \
+            parent and '/assets/%s/favorites.json' % parent.xid,
+        signals=[signals.favorite_created, signals.favorite_deleted],
+        name="asset favorite list invalidation for favoriting")

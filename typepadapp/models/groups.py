@@ -28,21 +28,23 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from django.core.cache import cache
+from django.conf import settings
 
 import typepad
-from typepadapp.utils.cached import cached_list, cached_object
 from typepadapp.models.assets import Event
 from typepadapp import signals
 
 
 class Group(typepad.Group):
 
+    admin_list = None
+
     def __init__(self):
         self.admin_list = None
 
     def admins(self):
         if self.admin_list is None:
-            admin_list_key = 'group:%s:admin_list' % group.url_id
+            admin_list_key = 'group:%s:admin_list' % self.url_id
 
             admin_list = cache.get(admin_list_key)
             if admin_list is None:
@@ -55,7 +57,8 @@ class Group(typepad.Group):
                     raise
 
                 cache.set(admin_list_key, admin_list)
-                self.admin_list = admin_list
+
+            self.admin_list = admin_list
 
         return self.admin_list
 
@@ -74,16 +77,23 @@ class Group(typepad.Group):
             # ignore in the event that the prefix doesn't exist
             pass
 
-    def event_stream(self, **kwargs):
-        # event_stream is a list of ids of event objects; to invalidate
-        # this list, use Group.cache_touch(); this will effectively clear
-        # any cached objects that are cached as a subset of the group
-        return self.events.filter(**kwargs)
 
-    def members(self, **kwargs):
-        return self.memberships.filter(member=True, **kwargs)
+### Cache support
 
-# Cache population/invalidation
-Group.get_by_url_id = cached_object(Group, invalidate_signals=[signals.group_webhook])(Group.get_by_url_id)
-Group.event_stream = cached_list(Event, by_group=True, invalidate_signals=[signals.asset_created, signals.asset_deleted, signals.favorite_created, signals.favorite_deleted])(Group.event_stream)
-Group.members = cached_list(typepad.Relationship, by_group=True, invalidate_signals=[signals.member_banned, signals.member_unbanned, signals.member_joined, signals.member_left])(Group.members)
+if settings.FRONTEND_CACHING:
+    from typepadapp.caching import cache_link, cache_object, \
+        invalidate_link, invalidate_object
+
+    # Cache population/invalidation
+    Group.get_by_url_id = cache_object(Group.get_by_url_id)
+    # invalidate with: signals.group_webhook
+
+    Group.events = cache_link(Group.events)
+    group_events_invalidator = invalidate_link(
+        key=lambda sender, group=None, **kwargs:
+            group and ('/groups/%s/events.json' % group.xid),
+        signals=[signals.asset_created, signals.asset_deleted],
+        name="Group events invalidation for asset_created/asset_deleted signal")
+
+    Group.memberships = cache_link(Group.memberships)
+    # invalidate with signals.member_joined, signals.member_left

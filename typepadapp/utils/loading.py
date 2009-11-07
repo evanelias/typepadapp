@@ -116,6 +116,14 @@ class DjangoHttplib2Cache(object):
 
 
 def configure_typepad_client(**kwargs):
+    if settings.FRONTEND_CACHING:
+        # this will create a typepad.client that caches
+        from typepadapp.caching import CachingTypePadClient
+        typepad.client = CachingTypePadClient()
+
+    if not typepad.client:
+        typepad.client = TypePadClient()
+
     typepad.client.endpoint = settings.BACKEND_URL
 
     log = logging.getLogger('typepadapp.utils.loading')
