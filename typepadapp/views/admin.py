@@ -69,7 +69,10 @@ def generate_members_csv(request):
     offset = 1
     typepad.client.batch_request()
     request.user = get_user(request)
-    members = request.group.memberships.filter(start_index=offset, member=True)
+    kwargs = {"start_index": offset, "member": True}
+    if settings.FRONTEND_CACHING:
+        kwargs['nocache'] = True
+    members = request.group.memberships.filter(**kwargs)
     typepad.client.complete_batch()
 
     # verify the user is an admin
@@ -92,7 +95,8 @@ def generate_members_csv(request):
 
             # fetch typepad api data
             typepad.client.batch_request()
-            more = request.group.memberships.filter(start_index=offset, member=True)
+            kwargs['start_index'] = offset
+            more = request.group.memberships.filter(**kwargs)
             typepad.client.complete_batch()
 
             # stop if the result is an empty list

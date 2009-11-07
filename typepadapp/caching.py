@@ -129,7 +129,7 @@ class CachedTypePadLinkPromise(object):
 
         """
 
-        cache_key = self._list_cache_key
+        cache_key = self.cache_key
         ids = cache.get(cache_key)
 
         start = self._start
@@ -140,8 +140,8 @@ class CachedTypePadLinkPromise(object):
             items = []
 
             if ids[0] > 0:
-                if end > ids[0]:
-                    end = ids[0]
+                if end - start > ids[0]:
+                    end = ids[0] + 1
 
                 subset = ids[start:end]
                 itemkeys = []
@@ -156,10 +156,14 @@ class CachedTypePadLinkPromise(object):
                     for key in itemkeys:
                         if key not in itemdict or itemdict[key] is None:
                             items = None
+                            log.debug("cache partial miss for key %s" % cache_key)
                             break
                         items.append(itemdict[key])
+                else:
+                    log.debug("cache subset miss for key %s; ids[0] %d, start %d, end %d" % (cache_key, ids[0], start, end))
 
             if (items is not None) and ((len(items) > 0) or (ids[0] == 0)):
+                log.debug("cache hit for key %s" % cache_key)
                 l = typepad.ListObject()
                 l._delivered = True
                 l.entries = items
@@ -167,6 +171,8 @@ class CachedTypePadLinkPromise(object):
                 l.total_results = ids[0]
                 self._inst = l
                 return True
+        else:
+            log.debug("cache key miss for key %s" % cache_key)
 
         return False
 
@@ -195,15 +201,25 @@ class CachedTypePadLinkPromise(object):
         ids[0] = self._inst.total_results
         idx = start
         for item in self._inst.entries:
-            item_key = self._item_cache_key_pattern % item.xid
+            item_key = item.cache_key
+            log.debug("setting key %s" % item_key)
             cache.set(item_key, item)
             ids[idx] = item.xid
             idx += 1
         self._id_cache = ids
-        cache.set(self._list_cache_key, ids)
+
+        # hmm. we need to rebuild the list cache key based on the
+        # originating url; httpobject changes the _location element
+        # on us, like for member urls with a preferred username
+        # (the username-based urls change to xid urls)
+        # list_key = self.cache_key
+        list_key = 'listcache:' + args[0].split('?')[0]
+        log.debug("setting key %s" % list_key)
+
+        cache.set(list_key, ids)
 
     @property
-    def _list_cache_key(self):
+    def cache_key(self):
         """Builds a key identifier for caching the list itself.
 
         This is "listcache:URL", where URL is the location of the
@@ -256,6 +272,11 @@ class CachedTypePadLinkPromise(object):
 
         """
 
+        # extra argument to allow requests without caching
+        if 'nocache' in kwargs and kwargs['nocache']:
+            del kwargs['nocache']
+            return self._inst.filter(*args, **kwargs)
+
         if 'start_index' in kwargs:
             self._start = kwargs['start_index']
         if 'max_results' in kwargs:
@@ -287,6 +308,9 @@ class CachedTypePadObject(object):
         self.cache_key = self.cache_key % func.im_self.__name__
 
     def __call__(self, *args, **kwargs):
+        if 'nocache' in kwargs and kwargs['nocache']:
+            return self.func(*args, **kwargs)
+
         key = self.cache_key % args[0]
         obj = cache.get(key)
         if obj is not None:
@@ -296,6 +320,7 @@ class CachedTypePadObject(object):
         def cache_callback(*args, **kwargs):
             del obj._cache_callback
             obj.update_from_response(*args, **kwargs)
+            log.debug("setting key %s" % key)
             cache.set(key, obj)
 
         kwargs['callback'] = cache_callback
@@ -304,9 +329,26 @@ class CachedTypePadObject(object):
         obj._cache_callback = cache_callback
         return obj
 
-
 cache_object = CachedTypePadObject
 
+def make_tpobject_cache_key(self):
+    """Property method we will graft to TypePadObject to construct
+    a cache key suitable for our caching layer.
+
+    """
+
+    return "objectcache:%s:%s" % (self.cache_namespace, self.xid)
+
+typepad.TypePadObject.cache_key = property(make_tpobject_cache_key)
+
+def make_tpobject_cache_namespace(self):
+    """Provides a namespace for caching a class of objects.
+    
+    """
+
+    return self.__class__.__name__
+
+typepad.TypePadObject.cache_namespace = property(make_tpobject_cache_namespace)
 
 class CachedTypePadLink(object):
 
@@ -347,6 +389,10 @@ class CacheInvalidator(object):
         if callable(self.key):
             try:
                 key = self.key(sender, **kwargs)
+                # if we get back some object that has a cache_key,
+                # use the value of the cache_key property
+                if hasattr(key, 'cache_key'):
+                    key = key.cache_key
             except:
                 # bah, just ignore failed invalidations
                 return
@@ -358,45 +404,8 @@ class CacheInvalidator(object):
     def __call__(self, sender, **kwargs):
         key = self.cache_key(sender, **kwargs)
         if key is not None:
+            log.debug("invalidating key %s" % key)
             cache.delete(key)
 
 
-class InvalidateTypePadObject(CacheInvalidator):
-
-    """Cache invalidation for `CachedTypePadObject` caches.
-
-    """
-
-    def cache_key(self, *args, **kwargs):
-        """Prefixes the cache key with ``objectcache:``.
-
-        """
-
-        key = super(InvalidateTypePadObject, self).cache_key(*args, **kwargs)
-        return key and "objectcache:%s" % key
-
-
-class InvalidateTypePadLink(CacheInvalidator):
-
-    def cache_key(self, *args, **kwargs):
-        """Prefixes the cache key with ``listcache:``.
-
-        It also amends the location cache key with a domain, taken from
-        `typepad.client.endpoint`.
-
-        """
-
-        key = super(InvalidateTypePadLink, self).cache_key(*args, **kwargs)
-
-        if key is not None and isinstance(key, basestring):
-            if key.startswith('/'):
-                endpoint = typepad.client.endpoint
-                if not endpoint.endswith('/'):
-                    endpoint += '/'
-                key = key.replace("/", endpoint, 1)
-            key = "listcache:%s" % key
-
-        return key
-
-invalidate_object = InvalidateTypePadObject
-invalidate_link = InvalidateTypePadLink
+invalidate_rule = CacheInvalidator

@@ -312,18 +312,21 @@ class User(typepad.User):
 ### Caching support
 
 if settings.FRONTEND_CACHING:
-    from typepadapp.caching import cache_link, cache_object, \
-        invalidate_link, invalidate_object
+    from typepadapp.caching import cache_link, cache_object, invalidate_rule
     from typepadapp import signals
+
+    def make_user_alias_cache_key(self):
+        """Attempts to use a caching key of the user's username, if available."""
+        return self.preferred_username or self.url_id
+    User.cache_key = property(make_user_alias_cache_key)
 
     User.get_by_url_id = cache_object(User.get_by_url_id)
     #signals.member_banned, signals.member_unbanned
 
     User.events = cache_link(User.events)
-    user_events_invalidator = invalidate_link(
+    user_events_invalidator = invalidate_rule(
         key=lambda sender, group=None, instance=None, **kwargs:
-            instance and instance.author and group and ("/users/%s/notifications/@by-group/%s.json" % \
-            (instance.author.xid, group.xid)),
+            instance and instance.author and group and instance.author.notifications.filter(by_group=group),
         signals=[signals.asset_created, signals.asset_deleted],
         name="user notifications for group cache invalidation for asset_created/asset_deleted signals")
 
@@ -346,8 +349,7 @@ if settings.FRONTEND_CACHING:
     # User.assets = cache_link(User.assets)
 
     User.favorites = cache_link(User.favorites)
-    user_favorites_invalidator = invalidate_link(
-        key=lambda sender, instance=None, **kwargs:
-            instance and ("/users/%s/favorites/%s.json" % instance.author.xid, instance.xid),
+    user_favorites_invalidator = invalidate_rule(
+        key=lambda sender, instance=None, **kwargs: instance and instance.author.favorites,
         signals=[signals.favorite_created, signals.favorite_deleted],
         name="user favorites stream for favorite created/deleted signals")

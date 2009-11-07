@@ -330,28 +330,29 @@ class Event(typepad.Event):
 ### Cache support
 
 if settings.FRONTEND_CACHING:
-    from typepadapp.caching import cache_link, cache_object, \
-        invalidate_link, invalidate_object
+    from typepadapp.caching import cache_link, cache_object, invalidate_rule
+
+    # this is so we cache all Post, Video, Comment, etc., assets using
+    # the same namespace.
+    Asset.cache_namespace = "Asset"
 
     Asset.get_by_url_id = cache_object(Asset.get_by_url_id)
     # cache invalidation of parent asset when a new comment is created
-    asset_invalidator = invalidate_object( \
-        key=lambda sender, parent=None, **kwargs: \
-            parent and "Asset:%s" % parent.xid,
+    asset_invalidator = invalidate_rule(
+        key=lambda sender, parent=None, **kwargs: parent,
         signals=[signals.asset_created, signals.asset_deleted, signals.favorite_created, signals.favorite_deleted],
         name="asset object invalidation for commenting/favoriting")
 
     Asset.comments = cache_link(Asset.comments)
-    asset_comments_invalidator = invalidate_link( \
-        key=lambda sender, parent=None, instance=None, **kwargs: \
-            isinstance(instance, Comment) and parent and "/assets/%s/comments.json" % parent.xid,
+    asset_comments_invalidator = invalidate_rule(
+        key=lambda sender, parent=None, instance=None, **kwargs:
+            isinstance(instance, Comment) and parent and parent.comments,
         signals=[signals.asset_created, signals.asset_deleted],
         name="asset comments list invalidation for commenting")
 
     Asset.favorites = cache_link(Asset.favorites)
     # cache invalidation for asset object cache when a favorite is created/deleted
-    asset_favorites_invalidator = invalidate_link( \
-        key=lambda sender, parent=None, **kwargs: \
-            parent and '/assets/%s/favorites.json' % parent.xid,
+    asset_favorites_invalidator = invalidate_rule(
+        key=lambda sender, parent=None, **kwargs: parent and parent.favorites,
         signals=[signals.favorite_created, signals.favorite_deleted],
         name="asset favorite list invalidation for favoriting")

@@ -39,59 +39,37 @@ class Group(typepad.Group):
 
     admin_list = None
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super(Group, self).__init__(*args, **kwargs)
         self.admin_list = None
 
     def admins(self):
         if self.admin_list is None:
-            admin_list_key = 'group:%s:admin_list' % self.url_id
+            admin_list_key = self.cache_key + ':admin_list'
 
             admin_list = cache.get(admin_list_key)
             if admin_list is None:
-                typepad.client.batch_request()
-                try:
-                    admin_list = self.memberships.filter(admin=True)
-                    typepad.client.complete_batch()
-                except Exception, exc:
-                    log.error('Error loading admin list %s: %s', self.url_id, str(exc))
-                    raise
-
+                admin_list = self.memberships.filter(admin=True, batch=False, nocache=True)
+                admin_list.deliver()
                 cache.set(admin_list_key, admin_list)
 
             self.admin_list = admin_list
 
         return self.admin_list
 
-    def cache_prefix(self):
-        key = 'cacheprefix:Group:%s' % self.xid
-        prefix = cache.get(key)
-        if prefix is None:
-            prefix = 1
-            cache.set(key, prefix)
-        return prefix
-
-    def cache_touch(self):
-        try:
-            cache.incr(str('cacheprefix:Group:%s' % self.xid))
-        except ValueError:
-            # ignore in the event that the prefix doesn't exist
-            pass
-
 
 ### Cache support
 
 if settings.FRONTEND_CACHING:
-    from typepadapp.caching import cache_link, cache_object, \
-        invalidate_link, invalidate_object
+    from typepadapp.caching import cache_link, cache_object, invalidate_rule
 
     # Cache population/invalidation
     Group.get_by_url_id = cache_object(Group.get_by_url_id)
     # invalidate with: signals.group_webhook
 
     Group.events = cache_link(Group.events)
-    group_events_invalidator = invalidate_link(
-        key=lambda sender, group=None, **kwargs:
-            group and ('/groups/%s/events.json' % group.xid),
+    group_events_invalidator = invalidate_rule(
+        key=lambda sender, group=None, **kwargs: group and group.events,
         signals=[signals.asset_created, signals.asset_deleted],
         name="Group events invalidation for asset_created/asset_deleted signal")
 
