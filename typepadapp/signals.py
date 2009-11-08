@@ -41,6 +41,8 @@ member_left = Signal(providing_args=["instance", "group"])
 member_banned = Signal(providing_args=["instance", "group"])
 member_unbanned = Signal(providing_args=["instance", "group"])
 
+post_save = Signal(providing_args=["instance"])
+
 # issued when app is starting up
 post_start = Signal(providing_args=[])
 
