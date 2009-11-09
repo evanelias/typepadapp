@@ -46,9 +46,12 @@ import typepad
 
 def parse_etags(etag_str):
     """
-    Parses a string with one or several etags passed in If-None-Match and
-    If-Match headers by the rules in RFC 2616. Returns a list of etags
-    without surrounding double quotes (") and unescaped from \<CHAR>.
+    Parses a string with one or several etags passed in ``If-None-Match`` and
+    ``If-Match`` headers by the rules in RFC 2616.
+
+    Returns a list of etags without surrounding double quotes (``"``) and
+    unescaped from ``\<CHAR>``.
+
     """
     etags = re.findall(r'(?:W/)?"((?:\\.|[^"])*)"', etag_str)
     if not etags:
@@ -62,14 +65,15 @@ class GenericView(http.HttpResponse):
     """
     A base view class for TypePadView.
 
-    This class by default permits 'GET' requests, and will automatically
-    handle conditional requests (respecting If-Modified-Since and Etag HTTP
-    headers).
+    This class by default permits ``GET`` requests, and will automatically
+    handle conditional requests (respecting ``If-Modified-Since`` and Etag
+    HTTP headers).
 
-    This class inherits from ``HttpResponse``. When invoked, the view is
-    instantiated, and given the request and url parameters just like a
-    Django view function is. The resulting value is the response that is
-    used for the active request.
+    This class inherits from `HttpResponse`. When invoked, the view is
+    instantiated, and given the request and url parameters just like a Django
+    view function is. The resulting value is the response that is used for the
+    active request.
+
     """
     methods = ('GET',)
 
@@ -97,6 +101,7 @@ class GenericView(http.HttpResponse):
         dictionaries, whose ``update`` methods are called. This means that any
         headers or cookies which are present in this response but not the
         argument are preserved.
+
         """
         self._charset = response._charset
         self._is_string = response._is_string
@@ -191,19 +196,21 @@ class GenericView(http.HttpResponse):
         Returns a value representing the last modification timestamp of the
         view.
 
-        To support If-Modified-Since headers, return a timestamp representing
-        the last-modified date of the view. This may be based on a physical
-        file timestamp, or the last modified element of the view being
-        published.
+        To support ``If-Modified-Since`` headers, return a timestamp
+        representing the last-modified date of the view. This may be based on
+        a physical file timestamp, or the last modified element of the view
+        being published.
+
         """
         return None
 
     def etag(self, request, *args, **kwargs):
         """
-        Returns a value used as the Etag for the view.
+        Returns a value used as the ETag for the view.
 
-        To support If-None-Match Etag HTTP headers, return an appropriate
+        To support ``If-None-Match`` ETag HTTP headers, return an appropriate
         etag here.
+
         """
         return None
 
@@ -211,8 +218,9 @@ class GenericView(http.HttpResponse):
         """
         Handles ``GET`` requests.
 
-        Subclasses should override this method to handle GET requests. The
-        return value should be a HttpResponse instance.
+        Subclasses should override this method to handle ``GET`` requests. The
+        return value should be an `HttpResponse` instance.
+
         """
         return http.HttpResponse()
 
@@ -224,17 +232,18 @@ class GenericView(http.HttpResponse):
         Subclasses can override this method which is invoked after the class
         has been initialized but prior to the dispatch to the ``GET``,
         ``POST``, etc. handler.
+
         """
         pass
 
     def render_to_response(self, template, more_context=None, **kwargs):
         """
-        A shortcut method that runs the render_to_response
-        Django shortcut.
+        A shortcut method that runs the `render_to_response` Django shortcut.
 
         It will apply the view's context object as the context for rendering
         the template. Additional context variables may be passed in, similar
-        to the render_to_response shortcut.
+        to the `render_to_response` shortcut.
+
         """
         if more_context:
             self.context.push()
@@ -246,6 +255,7 @@ class GenericView(http.HttpResponse):
 
 
 class TypePadView(GenericView):
+
     """
     A subclass of the ``GenericView`` class that adds TypePad-specific
     features and behavior.
@@ -258,49 +268,49 @@ class TypePadView(GenericView):
     batch request is made to the TypePad API for all data elements requested
     in the ``select_from_typepad()`` method.
 
-    View properties:
+    .. rubric:: Class attributes:
 
-    paginate_by: specify this value if the view is to support pagination
-        of a list of objects. An ``object_list`` member is expected to be
-        assigned in order to provide context for pagination. A template
-        context variable named ``page_obj`` is also set, being an instance
-        of ``FinitePaginator``.
-    object_list: Assign to this member when the view is to paginate a
-        list of objects. This member is also assigned to the
-    offset: When paginating a list of objects, this member is
-        automatically assigned, based on the ``page`` parameter to the view
-        and the value of the ``paginate_by`` property. This value may
-        be used to control the selection of rows used to populate the
-        ``object_list`` member during the ``setup()`` or
-        ``select_from_typepad()`` methods.
-    limit: Assigned as the number of rows to select for the ``object_list``
-        member. This is typically set to ``paginate_by``.
-    paginate_template: Assign a string to control the format of
-        next, previous links.
-    form: The Django form class that is to be used for any editable object
-        the view is presenting. If this member is set, it is instantiated
-        during the ``setup()`` method and during a ``POST`` request, the
-        values of the ``POST`` are given to it. Once the form is instantiated
-        it is assigned to a ``form_instance`` member. The form is also
-        assigned to the template context as ``form``.
-    template_name: Assign the name of a Django template file to be
-        used for ``GET`` requests. The value of this property is stripped of
-        any path and suffix and assigned to the 'view' template context
-        variable.
-    login_required: If the view requires an authenticated user to run,
-        set this member to True. It relies on the settings.LOGIN_URL value
-        for redirecting the user to a login form.
+    * ``paginate_by``: specify this value if the view is to support pagination
+      of a list of objects. An ``object_list`` member is expected to be
+      assigned in order to provide context for pagination. A template context
+      variable named ``page_obj`` is also set, being an instance of
+      ``FinitePaginator``.
+    * ``object_list``: Assign to this member when the view is to paginate a
+      list of objects. This member is also assigned to the
+    * ``offset``: When paginating a list of objects, this member is
+      automatically assigned, based on the ``page`` parameter to the view and
+      the value of the ``paginate_by`` property. This value may be used to
+      control the selection of rows used to populate the ``object_list``
+      member during the ``setup()`` or ``select_from_typepad()`` methods.
+    * ``limit``: Assigned as the number of rows to select for the
+      ``object_list`` member. This is typically set to ``paginate_by``.
+    * ``paginate_template``: Assign a string to control the format of next,
+      previous links.
+    * ``form``: The Django form class that is to be used for any editable
+      object the view is presenting. If this member is set, it is instantiated
+      during the ``setup()`` method and during a ``POST`` request, the values
+      of the ``POST`` are given to it. Once the form is instantiated it is
+      assigned to a ``form_instance`` member. The form is also assigned to the
+      template context as ``form``.
+    * ``template_name``: Assign the name of a Django template file to be used
+      for ``GET`` requests. The value of this property is stripped of any path
+      and suffix and assigned to the 'view' template context variable.
+    * ``login_required``: If the view requires an authenticated user to run,
+      set this member to True. It relies on the settings.LOGIN_URL value for
+      redirecting the user to a login form.
 
-    Context variables:
+    .. rubric:: Template variables:
 
     The following variables are assigned by default and available for any
     template.
 
-    view: Assigned as the basename of the ``template_name`` member, minus any
-        file path and extension.
-    form: The value of the ``form_instance`` member.
-    page_obj: Set when ``paginate_by`` member is assigned.
+    * ``view``: Assigned as the basename of the ``template_name`` member,
+      minus any file path and extension.
+    * ``form``: The value of the ``form_instance`` member.
+    * ``page_obj``: Set when ``paginate_by`` member is assigned.
+
     """
+
     paginate_by = None
     paginate_template = None
     form = None
@@ -365,6 +375,7 @@ class TypePadView(GenericView):
 
         In addition, the pagination state is set if the ``paginate_by``
         attribute is assigned.
+
         """
         # Pagination setup
         if self.paginate_by:
@@ -431,6 +442,7 @@ class TypePadView(GenericView):
         In the event that the form is invalid, the response is unset,
         the TypePad API requests for the view are issued and the 'get' handler
         is invoked to return a response.
+
         """
         response = super(TypePadView, self).dispatch(request, *args, **kwargs)
         if self.form and (request.method == 'POST') and (response is None):
@@ -448,6 +460,7 @@ class TypePadView(GenericView):
         When the ``template_name`` attribute is assigned, the template
         is rendered as the response to the request. Otherwise, an
         empty HttpResponse is returned.
+
         """
         template = view = kwargs.get('template_name', self.template_name)
         if template is None:
@@ -456,8 +469,9 @@ class TypePadView(GenericView):
 
 
 class TypePadFeed(Feed):
-    """ A subclass of the Django ``Feed`` class that handles selecting data
-    from the TypePad client library. """
+
+    """A subclass of the Django `Feed` class that handles selecting data from
+    the TypePad client library."""
 
     feed_type = Atom1Feed
 
@@ -472,8 +486,8 @@ class TypePadFeed(Feed):
 
 
 class TypePadEventFeed(TypePadFeed):
-    """ A subclass of the ``TypePadFeed`` class that handles serving
-    Asset items. """
+
+    """A subclass of `TypePadFeed` that handles serving `Asset` items."""
 
     def item_link(self, event):
         return event.object.get_absolute_url()
