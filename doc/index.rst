@@ -15,6 +15,7 @@ Contents:
    :maxdepth: 2
 
    settings
+   views
    localprofile
 
 Indices and tables
