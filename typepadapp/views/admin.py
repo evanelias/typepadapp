@@ -71,7 +71,7 @@ def generate_members_csv(request):
     request.user = get_user(request)
     kwargs = {"start_index": offset, "member": True}
     if settings.FRONTEND_CACHING:
-        kwargs['nocache'] = True
+        kwargs['cache'] = False
     members = request.group.memberships.filter(**kwargs)
     typepad.client.complete_batch()
 

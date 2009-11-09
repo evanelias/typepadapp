@@ -273,8 +273,8 @@ class CachedTypePadLinkPromise(object):
         """
 
         # extra argument to allow requests without caching
-        if 'nocache' in kwargs and kwargs['nocache']:
-            del kwargs['nocache']
+        if 'cache' in kwargs and (not kwargs['cache']):
+            del kwargs['cache']
             return self._inst.filter(*args, **kwargs)
 
         if 'start_index' in kwargs:
@@ -308,7 +308,7 @@ class CachedTypePadObject(object):
         self.cache_key = self.cache_key % func.im_self.__name__
 
     def __call__(self, *args, **kwargs):
-        if 'nocache' in kwargs and kwargs['nocache']:
+        if 'cache' in kwargs and (not kwargs['cache']):
             return self.func(*args, **kwargs)
 
         key = self.cache_key % args[0]

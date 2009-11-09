@@ -49,7 +49,7 @@ class Group(typepad.Group):
 
             admin_list = cache.get(admin_list_key)
             if admin_list is None:
-                admin_list = self.memberships.filter(admin=True, batch=False, nocache=True)
+                admin_list = self.memberships.filter(admin=True, batch=False, cache=False)
                 admin_list.deliver()
                 cache.set(admin_list_key, admin_list)
 

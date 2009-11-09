@@ -178,8 +178,8 @@ class ApplicationMiddleware(object):
 
             log.info("Running for group: %s", group.display_name)
 
-            cache.set(app_key, app)
-            cache.set(group_key, group)
+            cache.set(app_key, app, settings.LONG_TERM_CACHE_PERIOD)
+            cache.set(group_key, group, settings.LONG_TERM_CACHE_PERIOD)
 
         if settings.SESSION_COOKIE_NAME is None:
             settings.SESSION_COOKIE_NAME = "sg_%s" % group.url_id

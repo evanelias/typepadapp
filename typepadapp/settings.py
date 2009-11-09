@@ -39,6 +39,10 @@ FRONTEND_CACHING = True
 """Setting that controls whether to use the Django caching framework for
 caching object data retrieved from the TypePad API."""
 
+LONG_TERM_CACHE_PERIOD = 60 * 60 * 24  # 1 day
+"""Defines a cache timeout (in seconds) for cacheable items that can be
+cached more aggressively."""
+
 EVENTS_PER_PAGE = 25
 COMMENTS_PER_PAGE = 50
 MEMBERS_PER_WIDGET = 30

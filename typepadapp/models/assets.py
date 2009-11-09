@@ -32,7 +32,6 @@ from urlparse import urljoin
 
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.utils.translation import ugettext as _
-from django.core.cache import cache
 from django.conf import settings
 
 from remoteobjects import fields, RemoteObject
@@ -118,21 +117,6 @@ class Asset(typepad.Asset):
     def user(self):
         """ An alias for the author property. """
         return self.author
-
-    def cache_prefix(self):
-        key = 'cacheprefix:Asset:%s' % self.id
-        prefix = cache.get(key)
-        if prefix is None:
-            prefix = 1
-            cache.set(key, prefix)
-        return prefix
-
-    def cache_touch(self):
-        try:
-            cache.incr(str('cacheprefix:Asset:%s' % self.id))
-        except ValueError:
-            # ignore in the event that the prefix doesn't exist
-            pass
 
     def link_relation(self, relation):
         """ A method that yields a Link object of the specified relation

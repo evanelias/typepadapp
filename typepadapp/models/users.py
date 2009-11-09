@@ -297,17 +297,6 @@ class User(typepad.User):
             pass
         return None
 
-    def cache_prefix(self):
-        key = 'cacheprefix:User:%s' % (self.url_id or self.xid)
-        prefix = cache.get(key)
-        if prefix is None:
-            prefix = 1
-            cache.set(key, prefix)
-        return prefix
-
-    def cache_touch(self):
-        cace.incr('cacheprefix:User:%s' % (self.url_id or self.xid))
-
 
 ### Caching support
 
