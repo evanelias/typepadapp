@@ -27,6 +27,20 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+
+"""
+
+`typepadapp.views.base` provides a basis for building Django views that use
+TypePad API resources.
+
+As TypePad API resources are best requested in a single batch request, the
+class-based view implementation in `TypePadView` affords grouping all required
+data at once in the `select_from_typepad()` method, which can be retrieved in
+a batch and provided to your view's implementation.
+
+"""
+
+
 from urlparse import urljoin
 from os import path
 import re
@@ -45,12 +59,12 @@ import typepad
 
 
 def parse_etags(etag_str):
-    """
-    Parses a string with one or several etags passed in ``If-None-Match`` and
-    ``If-Match`` headers by the rules in RFC 2616.
+    """Parses ETags out of an HTTP header value.
 
-    Returns a list of etags without surrounding double quotes (``"``) and
-    unescaped from ``\<CHAR>``.
+    This function parses ETags out of the value of an ``If-None-Match`` or
+    ``If-Match`` header according to the rules in RFC 2616. It returns a list
+    of ETags without surrounding double quotes (``"``) and with no characters
+    escaped with backslashes, ``\<CODE>`` style.
 
     """
     etags = re.findall(r'(?:W/)?"((?:\\.|[^"])*)"', etag_str)
@@ -62,17 +76,17 @@ def parse_etags(etag_str):
 
 
 class GenericView(http.HttpResponse):
-    """
-    A base view class for TypePadView.
+    """A class-based view.
 
-    This class by default permits ``GET`` requests, and will automatically
-    handle conditional requests (respecting ``If-Modified-Since`` and Etag
-    HTTP headers).
+    This class provides a generic framework for implementing a class-based
+    view. By default it permits ``GET`` requests, and will automatically
+    handle conditional requests, controlled through ``If-Modified-Since`` and
+    ETag request headers.
 
-    This class inherits from `HttpResponse`. When invoked, the view is
-    instantiated, and given the request and url parameters just like a Django
-    view function is. The resulting value is the response that is used for the
-    active request.
+    This class works by subclassing ``HttpResponse``. When called, the view is
+    instantiated with the request instance and url parameters, just like a
+    Django view function. The request is handled by the initializer and the
+    result of the instantiation is the response to the given request.
 
     """
     methods = ('GET',)
@@ -94,13 +108,13 @@ class GenericView(http.HttpResponse):
 
     def _update(self, response):
         """
-        Merge the info from another response with this instance.
+        Merge another `HttpResponse` into this instance.
 
-        This method simply copies the attributes from the given response to
-        this instance, with the exceptions of the ``_headers`` and ``cookies``
-        dictionaries, whose ``update`` methods are called. This means that any
-        headers or cookies which are present in this response but not the
-        argument are preserved.
+        This method copies the attributes from the given response to this
+        instance, with the exceptions of the ``_headers`` and ``cookies``
+        dictionaries. Instead these members' ``update()`` methods are used,
+        preserving headers and cookies present in this response but not the
+        argument.
 
         """
         self._charset = response._charset
@@ -139,9 +153,14 @@ class GenericView(http.HttpResponse):
 
     def conditional_dispatch(self, request, *args, **kwargs):
         """
-        For GET, HEAD, and PUT requests, this method calls the ``etag()`` and
-        ``last_modified()`` methods and then checks whether a the appropriate
-        preconditions are satisfied before continuing.
+        Dispatches the request or returns an `HttpResponseNotModified`
+        instance, as appropriate.
+
+        For ``GET``, ``HEAD``, and ``PUT`` requests, this method calls its
+        instance's `etag()` and `last_modified()` methods, then checks
+        whether a the appropriate preconditions are satisfied before
+        continuing.
+
         """
         allowed, response = self._check_request_allowed(request, *args,
                                                         **kwargs)
@@ -209,7 +228,7 @@ class GenericView(http.HttpResponse):
         Returns a value used as the ETag for the view.
 
         To support ``If-None-Match`` ETag HTTP headers, return an appropriate
-        etag here.
+        ETag here.
 
         """
         return None
@@ -218,8 +237,8 @@ class GenericView(http.HttpResponse):
         """
         Handles ``GET`` requests.
 
-        Subclasses should override this method to handle ``GET`` requests. The
-        return value should be an `HttpResponse` instance.
+        Override this method to handle ``GET`` requests, returning an
+        `HttpResponse` instance.
 
         """
         return http.HttpResponse()
@@ -276,38 +295,39 @@ class TypePadView(GenericView):
       variable named ``page_obj`` is also set, being an instance of
       ``FinitePaginator``.
     * ``object_list``: Assign to this member when the view is to paginate a
-      list of objects. This member is also assigned to the
+      list of objects.
     * ``offset``: When paginating a list of objects, this member is
       automatically assigned, based on the ``page`` parameter to the view and
       the value of the ``paginate_by`` property. This value may be used to
       control the selection of rows used to populate the ``object_list``
-      member during the ``setup()`` or ``select_from_typepad()`` methods.
+      member during the `setup()` or `select_from_typepad()` methods.
     * ``limit``: Assigned as the number of rows to select for the
       ``object_list`` member. This is typically set to ``paginate_by``.
     * ``paginate_template``: Assign a string to control the format of next,
       previous links.
     * ``form``: The Django form class that is to be used for any editable
       object the view is presenting. If this member is set, it is instantiated
-      during the ``setup()`` method and during a ``POST`` request, the values
-      of the ``POST`` are given to it. Once the form is instantiated it is
-      assigned to a ``form_instance`` member. The form is also assigned to the
-      template context as ``form``.
+      during the `setup()` method and during a ``POST`` request, the values of
+      the ``POST`` are given to it. Once the form is instantiated, it is
+      assigned to a ``form_instance`` instance attribute. The form is also
+      assigned to the template context as ``form``.
     * ``template_name``: Assign the name of a Django template file to be used
       for ``GET`` requests. The value of this property is stripped of any path
-      and suffix and assigned to the 'view' template context variable.
+      and suffix and assigned to the ``view`` template context variable.
     * ``login_required``: If the view requires an authenticated user to run,
       set this member to True. It relies on the settings.LOGIN_URL value for
       redirecting the user to a login form.
 
     .. rubric:: Template variables:
 
-    The following variables are assigned by default and available for any
-    template.
+    These variables are available for any `TypePadView`.
 
-    * ``view``: Assigned as the basename of the ``template_name`` member,
-      minus any file path and extension.
-    * ``form``: The value of the ``form_instance`` member.
-    * ``page_obj``: Set when ``paginate_by`` member is assigned.
+    * ``view``: The basename of the ``template_name`` member, minus any file
+      path and extension.
+    * ``form``: The Django `Form` instance for this view, if this kind of view
+      has a form.
+    * ``page_obj``: The Django `Paginator` instance for this view, if the view
+      is paged.
 
     """
 
@@ -334,13 +354,26 @@ class TypePadView(GenericView):
 
     def select_from_typepad(self, request, *args, **kwargs):
         """
-        Empty method used for issuing TypePad API subrequests for the view.
+        Instantiates the TypePad API resources to display in this view.
+
+        The TypePad API resources instantiated in `select_from_typepad()` are
+        requested *en masse* in one API batch request. Add your resources to
+        the view's `context` dictionary, so they will be available when
+        rendering the template.
+
+        This implementation does nothing, requesting no API resources.
+
         """
         pass
 
     def filter_object_list(self, request):
         """
-        Empty method used for any filtering of objects returned by the API.
+        Filters the list of objects returned by the API according to this
+        view's requirements.
+
+        This implementation does nothing, leaving the view's `object_list` as
+        it is.
+
         """
         pass
 
@@ -368,13 +401,13 @@ class TypePadView(GenericView):
         """
         Issues a single TypePad batch request to render the current view.
 
-        This method is a wrapping method for the ``select_from_typepad()``
-        method which itself does individual TypePad API subrequests necessary
-        for the view. If a session token is present, the authed user is also
-        fetched with this batch request.
+        You generally needn't override this method; this method wraps the
+        `select_from_typepad()` method, which itself does individual TypePad
+        API subrequests necessary for the view.
 
-        In addition, the pagination state is set if the ``paginate_by``
-        attribute is assigned.
+        If a session token is present, the authed user is also fetched with
+        this batch request. In addition, the pagination state is set if the
+        ``paginate_by`` attribute is assigned.
 
         """
         # Pagination setup
@@ -410,9 +443,6 @@ class TypePadView(GenericView):
                 raise http.Http404
 
     def setup(self, request, *args, **kwargs):
-        """
-        Initializes a TypePadView instance.
-        """
         super(TypePadView, self).setup(request, *args, **kwargs)
 
         # View parameter from view or template_name
@@ -437,11 +467,12 @@ class TypePadView(GenericView):
 
     def dispatch(self, request, *args, **kwargs):
         """
-        Dispatch for TypePadView, which handles invalid form POST requests.
+        Dispatches requests to `TypePadView` instances.
 
-        In the event that the form is invalid, the response is unset,
-        the TypePad API requests for the view are issued and the 'get' handler
-        is invoked to return a response.
+        If the dispatched ``POST`` call returns ``None`` for a response and
+        the view's `form_instance` instance member is an invalid form, the
+        view is re-dispatched as a ``GET`` request to display the errors and
+        ask for new valid form input.
 
         """
         response = super(TypePadView, self).dispatch(request, *args, **kwargs)
@@ -455,11 +486,13 @@ class TypePadView(GenericView):
 
     def get(self, request, *args, **kwargs):
         """
-        Base handler for GET requests.
+        Handles a ``GET`` request.
 
-        When the ``template_name`` attribute is assigned, the template
-        is rendered as the response to the request. Otherwise, an
-        empty HttpResponse is returned.
+        By default, the template named in the request parameters (or, if none
+        is given, the view's ``template_name`` attribute) is rendered with the
+        view's context (including resources stashed there by the view's
+        `select_from_typepad()` method). If no template name is available,
+        this method returns an empty `HttpResponse` instance.
 
         """
         template = view = kwargs.get('template_name', self.template_name)
