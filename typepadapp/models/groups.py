@@ -74,4 +74,7 @@ if settings.FRONTEND_CACHING:
         name="Group events invalidation for asset_created/asset_deleted signal")
 
     Group.memberships = cache_link(Group.memberships)
-    # invalidate with signals.member_joined, signals.member_left
+    memberships_invalidator = invalidate_rule(
+        key=lambda sender, group=None: group and group.memberships,
+        signals=[signals.member_banned, signals.member_unbanned],
+        name="group memberships for member_banned, member_unbanned signals")
