@@ -94,8 +94,9 @@ def get_oauth_identification_url(self, next):
         'signin': '1',
     }
     callback_url = '%s?%s' % (self.build_absolute_uri(reverse('synchronize')), urlencode(params))
-    return gp_signed_url(self.oauth_client.oauth_identification_url,
-        { 'callback_url': callback_url, 'target_object': self.group.id })
+    params = { 'callback_url': callback_url, 'target_object': self.group.id }
+    params.update(settings.TYPEPAD_IDENTIFY_PARAMS)
+    return gp_signed_url(self.oauth_client.oauth_identification_url, params)
 
 
 class UserAgentMiddleware(object):
