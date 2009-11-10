@@ -34,9 +34,12 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from django.utils.translation import ugettext as _
 from django.conf import settings
 
+from remoteobjects import fields, RemoteObject
+
 import typepad
+from typepad.tpobject import ListObject
+
 from typepadapp import signals
-from remoteobjects import fields, ListObject, RemoteObject
 import typepadapp.models
 
 
@@ -207,7 +210,7 @@ class Video(typepad.Video, Asset):
         videos = group.video_assets
         try:
             videos.post(self)
-        except RemoteObject.ServerError, ex:
+        except (videos.RequestError, videos.ServerError), ex:
             # Bad video?
             try:
                 reason = ex.response_error
