@@ -68,25 +68,23 @@ class CachingTypePadClient(typepad.TypePadClient):
     """
 
     def complete_batch(self):
-        # check for this we can provide from cache
+        # check to see if we can provide this from the cache
         requests = []
         for request in self.batchrequest.requests:
-            try:
-                cb = request.callback
-                cb.alive()
-                if isinstance(request, RequestStatTracker):
-                    # special case for RequestStatTracker, which
-                    # holds the actual originating callback in this
-                    # attribute.
-                    cb = cb.orig_callback
-                if hasattr(cb, 'callback'):
-                    callback = cb.callback()
-                    if isinstance(callback, CachingCallback):
-                        if callback.is_cached():
-                            continue
-                requests.append(request)
-            except ReferenceError:
-                pass
+            cb = request.callback
+            if not cb.alive():
+                continue
+            if isinstance(request, RequestStatTracker):
+                # special case for RequestStatTracker, which
+                # holds the actual originating callback in this
+                # attribute.
+                cb = cb.orig_callback
+            if hasattr(cb, 'callback'):
+                callback = cb.callback()
+                if isinstance(callback, CachingCallback):
+                    if callback.is_cached():
+                        continue
+            requests.append(request)
 
         self.batchrequest.requests = requests
         super(CachingTypePadClient, self).complete_batch()
@@ -145,16 +143,17 @@ class CachedTypePadLinkPromise(object):
 
                 subset = ids[start:end]
                 itemkeys = []
+
+                # if one of our elements is empty, don't bother building
+                # list of ids; this cache is invalid
                 if None not in subset:
-                    # if one of our elements is empty, we force a new
-                    # request.
                     for id in subset:
                         itemkeys.append(self._item_cache_key_pattern % id)
 
                 if len(itemkeys) > 0:
                     itemdict = cache.get_many(itemkeys)
                     for key in itemkeys:
-                        if key not in itemdict or itemdict[key] is None:
+                        if itemdict.get(key) is None:
                             items = None
                             log.debug("cache partial miss for key %s" % cache_key)
                             break
@@ -387,15 +386,11 @@ class CacheInvalidator(object):
 
         key = None
         if callable(self.key):
-            try:
-                key = self.key(sender, **kwargs)
-                # if we get back some object that has a cache_key,
-                # use the value of the cache_key property
-                if hasattr(key, 'cache_key'):
-                    key = key.cache_key
-            except:
-                # bah, just ignore failed invalidations
-                return
+            key = self.key(sender, **kwargs)
+            # if we get back some object that has a cache_key,
+            # use the value of the cache_key property
+            if hasattr(key, 'cache_key'):
+                key = key.cache_key
         else:
             key = self.key
 
