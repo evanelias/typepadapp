@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Copyright (c) 2009 Six Apart Ltd.
 # All rights reserved.
 #
@@ -29,40 +27,29 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from setuptools import setup, find_packages
-from os.path import join, dirname
+import os
+from os.path import basename, dirname, join
 
-try:
-    long_description = open(join(dirname(__file__), 'README.rst')).read()
-except Exception:
-    long_description = None
+from django.core.management.base import BaseCommand
 
-setup(
-    name='typepadapp',
-    version='1.1a1',
-    description='A helper Django app for making TypePad applications',
-    author='Six Apart',
-    author_email='python@sixapart.com',
-    url='http://github.com/sixapart/typepadapp',
+from typepadapp import duplicate_file
 
-    long_description=long_description,
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'Environment :: Console',
-        'Environment :: Web Environment',
-        'Framework :: Django',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: MacOS :: MacOS X',
-        'Operating System :: POSIX',
-        'Programming Language :: Python',
-        'Topic :: Internet :: WWW/HTTP',
-    ],
 
-    packages=find_packages(),
-    provides=['typepadapp'],
-    include_package_data=True,
-    zip_safe=False,
-    requires=['Django(>=1.1.1)', 'typepad(==1.1a1)', 'FeedParser'],
-    install_requires=['Django>=1.1.1', 'typepad==1.1a1', 'FeedParser'],
-)
+class Command(BaseCommand):
+
+    help = "Refresh the project's app.wsgi file from the project template"
+    args = ""
+
+    def handle(self, *args, **options):
+        typeapp_path = dirname(dirname(dirname(__file__)))
+        project_template_path = join(typeapp_path, 'conf', 'project_template')
+        path_old = join(project_template_path, 'app.wsgi')
+
+        try:
+            directory = options['directory']
+        except KeyError:
+            directory = os.getcwd()
+        project_name = basename(directory)
+        path_new = join(directory, 'app.wsgi')
+
+        duplicate_file(path_old, path_new, replaces={'project': project_name})

@@ -212,7 +212,7 @@ class Video(typepad.Video, Asset):
         videos = group.video_assets
         try:
             videos.post(self)
-        except RemoteObject.ServerError, ex:
+        except (videos.RequestError, videos.ServerError), ex:
             # Bad video?
             try:
                 reason = ex.response_error
