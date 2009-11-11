@@ -107,7 +107,7 @@ class CachedTypePadLinkPromise(object):
         self._inst = None
         self._link = link
         self._start = 1
-        self._end = 50
+        self._end = 51
         self._id_cache = None
         self._item_cache_key_pattern = None
 
@@ -138,7 +138,7 @@ class CachedTypePadLinkPromise(object):
             items = []
 
             if ids[0] > 0:
-                if end - start > ids[0]:
+                if end > ids[0] + 1:
                     end = ids[0] + 1
 
                 subset = ids[start:end]
