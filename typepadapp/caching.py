@@ -232,20 +232,12 @@ class CachedTypePadLinkPromise(object):
             ["listcache", self._inst._location.split("?")[0]])
         return key
 
-    def _get_entries(self):
-        return self._inst.entries
-
-    def _set_entries(self, val):
-        self._inst.entries = val
-
-    entries = property(fget=_get_entries, fset=_set_entries)
-
-    def count(self):
-        return self._inst.total_results
+    def __getattr__(self, name):
+        return getattr(self._inst, name)
 
     def make_sequence_method(methodname):
         """Makes a new function that proxies calls to `methodname` to the
-        `entries` attribute of the instance on which the function is called as
+        `_inst` attribute of the instance on which the function is called as
         an instance method."""
         def seqmethod(self, *args, **kwargs):
             # Proxy these methods to self._inst.entries.
@@ -260,9 +252,6 @@ class CachedTypePadLinkPromise(object):
     __iter__     = make_sequence_method('__iter__')
     __reversed__ = make_sequence_method('__reversed__')
     __contains__ = make_sequence_method('__contains__')
-
-    def post(self, *args, **kwargs):
-        return self._inst.post(*args, **kwargs)
 
     def filter(self, *args, **kwargs):
         """Passes through the requested filter operation to the underlying
