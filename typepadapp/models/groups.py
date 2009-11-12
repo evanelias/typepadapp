@@ -70,7 +70,8 @@ if settings.FRONTEND_CACHING:
     Group.events = cache_link(Group.events)
     group_events_invalidator = invalidate_rule(
         key=lambda sender, group=None, **kwargs: group and group.events,
-        signals=[signals.asset_created, signals.asset_deleted],
+        signals=[signals.asset_created, signals.asset_deleted,
+                 signals.favorite_created, signals.favorite_deleted],
         name="Group events invalidation for asset_created/asset_deleted signal")
 
     Group.memberships = cache_link(Group.memberships)
