@@ -320,6 +320,7 @@ if settings.FRONTEND_CACHING:
     # this is so we cache all Post, Video, Comment, etc., assets using
     # the same namespace.
     Asset.cache_namespace = "Asset"
+    Favorite.cache_namespace = "Favorite"
 
     Asset.get_by_url_id = cache_object(Asset.get_by_url_id)
     # cache invalidation of parent asset when a new comment is created
