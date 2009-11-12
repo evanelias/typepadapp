@@ -310,7 +310,10 @@ if settings.FRONTEND_CACHING:
     User.cache_key = property(make_user_alias_cache_key)
 
     User.get_by_url_id = cache_object(User.get_by_url_id)
-    #signals.member_banned, signals.member_unbanned
+    user_invaldator = invalidate_rule(
+        key=lambda sender, instance=None, group=None, **kwargs: instance,
+        signals=[signals.member_banned, signals.member_unbanned],
+        name="user cache invalidation for member_banned, member_unbanned signals")
 
     User.events = cache_link(User.events)
     user_events_invalidator = invalidate_rule(
@@ -325,7 +328,11 @@ if settings.FRONTEND_CACHING:
     # We can't effectively signal to invalidate these lists because
     # follow/unfollow actions happen on typepad
     User.memberships = cache_link(User.memberships)
-    # signals.member_left, signals.member_joined
+    user_memberships_invaldator = invalidate_rule(
+        key=lambda sender, instance=None, group=None, **kwargs:
+            instance and group and instance.group_memberships(group),
+        signals=[signals.member_banned, signals.member_unbanned],
+        name="user membership invalidation for member_banned, member_unbanned signals")
 
     User.elsewhere_accounts = cache_link(User.elsewhere_accounts)
     # signals.profile_webhook
