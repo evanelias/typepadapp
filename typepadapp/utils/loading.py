@@ -119,7 +119,8 @@ def configure_typepad_client(**kwargs):
     if settings.FRONTEND_CACHING:
         # this will create a typepad.client that caches
         from typepadapp.caching import CachingTypePadClient
-        typepad.client = CachingTypePadClient()
+        # lets increase that timeout to 20 seconds
+        typepad.client = CachingTypePadClient(timeout=20)
 
     if not typepad.client:
         typepad.client = TypePadClient()
