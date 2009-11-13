@@ -140,6 +140,10 @@ class UserAgentMiddleware(object):
 
 class ApplicationMiddleware(object):
 
+    def __init__(self):
+        self.app = None
+        self.group = None
+
     def discover_group(self, request):
         log = logging.getLogger('.'.join((self.__module__, self.__class__.__name__)))
 
@@ -147,8 +151,11 @@ class ApplicationMiddleware(object):
         app_key = 'application:%s' % settings.OAUTH_CONSUMER_KEY
         group_key = 'group:%s' % settings.OAUTH_CONSUMER_KEY
 
-        app = cache.get(app_key)
-        group = cache.get(group_key)
+        # we cache in-process and in cache to support both situtations
+        # where a cache is unavailable (cache is dummy), and situtations
+        # where the application persistence is poor (Google App Engine)
+        app = self.app or cache.get(app_key)
+        group = self.group or cache.get(group_key)
         if app is None or group is None:
             log.info('Loading group info...')
 
@@ -184,6 +191,9 @@ class ApplicationMiddleware(object):
         if settings.SESSION_COOKIE_NAME is None:
             settings.SESSION_COOKIE_NAME = "sg_%s" % group.url_id
 
+        self.app = app
+        self.group = group
+
         return app, group
 
     def process_request(self, request):
@@ -194,8 +204,8 @@ class ApplicationMiddleware(object):
 
         app, group = self.discover_group(request)
 
-        typepadapp.models.GROUP = group
         typepadapp.models.APPLICATION = app
+        typepadapp.models.GROUP = group
 
         request.application = app
         request.group = group
