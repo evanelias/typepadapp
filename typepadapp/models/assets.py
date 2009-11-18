@@ -138,6 +138,20 @@ class Asset(typepad.Asset):
             return l
 
 
+def asset_ref_type_id(self):
+    object_type = self.object_type or self.object_types[0]
+    if object_type is None: return None
+    return object_type.split(':')[2].lower()
+
+def asset_ref_type_label(self):
+    return _(self.type_id)
+
+# Extend AssetRef so that type_id, type_label work on asset references
+# also
+typepad.api.AssetRef.type_id = property(asset_ref_type_id)
+typepad.api.AssetRef.type_label = property(asset_ref_type_label)
+
+
 class Comment(typepad.Comment, Asset):
 
     def get_absolute_url(self):
