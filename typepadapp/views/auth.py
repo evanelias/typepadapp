@@ -117,7 +117,7 @@ def authorize(request):
         token.key = access_token.key
         token.secret = access_token.secret
         token.save()
-        signals.member_joined.send(sender=authorize, instance=authed_user)
+        signals.member_joined.send(sender=authorize, instance=authed_user, group=request.group)
 
     # oauth token in authed user session
     request.session['oauth_token'] = token
