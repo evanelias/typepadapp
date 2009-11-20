@@ -266,12 +266,14 @@ class CachedTypePadLinkPromise(object):
         return seqmethod
 
     __len__      = make_sequence_method('__len__')
-    __getitem__  = make_sequence_method('__getitem__')
     __setitem__  = make_sequence_method('__setitem__')
     __delitem__  = make_sequence_method('__delitem__')
     __iter__     = make_sequence_method('__iter__')
     __reversed__ = make_sequence_method('__reversed__')
     __contains__ = make_sequence_method('__contains__')
+
+    def __getitem__(self, *args, **kwargs):
+        return self._inst.__getitem__(*args, **kwargs)
 
     def filter(self, *args, **kwargs):
         """Passes through the requested filter operation to the underlying
