@@ -106,7 +106,10 @@ class Asset(typepad.Asset):
     def is_local(self):
         """ Boolean property identifying whether the asset belongs to the
         group assigned to typepadapp.models.GROUP. """
-        return typepadapp.models.GROUP.id in self.groups
+        try:
+            return typepadapp.models.GROUP.id in self.groups
+        except:
+            return False
 
     def get_comments(self, start_index=1, max_results=None, **kwargs):
         if max_results is None:
@@ -340,7 +343,8 @@ if settings.FRONTEND_CACHING:
     # cache invalidation of parent asset when a new comment is created
     asset_invalidator = invalidate_rule(
         key=lambda sender, parent=None, **kwargs: parent,
-        signals=[signals.asset_created, signals.asset_deleted, signals.favorite_created, signals.favorite_deleted],
+        signals=[signals.asset_created, signals.asset_deleted,
+            signals.favorite_created, signals.favorite_deleted],
         name="asset object invalidation for commenting/favoriting")
 
     Asset.comments = cache_link(Asset.comments)

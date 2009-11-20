@@ -306,7 +306,7 @@ if settings.FRONTEND_CACHING:
 
     def make_user_alias_cache_key(self):
         """Attempts to use a caching key of the user's username, if available."""
-        return self.preferred_username or self.url_id
+        return "objectcache:%s:%s" % (self.cache_namespace, self.preferred_username or self.url_id)
     User.cache_key = property(make_user_alias_cache_key)
 
     User.get_by_url_id = cache_object(User.get_by_url_id)
@@ -318,9 +318,10 @@ if settings.FRONTEND_CACHING:
     User.events = cache_link(User.events)
     user_events_invalidator = invalidate_rule(
         key=lambda sender, group=None, instance=None, **kwargs:
-            instance and instance.author and group and instance.author.notifications.filter(by_group=group),
+            instance and instance.author and group and [instance.author.notifications.filter(by_group=group),
+                instance.author.preferred_username and User.get_by_url_id(instance.author.preferred_username).notifications.filter(by_group=group)],
         signals=[signals.asset_created, signals.asset_deleted],
-        name="user notifications for group cache invalidation for asset_created/asset_deleted signals")
+        name="user notifications for group cache invalidation for asset_created, asset_deleted signals")
 
     User.notifications = cache_link(User.notifications)
     # signals.asset_created, signals.asset_deleted
@@ -330,7 +331,8 @@ if settings.FRONTEND_CACHING:
     User.memberships = cache_link(User.memberships)
     user_memberships_invaldator = invalidate_rule(
         key=lambda sender, instance=None, group=None, **kwargs:
-            instance and group and instance.group_memberships(group),
+            instance and group and [instance.group_memberships(group),
+                instance.preferred_username and User.get_by_url_id(instance.preferred_username).group_memberships(group)],
         signals=[signals.member_banned, signals.member_unbanned],
         name="user membership invalidation for member_banned, member_unbanned signals")
 
@@ -340,12 +342,13 @@ if settings.FRONTEND_CACHING:
     User.relationships = cache_link(User.relationships)
     # signals.following_webhook, signals.member_left, signals.member_joined
 
-    # does these endpoints really work??
+    # do these endpoints really work??
     # User.comments = cache_link(User.comments)
     # User.assets = cache_link(User.assets)
 
     User.favorites = cache_link(User.favorites)
     user_favorites_invalidator = invalidate_rule(
-        key=lambda sender, instance=None, **kwargs: instance and instance.author.favorites,
+        key=lambda sender, instance=None, **kwargs: instance and [instance.author.favorites,
+            instance.author.preferred_username and User.get_by_url_id(instance.author.preferred_username).favorites],
         signals=[signals.favorite_created, signals.favorite_deleted],
         name="user favorites stream for favorite created/deleted signals")

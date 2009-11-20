@@ -157,6 +157,18 @@ class CachedTypePadLinkPromise(object):
                             items = None
                             log.debug("cache partial miss for key %s" % cache_key)
                             break
+                        item = itemdict[key]
+                        if hasattr(item, 'object'):
+                            # for things like Event objects that have an embedded object
+                            # that has a cache_key, cache that also
+                            obj = item.object
+                            if hasattr(obj, 'cache_key'):
+                                object_key = obj.cache_key
+                                if cache.add(object_key, None, 1) > 0:
+                                    log.debug("cache partial miss due to missing object reference %s for key %s" % (object_key, cache_key))
+                                    cache.delete(object_key)
+                                    items = None
+                                    break
                         items.append(itemdict[key])
                 else:
                     log.debug("cache subset miss for key %s; ids[0] %d, start %d, end %d" % (cache_key, ids[0], start, end))
@@ -202,6 +214,14 @@ class CachedTypePadLinkPromise(object):
         for item in self._inst.entries:
             item_key = item.cache_key
             log.debug("setting key %s" % item_key)
+            if hasattr(item, 'object'):
+                # for things like Event objects that have an embedded object
+                # that has a cache_key, cache that also
+                obj = item.object
+                if hasattr(obj, 'cache_key'):
+                    object_key = obj.cache_key
+                    log.debug("setting key %s" % object_key)
+                    cache.set(object_key, obj)
             cache.set(item_key, item)
             ids[idx] = item.xid
             idx += 1
@@ -352,6 +372,25 @@ class CachedTypePadLink(object):
 cache_link = CachedTypePadLink
 
 
+def _expand_cache_keys(item):
+    if hasattr(item, 'cache_key'):
+        value = item.cache_key
+    else:
+        value = item
+    if isinstance(value, list):
+        result = []
+        for v in value:
+            v = _expand_cache_keys(v)
+            if v is None: continue
+            if not isinstance(v, list): v = [v]
+            result.extend(v)
+        return result
+    elif value is None:
+        return []
+    else:
+        return [value]
+
+
 class CacheInvalidator(object):
     """General-purpose class for Django cache invalidation.
 
@@ -377,18 +416,14 @@ class CacheInvalidator(object):
         key = None
         if callable(self.key):
             key = self.key(sender, **kwargs)
-            # if we get back some object that has a cache_key,
-            # use the value of the cache_key property
-            if hasattr(key, 'cache_key'):
-                key = key.cache_key
         else:
             key = self.key
 
-        return key
+        return _expand_cache_keys(key)
 
     def __call__(self, sender, **kwargs):
-        key = self.cache_key(sender, **kwargs)
-        if key is not None:
+        keys = self.cache_key(sender, **kwargs)
+        for key in keys:
             log.debug("invalidating key %s" % key)
             cache.delete(key)
 
