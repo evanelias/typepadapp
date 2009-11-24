@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Local Profiles &mdash; typepadapp v1.1a1 documentation</title>
+    <title>Local Profiles &mdash; typepadapp v1.1 documentation</title>
     <link rel="stylesheet" href="static/default.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.1a1',
+        VERSION:     '1.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,8 +19,8 @@
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="typepadapp v1.1a1 documentation" href="index.html" />
-    <link rel="prev" title="typepadapp — core support for TypePad cloud applications" href="index.html" /> 
+    <link rel="top" title="typepadapp v1.1 documentation" href="index.html" />
+    <link rel="prev" title="Class-Based Views" href="views.html" /> 
   </head>
   <body>
     <div class="related">
@@ -30,9 +30,12 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="index.html" title="typepadapp — core support for TypePad cloud applications"
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="views.html" title="Class-Based Views"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">typepadapp v1.1a1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">typepadapp v1.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -61,7 +64,7 @@ subclass it and add the site&#8217;s additional custom fields.</p>
 <span class="kn">import</span> <span class="nn">typepadapp.models.profiles</span>
 
 <span class="k">class</span> <span class="nc">UserProfile</span><span class="p">(</span><span class="n">typepadapp</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">profiles</span><span class="o">.</span><span class="n">UserProfile</span><span class="p">):</span>
-    <span class="n">hiphop_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mf">80</span><span class="p">)</span>
+    <span class="n">hiphop_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>(Remember to have put <tt class="docutils literal"><span class="pre">clientapp</span></tt> in your <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt>.) This model
@@ -143,8 +146,8 @@ for how they work.</p>
 </ul>
 
             <h4>Previous topic</h4>
-            <p class="topless"><a href="index.html"
-                                  title="previous chapter"><tt class="docutils literal docutils literal"><span class="pre">typepadapp</span></tt> — core support for TypePad cloud applications</a></p>
+            <p class="topless"><a href="views.html"
+                                  title="previous chapter">Class-Based Views</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="sources/localprofile.txt"
@@ -174,14 +177,17 @@ for how they work.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="index.html" title="typepadapp — core support for TypePad cloud applications"
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="views.html" title="Class-Based Views"
              >previous</a> |</li>
-        <li><a href="index.html">typepadapp v1.1a1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">typepadapp v1.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2009, Six Apart.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
     </div>
   </body>
 </html>
