@@ -34,9 +34,12 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from django.utils.translation import ugettext as _
 from django.conf import settings
 
+from remoteobjects import fields, RemoteObject
+
 import typepad
+from typepad.tpobject import ListObject
+
 from typepadapp import signals
-from remoteobjects import fields, ListObject, RemoteObject
 import typepadapp.models
 
 
@@ -103,10 +106,15 @@ class Asset(typepad.Asset):
     def is_local(self):
         """ Boolean property identifying whether the asset belongs to the
         group assigned to typepadapp.models.GROUP. """
-        return typepadapp.models.GROUP.id in self.groups
+        try:
+            return typepadapp.models.GROUP.id in self.groups
+        except:
+            return False
 
-    def get_comments(self, start_index=1, max_results=settings.COMMENTS_PER_PAGE):
-        return self.comments.filter(start_index=start_index, max_results=max_results)
+    def get_comments(self, start_index=1, max_results=None, **kwargs):
+        if max_results is None:
+            max_results = settings.COMMENTS_PER_PAGE
+        return self.comments.filter(start_index=start_index, max_results=max_results, **kwargs)
 
     @property
     def user(self):
@@ -133,6 +141,20 @@ class Asset(typepad.Asset):
             l.href = ''
             links.add(l)
             return l
+
+
+def asset_ref_type_id(self):
+    object_type = self.object_type or self.object_types[0]
+    if object_type is None: return None
+    return object_type.split(':')[2].lower()
+
+def asset_ref_type_label(self):
+    return _(self.type_id)
+
+# Extend AssetRef so that type_id, type_label work on asset references
+# also
+typepad.api.AssetRef.type_id = property(asset_ref_type_id)
+typepad.api.AssetRef.type_label = property(asset_ref_type_label)
 
 
 class Comment(typepad.Comment, Asset):
@@ -306,3 +328,35 @@ class Event(typepad.Event):
     def is_local_asset(self):
         return self.object and isinstance(self.object, Asset) \
             and self.object.is_local
+
+### Cache support
+
+if settings.FRONTEND_CACHING:
+    from typepadapp.caching import cache_link, cache_object, invalidate_rule
+
+    # this is so we cache all Post, Video, Comment, etc., assets using
+    # the same namespace.
+    Asset.cache_namespace = "Asset"
+    Favorite.cache_namespace = "Favorite"
+
+    Asset.get_by_url_id = cache_object(Asset.get_by_url_id)
+    # cache invalidation of parent asset when a new comment is created
+    asset_invalidator = invalidate_rule(
+        key=lambda sender, parent=None, **kwargs: parent,
+        signals=[signals.asset_created, signals.asset_deleted,
+            signals.favorite_created, signals.favorite_deleted],
+        name="asset object invalidation for commenting/favoriting")
+
+    Asset.comments = cache_link(Asset.comments)
+    asset_comments_invalidator = invalidate_rule(
+        key=lambda sender, parent=None, instance=None, **kwargs:
+            isinstance(instance, Comment) and parent and parent.comments,
+        signals=[signals.asset_created, signals.asset_deleted],
+        name="asset comments list invalidation for commenting")
+
+    Asset.favorites = cache_link(Asset.favorites)
+    # cache invalidation for asset object cache when a favorite is created/deleted
+    asset_favorites_invalidator = invalidate_rule(
+        key=lambda sender, parent=None, **kwargs: parent and parent.favorites,
+        signals=[signals.favorite_created, signals.favorite_deleted],
+        name="asset favorite list invalidation for favoriting")

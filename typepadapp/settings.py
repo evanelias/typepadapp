@@ -35,7 +35,19 @@ TYPEPAD_COOKIES = {}
 """A dictionary of additional cookies (values, keyed on cookie names) to send
 when making API requests to TypePad.
 
-By default, no additional cookies are sent.
+Use this setting if you're trying to use another API server besides TypePad
+that requires additional cookies in its API requests. By default, no additional
+cookies are sent.
+
+"""
+
+TYPEPAD_IDENTIFY_PARAMS = {}
+"""A dictionary of additional parameters to pass when sending a user agent to
+identify on TypePad.
+
+Use this setting if you're trying to identify user agents with a service other
+than TypePad that requires additional parameters to the OAuth identification
+request. By default, no additional parameters are sent.
 
 """
 
@@ -47,6 +59,28 @@ Batch requests should always be used under normal conditions.
 
 This setting defaults to `True`. The ``TYPEPAD_BATCHLESS`` environment
 variable can be used to turn this setting off on a per-process basis.
+
+"""
+
+FRONTEND_CACHING = True
+"""Setting that controls whether to use the Django caching framework for
+caching object data retrieved from the TypePad API."""
+
+LONG_TERM_CACHE_PERIOD = 60 * 60 * 24  # 1 day
+"""Defines a cache timeout (in seconds) for cacheable items that can be
+cached more aggressively."""
+
+WELCOME_URL = None
+"""A URL for a welcome page to which to send newly registered site members.
+
+When group members register for the site from the home page, the authentication
+system will redirect them to this URL instead. If the `WELCOME_URL` setting is
+`None`, the new member is redirected back to the home page of the client site.
+If new members click the "Sign in or register" link from a page other than the
+home page, they are sent back to those pages to continue the action they wanted
+to take there.
+
+This setting defaults to `None` (no special welcome page).
 
 """
 
