@@ -1,0 +1,16 @@
+# Sphinx inventory version 1
+# Project: typepadapp
+# Version: 1.1
+typepadapp.settings mod settings.html
+typepadapp.settings.EVENTS_PER_PAGE data settings.html
+typepadapp.settings.LOG_LEVELS data settings.html
+typepadapp.settings.BATCH_REQUESTS data settings.html
+typepadapp.settings.LONG_TERM_CACHE_PERIOD data settings.html
+typepadapp.settings.MEMBERS_PER_WIDGET data settings.html
+typepadapp.settings.LOG_FORMAT data settings.html
+typepadapp.settings.COMMENTS_PER_PAGE data settings.html
+typepadapp.settings.FRONTEND_CACHING data settings.html
+typepadapp.settings.WELCOME_URL data settings.html
+typepadapp.settings.LOG_LEVEL data settings.html
+typepadapp.settings.TYPEPAD_COOKIES data settings.html
+typepadapp.settings.TYPEPAD_IDENTIFY_PARAMS data settings.html

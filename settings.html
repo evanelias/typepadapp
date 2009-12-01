@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Settings &mdash; typepadapp v1.1 documentation</title>
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="typepadapp v1.1 documentation" href="index.html" />
+    <link rel="next" title="Class-Based Views" href="views.html" />
+    <link rel="prev" title="typepadapp — core support for TypePad cloud applications" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="views.html" title="Class-Based Views"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="typepadapp — core support for TypePad cloud applications"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">typepadapp v1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-typepadapp.settings">
+<h1>Settings<a class="headerlink" href="#module-typepadapp.settings" title="Permalink to this headline">¶</a></h1>
+<dl class="data">
+<dt id="typepadapp.settings.BATCH_REQUESTS">
+<tt class="descclassname">typepadapp.settings.</tt><tt class="descname">BATCH_REQUESTS</tt><a class="headerlink" href="#typepadapp.settings.BATCH_REQUESTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to use batch requests in TypePad API requests.</p>
+<p>This boolean setting can be useful when debugging the request batching system.
+Batch requests should always be used under normal conditions.</p>
+<p>This setting defaults to <a title="(in Python v2.6)" class="reference external" href="http://docs.python.org/library/constants.html#True"><tt class="xref xref docutils literal"><span class="pre">True</span></tt></a>. The <tt class="docutils literal"><span class="pre">TYPEPAD_BATCHLESS</span></tt> environment
+variable can be used to turn this setting off on a per-process basis.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="typepadapp.settings.COMMENTS_PER_PAGE">
+<tt class="descclassname">typepadapp.settings.</tt><tt class="descname">COMMENTS_PER_PAGE</tt><a class="headerlink" href="#typepadapp.settings.COMMENTS_PER_PAGE" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of comments to request from comment fetching methods of
+<cite>typepadapp.models</cite> classes.</p>
+<p>This setting governs the number of objects requested by the
+<cite>typepadapp.models.Asset.get_comments()</cite> method, as well as the
+<cite>typepadapp.models.User.group_comments()</cite> method, unless the caller specifies
+a <tt class="docutils literal"><span class="pre">max_results</span></tt> parameter.</p>
+<p>By default, 50 comments are requested by these methods.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="typepadapp.settings.EVENTS_PER_PAGE">
+<tt class="descclassname">typepadapp.settings.</tt><tt class="descname">EVENTS_PER_PAGE</tt><a class="headerlink" href="#typepadapp.settings.EVENTS_PER_PAGE" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of events to request from event fetching methods of
+<cite>typepad.models.User</cite> instances.</p>
+<p>This setting governs the number of objects requested by the <cite>group_events()</cite>,
+<cite>group_assets()</cite>, and <cite>group_notifications()</cite> methods of
+<cite>typepadapp.models.User</cite> instances, unless a <tt class="docutils literal"><span class="pre">max_results</span></tt> parameter is
+specified by the caller.</p>
+<p>By default, 25 events are requested by these methods.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="typepadapp.settings.FRONTEND_CACHING">
+<tt class="descclassname">typepadapp.settings.</tt><tt class="descname">FRONTEND_CACHING</tt><a class="headerlink" href="#typepadapp.settings.FRONTEND_CACHING" title="Permalink to this definition">¶</a></dt>
+<dd>Setting that controls whether to use the Django caching framework for
+caching object data retrieved from the TypePad API.</dd></dl>
+
+<dl class="data">
+<dt id="typepadapp.settings.LOG_FORMAT">
+<tt class="descclassname">typepadapp.settings.</tt><tt class="descname">LOG_FORMAT</tt><a class="headerlink" href="#typepadapp.settings.LOG_FORMAT" title="Permalink to this definition">¶</a></dt>
+<dd><p>The format to use when logging messages.</p>
+<p>By default, messages are logged as <tt class="docutils literal"><span class="pre">&lt;logger</span> <span class="pre">name&gt;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="pre">&lt;level&gt;</span>&nbsp; <span class="pre">&lt;log</span> <span class="pre">message&gt;</span></tt>.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="typepadapp.settings.LOG_LEVEL">
+<tt class="descclassname">typepadapp.settings.</tt><tt class="descname">LOG_LEVEL</tt><a class="headerlink" href="#typepadapp.settings.LOG_LEVEL" title="Permalink to this definition">¶</a></dt>
+<dd><p>The default log level at which to log messages.</p>
+<p>For the root logger and other loggers for which a level is not specified in
+the <a title="typepadapp.settings.LOG_LEVELS" class="reference internal" href="#typepadapp.settings.LOG_LEVELS"><tt class="xref docutils literal"><span class="pre">LOG_LEVELS</span></tt></a> setting, only messages at <a title="typepadapp.settings.LOG_LEVEL" class="reference internal" href="#typepadapp.settings.LOG_LEVEL"><tt class="xref docutils literal"><span class="pre">LOG_LEVEL</span></tt></a> or more important are
+logged.</p>
+<p>By default, messages of <cite>INFO</cite> level and more important are displayed.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="typepadapp.settings.LOG_LEVELS">
+<tt class="descclassname">typepadapp.settings.</tt><tt class="descname">LOG_LEVELS</tt><a class="headerlink" href="#typepadapp.settings.LOG_LEVELS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Additional log levels at which specific loggers should log messages.</p>
+<p>This setting should be a dictionary of log levels keyed on logger name. Note
+more specific names inherit levels from more general names; for example, if a
+level for <tt class="docutils literal"><span class="pre">batchhttp.client.request</span></tt> isn&#8217;t included in <a title="typepadapp.settings.LOG_LEVELS" class="reference internal" href="#typepadapp.settings.LOG_LEVELS"><tt class="xref docutils literal"><span class="pre">LOG_LEVELS</span></tt></a>, it will
+inherit the level of the <tt class="docutils literal"><span class="pre">batchhttp.client</span></tt> logger (if set).</p>
+<p>By default, the <tt class="docutils literal"><span class="pre">remoteobjects.http</span></tt>, <tt class="docutils literal"><span class="pre">batchhttp.client</span></tt>, and
+<tt class="docutils literal"><span class="pre">typepad.oauthclient</span></tt> loggers are set to display <cite>WARNING</cite> and more
+important messages.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="typepadapp.settings.LONG_TERM_CACHE_PERIOD">
+<tt class="descclassname">typepadapp.settings.</tt><tt class="descname">LONG_TERM_CACHE_PERIOD</tt><a class="headerlink" href="#typepadapp.settings.LONG_TERM_CACHE_PERIOD" title="Permalink to this definition">¶</a></dt>
+<dd>Defines a cache timeout (in seconds) for cacheable items that can be
+cached more aggressively.</dd></dl>
+
+<dl class="data">
+<dt id="typepadapp.settings.MEMBERS_PER_WIDGET">
+<tt class="descclassname">typepadapp.settings.</tt><tt class="descname">MEMBERS_PER_WIDGET</tt><a class="headerlink" href="#typepadapp.settings.MEMBERS_PER_WIDGET" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of user accounts to request from member fetching methods of
+<cite>typepadapp.models.User</cite> instances.</p>
+<p>This setting governs the number of user accounts requested by the
+<cite>followers()</cite> and <cite>following()</cite> methods of <cite>typepadapp.models.User</cite> instances,
+unless a <tt class="docutils literal"><span class="pre">max_results</span></tt> parameter is specified by the caller.</p>
+<p>By default, 30 user accounts are requested by these methods.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="typepadapp.settings.TYPEPAD_COOKIES">
+<tt class="descclassname">typepadapp.settings.</tt><tt class="descname">TYPEPAD_COOKIES</tt><a class="headerlink" href="#typepadapp.settings.TYPEPAD_COOKIES" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary of additional cookies (values, keyed on cookie names) to send
+when making API requests to TypePad.</p>
+<p>Use this setting if you&#8217;re trying to use another API server besides TypePad
+that requires additional cookies in its API requests. By default, no additional
+cookies are sent.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="typepadapp.settings.TYPEPAD_IDENTIFY_PARAMS">
+<tt class="descclassname">typepadapp.settings.</tt><tt class="descname">TYPEPAD_IDENTIFY_PARAMS</tt><a class="headerlink" href="#typepadapp.settings.TYPEPAD_IDENTIFY_PARAMS" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary of additional parameters to pass when sending a user agent to
+identify on TypePad.</p>
+<p>Use this setting if you&#8217;re trying to identify user agents with a service other
+than TypePad that requires additional parameters to the OAuth identification
+request. By default, no additional parameters are sent.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="typepadapp.settings.WELCOME_URL">
+<tt class="descclassname">typepadapp.settings.</tt><tt class="descname">WELCOME_URL</tt><a class="headerlink" href="#typepadapp.settings.WELCOME_URL" title="Permalink to this definition">¶</a></dt>
+<dd><p>A URL for a welcome page to which to send newly registered site members.</p>
+<p>When group members register for the site from the home page, the authentication
+system will redirect them to this URL instead. If the <a title="typepadapp.settings.WELCOME_URL" class="reference internal" href="#typepadapp.settings.WELCOME_URL"><tt class="xref docutils literal"><span class="pre">WELCOME_URL</span></tt></a> setting is
+<a title="(in Python v2.6)" class="reference external" href="http://docs.python.org/library/constants.html#None"><tt class="xref xref docutils literal"><span class="pre">None</span></tt></a>, the new member is redirected back to the home page of the client site.
+If new members click the &#8220;Sign in or register&#8221; link from a page other than the
+home page, they are sent back to those pages to continue the action they wanted
+to take there.</p>
+<p>This setting defaults to <a title="(in Python v2.6)" class="reference external" href="http://docs.python.org/library/constants.html#None"><tt class="xref xref docutils literal"><span class="pre">None</span></tt></a> (no special welcome page).</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="index.html"
+                                  title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">typepadapp</span></tt> — core support for TypePad cloud applications</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="views.html"
+                                  title="next chapter">Class-Based Views</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="sources/settings.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="views.html" title="Class-Based Views"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="typepadapp — core support for TypePad cloud applications"
+             >previous</a> |</li>
+        <li><a href="index.html">typepadapp v1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Six Apart.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>
