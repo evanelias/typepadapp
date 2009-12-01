@@ -255,6 +255,14 @@ class CachedTypePadLinkPromise(object):
     def __getattr__(self, name):
         return getattr(self._inst, name)
 
+    def _get_entries(self):
+        return self._inst.entries
+
+    def _set_entries(self, val):
+        self._inst.entries = val
+
+    entries = property(fget=_get_entries, fset=_set_entries)
+
     def make_sequence_method(methodname):
         """Makes a new function that proxies calls to `methodname` to the
         `_inst` attribute of the instance on which the function is called as
