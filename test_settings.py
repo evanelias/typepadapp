@@ -46,4 +46,4 @@ LOG_LEVELS = {}
 BACKEND_URL = 'http://localhost'
 TYPEPAD_COOKIES = {}
 BATCH_REQUESTS = True
-
+FRONTEND_CACHING = True
