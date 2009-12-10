@@ -349,8 +349,8 @@ if settings.FRONTEND_CACHING:
 
     Asset.comments = cache_link(Asset.comments)
     asset_comments_invalidator = invalidate_rule(
-        key=lambda sender, parent=None, instance=None, **kwargs:
-            isinstance(instance, Comment) and parent and parent.comments,
+        key=lambda sender, instance=None, **kwargs:
+            isinstance(instance, Comment) and Asset.get_by_url_id(instance.in_reply_to.url_id).comments,
         signals=[signals.asset_created, signals.asset_deleted],
         name="asset comments list invalidation for commenting")
 
