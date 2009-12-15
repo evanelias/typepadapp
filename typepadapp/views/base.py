@@ -501,18 +501,72 @@ class TypePadView(GenericView):
         return self.render_to_response(template)
 
 
+class HubbedAtom1Feed(Atom1Feed):
+
+    """A `SyndicationFeed` with support for linking to a PubSubHubbub hub.
+
+    Provide ``hub_url`` as an extra parameter to include a hub ``<link />`` in
+    the feed.
+
+    """
+
+    def add_root_elements(self, handler):
+        """Adds the feed elements to the feed DOM node.
+
+        In addition to the regular `Atom1Feed` elements, this implementation
+        adds a ``<link rel="hub" />`` for the feed's PubSubHubbub hub, if
+        one was specified.
+
+        """
+        super(HubbedAtom1Feed, self).add_root_elements(handler)
+        try:
+            hub_url = self.feed['hub_url']
+        except KeyError:
+            pass
+        else:
+            handler.startElement('link', {'rel': 'hub', 'href': hub_url})
+            handler.endElement('link')
+
+
 class TypePadFeed(Feed):
 
     """A subclass of the Django `Feed` class that handles selecting data from
-    the TypePad client library."""
+    the TypePad client library.
 
-    feed_type = Atom1Feed
+    In addition to the regular `Feed` attributes, set a `TypePadFeed` class's
+    ``hub_url`` attribute (or supply a ``hub_url`` method) to link the feed to
+    a PubSubHubbub hub.
+
+    """
+
+    feed_type = HubbedAtom1Feed
 
     def get_object(self, *args, **kwargs):
         typepad.client.batch_request()
         self.select_from_typepad(*args, **kwargs)
         typepad.client.complete_batch()
         return getattr(self, 'object', None)
+
+    def feed_extra_kwargs(self, obj):
+        """Returns a dictionary of extra keyword arguments with which to
+        initialize the feed generator.
+
+        This implementation provides a ``hub_url`` argument with the value of
+        the `TypePadFeed` instance's ``hub_url`` attribute (or the return
+        value of its ``hub_url`` method if its ``hub_url`` attribute is
+        callable).
+
+        """
+        extras = super(TypePadFeed, self).feed_extra_kwargs(obj)
+        try:
+            hub_url = self.hub_url
+        except AttributeError:
+            pass
+        else:
+            if callable(hub_url):
+                hub_url = hub_url()
+            extras['hub_url'] = hub_url
+        return extras
 
     def select_from_typepad(self, *args, **kwargs):
         pass
