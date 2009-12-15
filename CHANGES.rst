@@ -1,6 +1,13 @@
 typepadapp Changelog
 ====================
 
+1.1.1 (2009-12-16)
+------------------
+
+* Resolved some cache invalidation bugs around comment deletion.
+* Fixed the HTTP status code for 500, 404 error handlers.
+
+
 1.1 (2009-11-24)
 ----------------
 
@@ -16,15 +23,18 @@ typepadapp Changelog
 * Fix for 'typepadproject' and 'typepadapp' commands under Django 1.1 so all template files are processed (not just '.py' files).
 * Fixed a bug that prevented issuing the 'post_save' signal for asset and comment posts.
 
+
 1.0.2 (2009-10-12)
 ------------------
 
 * Updated Django dependency for their security release.
 
+
 1.0.1 (2009-10-02)
 ------------------
 
 * Version bump for PyPi packaging issues.
+
 
 1.0 (2009-09-30)
 ----------------
