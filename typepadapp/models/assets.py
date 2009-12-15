@@ -340,12 +340,15 @@ if settings.FRONTEND_CACHING:
     Favorite.cache_namespace = "Favorite"
 
     Asset.get_by_url_id = cache_object(Asset.get_by_url_id)
-    # cache invalidation of parent asset when a new comment is created
-    asset_invalidator = invalidate_rule(
+    asset_invalidator_for_comments = invalidate_rule(
+        key=lambda sender, instance=None, **kwargs:
+            isinstance(instance, Comment) and Asset.get_by_url_id(instance.in_reply_to.url_id),
+        signals=[signals.asset_created, signals.asset_deleted],
+        name="asset object invalidation for commenting")
+    asset_invalidator_for_favorites = invalidate_rule(
         key=lambda sender, parent=None, **kwargs: parent,
-        signals=[signals.asset_created, signals.asset_deleted,
-            signals.favorite_created, signals.favorite_deleted],
-        name="asset object invalidation for commenting/favoriting")
+        signals=[signals.favorite_created, signals.favorite_deleted],
+        name="asset object invalidation for favoriting")
 
     Asset.comments = cache_link(Asset.comments)
     asset_comments_invalidator = invalidate_rule(
