@@ -39,7 +39,7 @@ except Exception:
 
 setup(
     name='typepadapp',
-    version='1.1',
+    version='1.1.1',
     description='A helper Django app for making TypePad applications',
     author='Six Apart',
     author_email='python@sixapart.com',
