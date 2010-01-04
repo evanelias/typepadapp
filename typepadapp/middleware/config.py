@@ -28,25 +28,21 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import logging
-import random
-import sys
-from types import MethodType
-from urlparse import urlparse
-from urllib import urlencode, quote
-import re
+from types import ModuleType
 
 from django.conf import settings
+from django.conf.urls.defaults import patterns, url
 from django.contrib.sessions.models import Session
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import resolve, Resolver404
 from django.core.exceptions import MiddlewareNotUsed
-from django.core.cache import cache
-from django.db import DatabaseError
-from oauth import oauth
+from django.http import HttpResponseNotFound
 
-import typepad
-from typepadapp.models.auth import OAuthClient
-import typepadapp.models
-from batchhttp.client import NonBatchResponseError
+
+wizard_urlconf = ModuleType('wizard_urlconf')
+
+wizard_urlconf.urlpatterns = patterns('typepadapp.middleware.config',
+    url(r'^$', 'incomplete_configuration'),
+)
 
 
 class ConfigurationMiddleware(object):
@@ -70,7 +66,7 @@ class ConfigurationMiddleware(object):
             pass
 
         self.log.debug('Showing incomplete configuration response due to missing keys')
-        return incomplete_configuration(request, missing_keys=True)
+        return self.incomplete_configuration(request, missing_keys=True)
 
     def check_local_database(self, request):
         try:
@@ -78,7 +74,22 @@ class ConfigurationMiddleware(object):
         except Exception, exc:
             self.log.debug('Showing incomplete configuration response due to uninitialized database (%s.%s: %s)',
                 type(exc).__module__, type(exc).__name__, str(exc))
-            return incomplete_configuration(request, missing_database=True)
+            return self.incomplete_configuration(request, missing_database=True)
+
+    def incomplete_configuration(self, request, **kwargs):
+        try:
+            view, args, kwargs = resolve(request.path, urlconf=wizard_urlconf)
+        except Resolver404:
+            return HttpResponseNotFound()
+
+        kwargs['request'] = request  # ??
+
+        try:
+            response = view(*args, **kwargs)
+        except Http404:
+            return HttpResponseNotFound()
+        else:
+            return response
 
 
 def incomplete_configuration(request, **kwargs):
