@@ -35,7 +35,8 @@ from django.conf.urls.defaults import patterns, url
 from django.contrib.sessions.models import Session
 from django.core.urlresolvers import resolve, Resolver404
 from django.core.exceptions import MiddlewareNotUsed
-from django.http import HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound
+from django.template import Template, Context
 
 
 wizard_urlconf = ModuleType('wizard_urlconf')
@@ -94,22 +95,22 @@ class ConfigurationMiddleware(object):
 
 def incomplete_configuration(request, **kwargs):
     """Create an incomplete configuration error response."""
-    from django.template import Template, Context
-    from django.http import HttpResponse
 
     # We're returning this before session middleware runs, so fake the
     # session set for djangoflash's process_response().
     request.session = ()
 
+    base_template = Template(BASE_TEMPLATE, name='Configuration base template')
     t = Template(CONFIGURATION_TEMPLATE, name='Incomplete configuration template')
     c = Context(dict(
+        base_template = base_template,
         project_name=settings.SETTINGS_MODULE.split('.')[0],
         **kwargs
     ))
     return HttpResponse(t.render(c), mimetype='text/html')
 
 
-CONFIGURATION_TEMPLATE = """
+BASE_TEMPLATE = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:at="http://www.sixapart.com/ns/at" id="sixapart-standard">
 <head>
@@ -140,11 +141,33 @@ CONFIGURATION_TEMPLATE = """
 
 <body>
 <div id="summary">
+    {% block summary %}
   <h1>It worked!</h1>
   <h2>Congratulations on your new TypePad-powered website.</h2>
+    {% endblock %}
 </div>
 
 <div id="instructions">
+    {% block instructions %}
+    {% endblock %}
+</div>
+
+<div id="explanation">
+    {% block explanation %}
+  <p>
+    You're seeing this message because you have <code>DEBUG = True</code> in your
+    Django settings file and you haven't finished configuring this installation.
+    Get to work!
+  </p>
+    {% endblock %}
+</div>
+</body>
+</html>
+"""
+
+CONFIGURATION_TEMPLATE = """
+{% extends base_template %}
+{% block instructions %}
   <p>Of course, you haven't actually done any work yet. Here's what to do next:</p>
   <ul>
     <li>Register your application on TypePad at <a href="http://www.typepad.com/account/access/api_key">http://www.typepad.com/account/access/api_key</a>, and get an application key and general purpose token.</li>
@@ -154,15 +177,5 @@ CONFIGURATION_TEMPLATE = """
     <li{% if missing_database %} class="thisone"{% endif %}><span>Initialize your database by running <code>python {{ project_name }}/manage.py syncdb</code>.</span></li>
     <li>Launch your site by running <code>python {{ project_name }}/manage.py runserver</code>.</li>
   </ul>
-</div>
-
-<div id="explanation">
-  <p>
-    You're seeing this message because you have <code>DEBUG = True</code> in your
-    Django settings file and you haven't finished configuring this installation.
-    Get to work!
-  </p>
-</div>
-</body>
-</html>
+{% endblock %}
 """
