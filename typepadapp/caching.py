@@ -31,7 +31,7 @@ import logging
 from django.core.cache import cache
 
 import typepad
-from typepadapp.debug_middleware import RequestStatTracker
+from typepadapp.middleware.debug import RequestStatTracker
 
 log = logging.getLogger('typepadapp.cache')
 
