@@ -76,5 +76,5 @@ if settings.FRONTEND_CACHING:
     Group.memberships = cache_link(Group.memberships)
     memberships_invalidator = invalidate_rule(
         key=lambda sender, group=None, **kwargs: group and group.memberships,
-        signals=[signals.member_banned, signals.member_unbanned, signals.member_joined],
-        name="group memberships for member_banned, member_unbanned, member_joined signals")
+        signals=[signals.member_banned, signals.member_unbanned, signals.member_joined, signals.member_left],
+        name="group memberships for member_banned, member_unbanned, member_joined, member_left signals")
