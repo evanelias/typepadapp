@@ -56,7 +56,7 @@ class ConfigurationMiddleware(object):
             raise MiddlewareNotUsed
 
     def process_request(self, request):
-        return self.check_keys(request) or self.check_local_database(request)
+        return self.check_local_database(request) or self.check_keys(request)
 
     def check_keys(self, request):
         try:
@@ -77,7 +77,7 @@ class ConfigurationMiddleware(object):
                 type(exc).__module__, type(exc).__name__, str(exc))
             return self.incomplete_configuration(request, missing_database=True)
 
-    def incomplete_configuration(self, request, **kwargs):
+    def incomplete_configuration(self, request, **reasons):
         try:
             view, args, kwargs = resolve(request.path, urlconf=wizard_urlconf)
         except Resolver404:
@@ -168,14 +168,28 @@ BASE_TEMPLATE = """
 CONFIGURATION_TEMPLATE = """
 {% extends base_template %}
 {% block instructions %}
-  <p>Of course, you haven't actually done any work yet. Here's what to do next:</p>
-  <ul>
-    <li>Register your application on TypePad at <a href="http://www.typepad.com/account/access/api_key">http://www.typepad.com/account/access/api_key</a>, and get an application key and general purpose token.</li>
-    <li{% if missing_keys %} class="thisone"{% endif %}><span>Edit the <code>OAUTH_*</code> settings in <code>{{ project_name }}/local_settings.py</code> to use your application's credentials.</span></li>
-    <li>If you plan on using a database other than sqlite, edit the <code>DATABASE_*</code> settings in <code>{{ project_name }}/local_settings.py</code>.</li>
-    <li>Create new TypePad apps to customize your site by running <code>python {{ project_name }}/manage.py typepadapp [appname]</code>.</li>
-    <li{% if missing_database %} class="thisone"{% endif %}><span>Initialize your database by running <code>python {{ project_name }}/manage.py syncdb</code>.</span></li>
-    <li>Launch your site by running <code>python {{ project_name }}/manage.py runserver</code>.</li>
-  </ul>
+
+    {% if missing_database %}
+        <p>You seem to be <strong>missing a database</strong>. Try:</p>
+
+        <blockquote><p><samp>python manage.py syncdb</samp></p></blockquote>
+
+        <p>to initialize the database.</p>
+
+        <p><button>Done!</button></p>
+    {% else %}{% if missing_keys %}
+        <p>Your application <strong>needs TypePad API keys</strong> to talk to TypePad.</p>
+
+        <p>
+        <a href="http://www.typepad.com/account/access/api_key">Get an application key</a>
+        <a href="http://www.typepad.com/account/access/api_key" class="arrow">&rarr;</a>
+        </p>
+
+        <p>Then paste your keys in below to save them:</p>
+
+        <form><textarea></textarea></form>
+
+        <p><button>Done!</button></p>
+    {% endif %}{% endif %}
 {% endblock %}
 """
