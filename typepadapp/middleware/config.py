@@ -35,7 +35,7 @@ from django.conf.urls.defaults import patterns, url
 from django.contrib.sessions.models import Session
 from django.core.urlresolvers import resolve, Resolver404
 from django.core.exceptions import MiddlewareNotUsed
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.template import Template, Context
 
 
@@ -67,7 +67,7 @@ class ConfigurationMiddleware(object):
             pass
 
         self.log.debug('Showing incomplete configuration response due to missing keys')
-        return self.incomplete_configuration(request, missing_keys=True)
+        return self.incomplete_configuration(request, reason='missing_keys')
 
     def check_local_database(self, request):
         try:
@@ -75,14 +75,15 @@ class ConfigurationMiddleware(object):
         except Exception, exc:
             self.log.debug('Showing incomplete configuration response due to uninitialized database (%s.%s: %s)',
                 type(exc).__module__, type(exc).__name__, str(exc))
-            return self.incomplete_configuration(request, missing_database=True)
+            return self.incomplete_configuration(request, reason='missing_database')
 
-    def incomplete_configuration(self, request, **reasons):
+    def incomplete_configuration(self, request, reason=None):
         try:
             view, args, kwargs = resolve(request.path, urlconf=wizard_urlconf)
         except Resolver404:
             return HttpResponseNotFound()
 
+        request.reason = reason
         kwargs['request'] = request  # ??
 
         try:
@@ -103,8 +104,9 @@ def incomplete_configuration(request, **kwargs):
     base_template = Template(BASE_TEMPLATE, name='Configuration base template')
     t = Template(CONFIGURATION_TEMPLATE, name='Incomplete configuration template')
     c = Context(dict(
-        base_template = base_template,
+        base_template=base_template,
         project_name=settings.SETTINGS_MODULE.split('.')[0],
+        reason=request.reason,
         **kwargs
     ))
     return HttpResponse(t.render(c), mimetype='text/html')
@@ -135,6 +137,8 @@ BASE_TEMPLATE = """
     #summary h2 { font-weight: normal; color: #666; }
     #explanation { background:#eee; }
     #instructions { background:#f6f6f6; }
+    #instructions p { margin-bottom: 1em; }
+    #instructions blockquote { margin-left: 2em; }
     #summary table { border:none; background:transparent; }
   </style>
 </head>
@@ -169,15 +173,15 @@ CONFIGURATION_TEMPLATE = """
 {% extends base_template %}
 {% block instructions %}
 
-    {% if missing_database %}
+    {% ifequal reason "missing_database" %}
         <p>You seem to be <strong>missing a database</strong>. Try:</p>
 
         <blockquote><p><samp>python manage.py syncdb</samp></p></blockquote>
 
         <p>to initialize the database.</p>
 
-        <p><button>Done!</button></p>
-    {% else %}{% if missing_keys %}
+        <p><button onclick="return document.location.reload()">Next &rarr;</button></p>
+    {% else %}{% ifequal reason "missing_keys" %}
         <p>Your application <strong>needs TypePad API keys</strong> to talk to TypePad.</p>
 
         <p>
@@ -190,6 +194,6 @@ CONFIGURATION_TEMPLATE = """
         <form><textarea></textarea></form>
 
         <p><button>Done!</button></p>
-    {% endif %}{% endif %}
+    {% endifequal %}{% endifequal %}
 {% endblock %}
 """
