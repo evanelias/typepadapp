@@ -139,6 +139,8 @@ BASE_TEMPLATE = """
     #instructions { background:#f6f6f6; }
     #instructions p { margin-bottom: 1em; }
     #instructions blockquote { margin-left: 2em; }
+    #instructions a.arrow { text-decoration: none }
+    #instructions textarea { width: 100%; height: 6em }
     #summary table { border:none; background:transparent; }
   </style>
 </head>
@@ -191,9 +193,10 @@ CONFIGURATION_TEMPLATE = """
 
         <p>Then paste your keys in below to save them:</p>
 
-        <form><textarea></textarea></form>
-
-        <p><button>Done!</button></p>
+        <form method="post" action="/save_keys">
+            <p><textarea></textarea></p>
+            <p><button>Save keys &rarr;</button></p>
+        </form>
     {% endifequal %}{% endifequal %}
 {% endblock %}
 """
