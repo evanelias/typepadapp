@@ -233,8 +233,8 @@ MISSING_KEYS_TEMPLATE = """
     <p>Your application <strong>needs TypePad API keys</strong> to talk to TypePad.</p>
 
     <p>
-    <a href="http://www.typepad.com/account/access/api_key">Get an application key</a>
-    <a href="http://www.typepad.com/account/access/api_key" class="arrow">&rarr;</a>
+    <a href="http://www.typepad.com/account/access/api_key" target="_new">Get an application key</a>
+    <a href="http://www.typepad.com/account/access/api_key" target="_new" class="arrow">&rarr;</a>
     </p>
 
     <p>Then paste your keys in below to save them:</p>
