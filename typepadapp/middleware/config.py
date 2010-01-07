@@ -145,7 +145,7 @@ def save_keys(request):
     # Assume we want local settings in the CWD.
     try:
         local_settings_file = file('local_settings.py', 'w')
-    except OSError:
+    except IOError:
         return render_wizard_page(request, MANUAL_SAVE_KEYS_TEMPLATE, local_settings=local_settings)
     local_settings_file.write(local_settings)
     local_settings_file.close()
