@@ -180,7 +180,7 @@ BASE_TEMPLATE = """
     #instructions p { margin-bottom: 1em; }
     #instructions blockquote { margin-left: 2em; }
     #instructions a.arrow { text-decoration: none }
-    #instructions textarea { width: 100%; height: 6em }
+    #instructions textarea { width: 100%; height: 12em }
     #summary table { border:none; background:transparent; }
   </style>
 </head>
@@ -283,7 +283,7 @@ MANUAL_SAVE_KEYS_TEMPLATE = """
 
     <p>We couldn't save your keys to disk, so <strong>add these settings to your <samp>local_settings.py</samp> file</strong>:</p>
 
-    <textarea>{{ local_settings }}</textarea>
+    <p><textarea>{{ local_settings }}</textarea></p>
 
     <p><button onclick="window.location.href = '/'; return false">Done &rarr;</button></p>
 
