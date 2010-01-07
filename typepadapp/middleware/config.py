@@ -84,7 +84,11 @@ class ConfigurationMiddleware(object):
             return HttpResponseNotFound()
 
         request.reason = reason
-        kwargs['request'] = request  # ??
+        kwargs['request'] = request
+
+        # We're returning this before session middleware runs, so fake the
+        # session set for djangoflash's process_response().
+        request.session = ()
 
         try:
             response = view(*args, **kwargs)
@@ -96,10 +100,6 @@ class ConfigurationMiddleware(object):
 
 def incomplete_configuration(request, **kwargs):
     """Create an incomplete configuration error response."""
-
-    # We're returning this before session middleware runs, so fake the
-    # session set for djangoflash's process_response().
-    request.session = ()
 
     base_template = Template(BASE_TEMPLATE, name='Configuration base template')
     t = Template(CONFIGURATION_TEMPLATE, name='Incomplete configuration template')
