@@ -112,9 +112,16 @@ def render_wizard_page(request, template, **kwargs):
     return HttpResponse(template.render(c), mimetype='text/html')
 
 
-def incomplete_configuration(request, **kwargs):
+def incomplete_configuration(request):
     """Create an incomplete configuration error response."""
-    return render_wizard_page(request, CONFIGURATION_TEMPLATE, reason=request.reason, **kwargs)
+    if request.reason == 'missing_database':
+        tmpl = MISSING_DATABASE_TEMPLATE
+    elif request.reason == 'missing_keys':
+        tmpl = MISSING_KEYS_TEMPLATE
+    else:
+        raise ValueError('Request has an unknown reason for incomplete configuration')
+
+    return render_wizard_page(request, tmpl)
 
 
 def save_keys(request):
@@ -186,36 +193,41 @@ BASE_TEMPLATE = """
 </html>
 """
 
-CONFIGURATION_TEMPLATE = """
+MISSING_DATABASE_TEMPLATE = """
 {% extends base_template %}
 {% block instructions %}
 
-    {% ifequal reason "missing_database" %}
-        <p>You seem to be <strong>missing a database</strong>. Try:</p>
+    <p>You seem to be <strong>missing a database</strong>. Try:</p>
 
-        <blockquote><p><samp>python manage.py syncdb</samp></p></blockquote>
+    <blockquote><p><samp>python manage.py syncdb</samp></p></blockquote>
 
-        <p>to initialize the database.</p>
+    <p>to initialize the database.</p>
 
-        <p><button onclick="return document.location.reload()">Next &rarr;</button></p>
-    {% else %}{% ifequal reason "missing_keys" %}
-        <p>Your application <strong>needs TypePad API keys</strong> to talk to TypePad.</p>
+    <p><button onclick="return document.location.reload()">Next &rarr;</button></p>
 
-        <p>
-        <a href="http://www.typepad.com/account/access/api_key">Get an application key</a>
-        <a href="http://www.typepad.com/account/access/api_key" class="arrow">&rarr;</a>
-        </p>
-
-        <p>Then paste your keys in below to save them:</p>
-
-        <form method="post" action="/save_keys">
-            <p><textarea name="keys"></textarea></p>
-            <p><button>Save keys &rarr;</button></p>
-        </form>
-    {% endifequal %}{% endifequal %}
 {% endblock %}
 """
 
+MISSING_KEYS_TEMPLATE = """
+{% extends base_template %}
+{% block instructions %}
+
+    <p>Your application <strong>needs TypePad API keys</strong> to talk to TypePad.</p>
+
+    <p>
+    <a href="http://www.typepad.com/account/access/api_key">Get an application key</a>
+    <a href="http://www.typepad.com/account/access/api_key" class="arrow">&rarr;</a>
+    </p>
+
+    <p>Then paste your keys in below to save them:</p>
+
+    <form method="post" action="/save_keys">
+        <p><textarea name="keys"></textarea></p>
+        <p><button>Save keys &rarr;</button></p>
+    </form>
+
+{% endblock %}
+"""
 
 SAVE_KEYS_TEMPLATE = """
 {% extends base_template %}
