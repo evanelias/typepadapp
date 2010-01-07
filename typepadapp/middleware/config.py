@@ -28,6 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import logging
+import re
 from types import ModuleType
 
 from django.conf import settings
@@ -130,8 +131,25 @@ def save_keys(request):
 
     # TODO: Find the keys inside the paste.
     paste = request.POST['keys']
+    (csr_key, acc_key, acc_secret) = re.findall(r'\b\w{16}\b', paste)
+    (csr_secret,) = re.findall(r'\b(?!Consumer)\w{8}\b', paste)
 
-    return render_wizard_page(request, SAVE_KEYS_TEMPLATE, keys=paste)
+    local_settings_tmpl = Template(LOCAL_SETTINGS_TEMPLATE)
+    local_settings = local_settings_tmpl.render(Context({
+        'consumer_key': csr_key,
+        'consumer_secret': csr_secret,
+        'access_key': acc_key,
+        'access_secret': acc_secret,
+    }))
+
+    # Assume we want local settings in the CWD.
+    try:
+        local_settings_file = file('local_settings.py', 'w')
+    except OSError:
+        return render_wizard_page(request, MANUAL_SAVE_KEYS_TEMPLATE, local_settings=local_settings)
+    local_settings_file.write(local_settings)
+    local_settings_file.close()
+    return render_wizard_page(request, SAVED_KEYS_TEMPLATE)
 
 
 BASE_TEMPLATE = """
@@ -229,11 +247,45 @@ MISSING_KEYS_TEMPLATE = """
 {% endblock %}
 """
 
-SAVE_KEYS_TEMPLATE = """
+LOCAL_SETTINGS_TEMPLATE = """
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
+
+# TypePad API access configuration.
+OAUTH_CONSUMER_KEY           = '{{ consumer_key }}'
+OAUTH_CONSUMER_SECRET        = '{{ consumer_secret }}'
+OAUTH_GENERAL_PURPOSE_KEY    = '{{ access_key }}'
+OAUTH_GENERAL_PURPOSE_SECRET = '{{ access_secret }}'
+
+# Database configuration.
+DATABASE_ENGINE = 'sqlite3'                # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+DATABASE_NAME = 'wizify.db'    # Or path to database file if using sqlite3.
+DATABASE_USER = ''                         # Not used with sqlite3.
+DATABASE_PASSWORD = ''                     # Not used with sqlite3.
+DATABASE_HOST = ''                         # Set to empty string for localhost. Not used with sqlite3.
+DATABASE_PORT = ''                         # Set to empty string for default. Not used with sqlite3.
+"""
+
+SAVED_KEYS_TEMPLATE = """
 {% extends base_template %}
 {% block instructions %}
 
-    <pre>{{ keys }}</pre>
+    <p>Your keys have been saved to your <samp>local_settings.py</samp> file. Let's see if this works!</p>
+
+    <p><button onclick="window.location.href = '/'; return false">Continue &rarr;</button></p>
+
+{% endblock %}
+"""
+
+MANUAL_SAVE_KEYS_TEMPLATE = """
+{% extends base_template %}
+{% block instructions %}
+
+    <p>We couldn't save your keys to disk, so <strong>add these settings to your <samp>local_settings.py</samp> file</strong>:</p>
+
+    <textarea>{{ local_settings }}</textarea>
+
+    <p><button onclick="window.location.href = '/'; return false">Done &rarr;</button></p>
 
 {% endblock %}
 """
