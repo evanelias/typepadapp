@@ -43,6 +43,7 @@ wizard_urlconf = ModuleType('wizard_urlconf')
 
 wizard_urlconf.urlpatterns = patterns('typepadapp.middleware.config',
     url(r'^$', 'incomplete_configuration'),
+    url(r'^save_keys$', 'save_keys'),
 )
 
 
@@ -98,18 +99,32 @@ class ConfigurationMiddleware(object):
             return response
 
 
-def incomplete_configuration(request, **kwargs):
-    """Create an incomplete configuration error response."""
+def render_wizard_page(request, template, **kwargs):
+    if not isinstance(template, Template):
+        template = Template(template)
 
     base_template = Template(BASE_TEMPLATE, name='Configuration base template')
-    t = Template(CONFIGURATION_TEMPLATE, name='Incomplete configuration template')
     c = Context(dict(
         base_template=base_template,
         project_name=settings.SETTINGS_MODULE.split('.')[0],
-        reason=request.reason,
         **kwargs
     ))
-    return HttpResponse(t.render(c), mimetype='text/html')
+    return HttpResponse(template.render(c), mimetype='text/html')
+
+
+def incomplete_configuration(request, **kwargs):
+    """Create an incomplete configuration error response."""
+    return render_wizard_page(request, CONFIGURATION_TEMPLATE, reason=request.reason, **kwargs)
+
+
+def save_keys(request):
+    if request.method != 'POST':
+        return HttpResponse('POST required to save keys', status=400, content_type='text/plain')
+
+    # TODO: Find the keys inside the paste.
+    paste = request.POST['keys']
+
+    return render_wizard_page(request, SAVE_KEYS_TEMPLATE, keys=paste)
 
 
 BASE_TEMPLATE = """
@@ -194,9 +209,20 @@ CONFIGURATION_TEMPLATE = """
         <p>Then paste your keys in below to save them:</p>
 
         <form method="post" action="/save_keys">
-            <p><textarea></textarea></p>
+            <p><textarea name="keys"></textarea></p>
             <p><button>Save keys &rarr;</button></p>
         </form>
     {% endifequal %}{% endifequal %}
 {% endblock %}
 """
+
+
+SAVE_KEYS_TEMPLATE = """
+{% extends base_template %}
+{% block instructions %}
+
+    <pre>{{ keys }}</pre>
+
+{% endblock %}
+"""
+
