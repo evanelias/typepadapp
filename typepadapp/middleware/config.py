@@ -83,7 +83,7 @@ class ConfigurationMiddleware(object):
         try:
             view, args, kwargs = resolve(request.path, urlconf=wizard_urlconf)
         except Resolver404:
-            return HttpResponseNotFound()
+            return HttpResponseNotFound('not found', content_type='text/plain')
 
         request.reason = reason
         kwargs['request'] = request
@@ -95,7 +95,7 @@ class ConfigurationMiddleware(object):
         try:
             response = view(*args, **kwargs)
         except Http404:
-            return HttpResponseNotFound()
+            return HttpResponseNotFound('not found', content_type='text/plain')
         else:
             return response
 
