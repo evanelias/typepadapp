@@ -158,10 +158,11 @@ BASE_TEMPLATE = """
 <head>
   <style type="text/css">
     html * { padding:0; margin:0; }
-    body * { padding:10px 20px; }
-    body * * { padding:0; }
+    body * * { padding:10px 20px; }
+    body * * * { padding:0; }
     body { font:small sans-serif; }
-    body>div { border-bottom:1px solid #ddd; }
+    div#body>div { border-bottom:1px solid #ddd; }
+    div#body { width: 500px; margin: 0 auto; }
     h1 { font-weight:normal; }
     h2 { margin-bottom:.8em; }
     h2 span { font-size:80%; color:#666; font-weight:normal; }
@@ -186,26 +187,28 @@ BASE_TEMPLATE = """
 </head>
 
 <body>
-<div id="summary">
-    {% block summary %}
-  <h1>It worked!</h1>
-  <h2>Congratulations on your new TypePad-powered website.</h2>
-    {% endblock %}
-</div>
+<div id="body">
+    <div id="summary">
+        {% block summary %}
+      <h1>It worked!</h1>
+      <h2>Congratulations on your new TypePad-powered website.</h2>
+        {% endblock %}
+    </div>
 
-<div id="instructions">
-    {% block instructions %}
-    {% endblock %}
-</div>
+    <div id="instructions">
+        {% block instructions %}
+        {% endblock %}
+    </div>
 
-<div id="explanation">
-    {% block explanation %}
-  <p>
-    You're seeing this message because you have <code>DEBUG = True</code> in your
-    Django settings file and you haven't finished configuring this installation.
-    Get to work!
-  </p>
-    {% endblock %}
+    <div id="explanation">
+        {% block explanation %}
+      <p>
+        You're seeing this message because you have <code>DEBUG = True</code> in your
+        Django settings file and you haven't finished configuring this installation.
+        Get to work!
+      </p>
+        {% endblock %}
+    </div>
 </div>
 </body>
 </html>
