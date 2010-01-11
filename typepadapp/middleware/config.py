@@ -28,6 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import logging
+import os
 from os.path import dirname, join
 import re
 from types import ModuleType
@@ -133,25 +134,43 @@ def save_keys(request):
     if request.method != 'POST':
         return HttpResponse('POST required to save keys', status=400, content_type='text/plain')
 
-    # TODO: Find the keys inside the paste.
+    # Find the keys inside the paste.
     paste = request.POST['keys']
     (csr_key, acc_key, acc_secret) = re.findall(r'\b\w{16}\b', paste)
     (csr_secret,) = re.findall(r'\b(?!Consumer)\w{8}\b', paste)
 
-    local_settings_tmpl = Template(LOCAL_SETTINGS_TEMPLATE)
-    local_settings = local_settings_tmpl.render(Context({
-        'consumer_key': csr_key,
-        'consumer_secret': csr_secret,
-        'access_key': acc_key,
-        'access_secret': acc_secret,
-    }))
+    # TODO: handle not finding all the keys?
 
     # Assume we want local settings in the CWD.
+    local_settings_filename = os.path.abspath('local_settings.py')
+    log = logging.getLogger('.'.join((__name__, 'save_keys')))
+    log.debug('Saving keys into %r', local_settings_filename)
+
     try:
-        local_settings_file = file('local_settings.py', 'w')
+        local_settings_file = open(local_settings_filename, 'r+')
+        os.unlink(local_settings_filename)
+        new_settings_file = open(local_settings_filename, 'w')
     except IOError:
         return render_wizard_page(request, MANUAL_SAVE_KEYS_TEMPLATE, local_settings=local_settings)
-    local_settings_file.write(local_settings)
+
+    key_settings = {
+        'OAUTH_CONSUMER_KEY': csr_key,
+        'OAUTH_CONSUMER_SECRET': csr_secret,
+        'OAUTH_GENERAL_PURPOSE_KEY': acc_key,
+        'OAUTH_GENERAL_PURPOSE_SECRET': acc_secret,
+    }
+
+    def settings_line_for_match(mo):
+        log.debug('Updating line with match %r', mo)
+        key = mo.group(1)
+        value = key_settings.get(key, '')
+        return mo.expand(r'\1\2\3%s\3') % value
+
+    for line in local_settings_file.xreadlines():
+        line = re.sub(r'^(OAUTH_\w+)(\s*=\s*)([\'"])\3', settings_line_for_match, line)
+        new_settings_file.write(line)
+
+    new_settings_file.close()
     local_settings_file.close()
     return render_wizard_page(request, SAVED_KEYS_TEMPLATE)
 
@@ -268,25 +287,6 @@ MISSING_KEYS_TEMPLATE = """
     </form>
 
 {% endblock %}
-"""
-
-LOCAL_SETTINGS_TEMPLATE = """
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
-
-# TypePad API access configuration.
-OAUTH_CONSUMER_KEY           = '{{ consumer_key }}'
-OAUTH_CONSUMER_SECRET        = '{{ consumer_secret }}'
-OAUTH_GENERAL_PURPOSE_KEY    = '{{ access_key }}'
-OAUTH_GENERAL_PURPOSE_SECRET = '{{ access_secret }}'
-
-# Database configuration.
-DATABASE_ENGINE = 'sqlite3'                # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_NAME = 'wizify.db'    # Or path to database file if using sqlite3.
-DATABASE_USER = ''                         # Not used with sqlite3.
-DATABASE_PASSWORD = ''                     # Not used with sqlite3.
-DATABASE_HOST = ''                         # Set to empty string for localhost. Not used with sqlite3.
-DATABASE_PORT = ''                         # Set to empty string for default. Not used with sqlite3.
 """
 
 SAVED_KEYS_TEMPLATE = """
