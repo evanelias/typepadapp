@@ -226,7 +226,6 @@ BASE_TEMPLATE = """
       <p>
         You're seeing this message because you have <code>DEBUG = True</code> in your
         Django settings file and you haven't finished configuring this installation.
-        Get to work!
       </p>
         {% endblock %}
     </div>
@@ -256,12 +255,12 @@ MISSING_KEYS_TEMPLATE = """
 
     <p>Your application <strong>needs TypePad API keys</strong> to talk to TypePad.</p>
 
-    <p>
+    <p><big>
     <a href="http://www.typepad.com/account/access/api_key" target="_new">Get an application key</a>
     <a href="http://www.typepad.com/account/access/api_key" target="_new" class="arrow">&rarr;</a>
-    </p>
+    </big></p>
 
-    <p>Then paste your keys in below to save them:</p>
+    <p>Then paste <strong>all four parts</strong> of your key in below to save it:</p>
 
     <form method="post" action="/save_keys">
         <p><textarea name="keys"></textarea></p>
