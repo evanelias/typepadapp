@@ -28,6 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import logging
+from os.path import dirname, join
 import re
 from types import ModuleType
 
@@ -45,6 +46,9 @@ wizard_urlconf = ModuleType('wizard_urlconf')
 wizard_urlconf.urlpatterns = patterns('typepadapp.middleware.config',
     url(r'^$', 'incomplete_configuration'),
     url(r'^save_keys$', 'save_keys'),
+) + patterns('',
+    url(r'^(?P<path>images/\w+\.png)$', 'django.views.static.serve',
+        {'document_root': join(dirname(dirname(__file__)), 'static')}),
 )
 
 
@@ -174,10 +178,22 @@ BASE_TEMPLATE = """
     tbody th { width:12em; text-align:right; color:#666; padding-right:.5em; }
     ul { margin-left: 2em; margin-top: 1em; }
     li.thisone span { background-color: #e8ff66; }
-    #summary { background: #e0ebff; }
-    #summary h2 { font-weight: normal; color: #666; }
+    #banner {
+        position: relative;
+        height: 80px;
+        background: #e0ebff url(/images/burst.png) no-repeat center bottom;
+    }
+    #logo {
+        position: absolute;
+        left: 215px;
+        top: 45px;
+        width: 70px;
+        height: 70px;
+        background: url(/images/typepad.png) no-repeat center center
+    }
+    #summary { display: none; }
     #explanation { background:#eee; }
-    #instructions { background:#f6f6f6; }
+    #instructions { background:#f6f6f6; padding-top: 30px }
     #instructions p { margin-bottom: 1em; }
     #instructions blockquote { margin-left: 2em; }
     #instructions a.arrow { text-decoration: none }
@@ -188,6 +204,11 @@ BASE_TEMPLATE = """
 
 <body>
 <div id="body">
+
+    <div id="banner">
+        <div id="logo">&nbsp;</div>
+    </div>
+
     <div id="summary">
         {% block summary %}
       <h1>It worked!</h1>
