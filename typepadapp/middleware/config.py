@@ -146,19 +146,19 @@ def save_keys(request):
     log = logging.getLogger('.'.join((__name__, 'save_keys')))
     log.debug('Saving keys into %r', local_settings_filename)
 
-    try:
-        local_settings_file = open(local_settings_filename, 'r+')
-        os.unlink(local_settings_filename)
-        new_settings_file = open(local_settings_filename, 'w')
-    except IOError:
-        return render_wizard_page(request, MANUAL_SAVE_KEYS_TEMPLATE, local_settings=local_settings)
-
     key_settings = {
         'OAUTH_CONSUMER_KEY': csr_key,
         'OAUTH_CONSUMER_SECRET': csr_secret,
         'OAUTH_GENERAL_PURPOSE_KEY': acc_key,
         'OAUTH_GENERAL_PURPOSE_SECRET': acc_secret,
     }
+
+    try:
+        local_settings_file = open(local_settings_filename, 'r+')
+        os.unlink(local_settings_filename)
+        new_settings_file = open(local_settings_filename, 'w')
+    except IOError:
+        return render_wizard_page(request, MANUAL_SAVE_KEYS_TEMPLATE, local_settings=key_settings)
 
     def settings_line_for_match(mo):
         log.debug('Updating line with match %r', mo)
@@ -306,7 +306,10 @@ MANUAL_SAVE_KEYS_TEMPLATE = """
 
     <p>We couldn't save your keys to disk, so <strong>add these settings to your <samp>local_settings.py</samp> file</strong>:</p>
 
-    <p><textarea>{{ local_settings }}</textarea></p>
+    <p><textarea>OAUTH_CONSUMER_KEY = '{{ local_settings.OAUTH_CONSUMER_KEY }}'
+OAUTH_CONSUMER_SECRET = '{{ local_settings.OAUTH_CONSUMER_SECRET }}'
+OAUTH_GENERAL_PURPOSE_KEY = '{{ local_settings.OAUTH_GENERAL_PURPOSE_KEY }}'
+OAUTH_GENERAL_PURPOSE_SECRET = '{{ local_settings.OAUTH_GENERAL_PURPOSE_SECRET }}'</textarea></p>
 
     <p><button onclick="window.location.href = '/'; return false">Done &rarr;</button></p>
 
