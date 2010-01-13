@@ -39,6 +39,9 @@ import time
 
 class Group(typepad.Group):
 
+    admin_list = None
+    admin_list_time = 0
+
     def __init__(self, *args, **kwargs):
         super(Group, self).__init__(*args, **kwargs)
         self.admin_list = None
