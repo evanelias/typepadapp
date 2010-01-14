@@ -34,17 +34,22 @@ import typepad
 from typepadapp.models.assets import Event
 from typepadapp import signals
 
+import time
+
 
 class Group(typepad.Group):
 
     admin_list = None
+    admin_list_time = 0
 
     def __init__(self, *args, **kwargs):
         super(Group, self).__init__(*args, **kwargs)
         self.admin_list = None
+        self.admin_list_time = 0
 
     def admins(self):
-        if self.admin_list is None:
+        # cache in-process for up to 5 minutes
+        if self.admin_list_time < time.time() + settings.LONG_TERM_CACHE_PERIOD:
             admin_list_key = self.cache_key + ':admin_list'
 
             admin_list = cache.get(admin_list_key)
@@ -54,6 +59,7 @@ class Group(typepad.Group):
                 cache.set(admin_list_key, admin_list)
 
             self.admin_list = admin_list
+            self.admin_list_time = time.time()
 
         return self.admin_list
 
@@ -76,5 +82,5 @@ if settings.FRONTEND_CACHING:
     Group.memberships = cache_link(Group.memberships)
     memberships_invalidator = invalidate_rule(
         key=lambda sender, group=None, **kwargs: group and group.memberships,
-        signals=[signals.member_banned, signals.member_unbanned, signals.member_joined],
-        name="group memberships for member_banned, member_unbanned, member_joined signals")
+        signals=[signals.member_banned, signals.member_unbanned, signals.member_joined, signals.member_left],
+        name="group memberships for member_banned, member_unbanned, member_joined, member_left signals")

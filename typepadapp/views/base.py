@@ -428,7 +428,10 @@ class TypePadView(GenericView):
             return response
 
         self.select_from_typepad(request, *args, **kwargs)
-        typepad.client.complete_batch()
+        try:
+            typepad.client.complete_batch()
+        except typepad.TypePadObject.NotFound:
+            raise http.Http404
 
         # Page parameter assignment
         if self.paginate_by and self.object_list is not None:
@@ -544,7 +547,10 @@ class TypePadFeed(Feed):
     def get_object(self, *args, **kwargs):
         typepad.client.batch_request()
         self.select_from_typepad(*args, **kwargs)
-        typepad.client.complete_batch()
+        try:
+            typepad.client.complete_batch()
+        except typepad.TypePadObject.NotFound:
+            raise http.Http404
         return getattr(self, 'object', None)
 
     def feed_extra_kwargs(self, obj):

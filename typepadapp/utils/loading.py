@@ -120,27 +120,29 @@ def configure_typepad_client(**kwargs):
         # this will create a typepad.client that caches
         from typepadapp.caching import CachingTypePadClient
         # lets increase that timeout to 20 seconds
-        typepad.client = CachingTypePadClient(timeout=20)
+        client = CachingTypePadClient(timeout=20)
+    else:
+        client = typepad.client or TypePadClient(timeout=20)
 
-    if not typepad.client:
-        typepad.client = TypePadClient()
-
-    typepad.client.endpoint = settings.BACKEND_URL
+    client.endpoint = settings.BACKEND_URL
 
     log = logging.getLogger('typepadapp.utils.loading')
-    # log.info('Configuring HTTP caching')
-    # typepad.client.cache = DjangoHttplib2Cache()
 
     if settings.TYPEPAD_COOKIES:
-        typepad.client.cookies.update(settings.TYPEPAD_COOKIES)
+        client.cookies.update(settings.TYPEPAD_COOKIES)
 
     if not settings.BATCH_REQUESTS:
         typepad.TypePadObject.batch_requests = False
 
+    return client
+
+typepad.client_factory = configure_typepad_client
 post_start.connect(configure_typepad_client)
 
 
 def clear_client_request(signal, sender, **kwargs):
-    typepad.client.clear_batch()
+    if hasattr(typepad.client._local, 'client'):
+        # Condition this operation; not all requests instantiate a client
+        typepad.client.clear_batch()
 
 django.core.signals.request_finished.connect(clear_client_request)
