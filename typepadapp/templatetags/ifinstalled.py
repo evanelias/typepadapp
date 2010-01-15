@@ -33,12 +33,12 @@ from django.conf import settings
 register = template.Library()
 
 
-class IfinstalledEmptyNode(template.Node):
+class IfInstalledEmptyNode(template.Node):
     def render(self, context):
         return ''
 
 
-class IfinstalledNode(template.Node):
+class IfInstalledNode(template.Node):
     def __init__(self, template_nodes):
         self.template_nodes = template_nodes
 
@@ -55,7 +55,7 @@ def ifinstalled(parser, token):
     if bits[1] in settings.INSTALLED_APPS:
         nodes = parser.parse(('endifinstalled',))
         parser.delete_first_token()
-        return IfinstalledNode(nodes)
+        return IfInstalledNode(nodes)
     else:
         parser.skip_past('endifinstalled')
-        return IfinstalledEmptyNode()
+        return IfInstalledEmptyNode()
