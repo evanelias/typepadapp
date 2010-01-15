@@ -49,7 +49,7 @@ class Group(typepad.Group):
 
     def admins(self):
         # cache in-process for up to 5 minutes
-        if self.admin_list_time < time.time() + settings.LONG_TERM_CACHE_PERIOD:
+        if self.admin_list_time + settings.LONG_TERM_CACHE_PERIOD < time.time():
             admin_list_key = self.cache_key + ':admin_list'
 
             admin_list = cache.get(admin_list_key)
