@@ -48,13 +48,14 @@ class Group(typepad.Group):
         self.admin_list_time = 0
 
     def admins(self):
-        # cache in-process for up to 5 minutes
+        # cache in-process for the long-term cache period
         if self.admin_list_time + settings.LONG_TERM_CACHE_PERIOD < time.time():
             admin_list_key = self.cache_key + ':admin_list'
 
             admin_list = cache.get(admin_list_key)
             if admin_list is None:
-                admin_list = self.memberships.filter(admin=True, batch=False, cache=False)
+                admin_list = self.memberships.filter(admin=True, batch=False,
+                    cache=False)
                 admin_list.deliver()
                 cache.set(admin_list_key, admin_list)
 

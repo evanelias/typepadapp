@@ -45,12 +45,14 @@ from django.template import loader, loader_tags, NodeList, Template, TemplateDoe
 from django.template.context import Context
 from django.utils.safestring import mark_safe
 
+from django.conf import settings
 
 def get_template(template_name):
-    if template_name not in _template_cache:
+    cache_name = getattr(settings, 'group_host', '*') + ':' + template_name
+    if cache_name not in _template_cache:
         source, origin = find_template_source(template_name)
-        _template_cache[template_name] = get_template_from_string(source, origin, template_name)
-    return _template_cache[template_name]
+        _template_cache[cache_name] = get_template_from_string(source, origin, template_name)
+    return _template_cache[cache_name]
 
 
 def Template__render(self, context):
@@ -239,6 +241,7 @@ def setup():
     "Monkeypunch!"
     loader.get_template.func_code = get_template.func_code
     loader.get_template.func_globals['_template_cache'] = {}
+    loader.get_template.func_globals['settings'] = settings
     Context.__init__ = Context__init
     Template.render = Template__render
     loader_tags.BlockNode.render = BlockNode__render

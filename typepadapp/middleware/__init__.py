@@ -109,7 +109,7 @@ class UserAgentMiddleware(object):
         """
 
         # static requests don't require auth
-        if re.match('/?static/.*', request.path):
+        if request.path.find('/static/') == 0:
             return None
 
         request.oauth_client = OAuthClient(request.application)
@@ -139,79 +139,17 @@ class UserAgentMiddleware(object):
         return None
 
 
-class ApplicationMiddleware(object):
 
-    def __init__(self):
-        self.app = None
-        self.group = None
+def ApplicationMiddleware(*args, **kwargs):
 
-    def discover_group(self, request):
-        log = logging.getLogger('.'.join((self.__module__, self.__class__.__name__)))
+    if settings.MULTIGROUP:
+        from typepadapp.middleware.group import MultiGroupMiddleware
+        cls = MultiGroupMiddleware
+    else:
+        from typepadapp.middleware.group import SingleGroupMiddleware
+        cls = SingleGroupMiddleware
 
-        # check for a cached app/group first
-        app_key = 'application:%s' % settings.OAUTH_CONSUMER_KEY
-        group_key = 'group:%s' % settings.OAUTH_CONSUMER_KEY
-
-        # we cache in-process and in cache to support both situtations
-        # where a cache is unavailable (cache is dummy), and situtations
-        # where the application persistence is poor (Google App Engine)
-        app = self.app or cache.get(app_key)
-        group = self.group or cache.get(group_key)
-        if app is None or group is None:
-            log.info('Loading group info...')
-
-            # Grab the group and app with the default credentials.
-            consumer = oauth.OAuthConsumer(settings.OAUTH_CONSUMER_KEY,
-                settings.OAUTH_CONSUMER_SECRET)
-            token = oauth.OAuthToken(settings.OAUTH_GENERAL_PURPOSE_KEY,
-                settings.OAUTH_GENERAL_PURPOSE_SECRET)
-            backend = urlparse(settings.BACKEND_URL)
-            typepad.client.clear_credentials()
-            typepad.client.add_credentials(consumer, token, domain=backend[1])
-
-            typepad.client.batch_request()
-            try:
-                api_key = typepad.ApiKey.get_by_api_key(
-                    settings.OAUTH_CONSUMER_KEY)
-                token = typepad.AuthToken.get_by_key_and_token(
-                    settings.OAUTH_CONSUMER_KEY,
-                    settings.OAUTH_GENERAL_PURPOSE_KEY)
-                typepad.client.complete_batch()
-            except Exception, exc:
-                log.error('Error loading Application %s: %s' % (settings.OAUTH_CONSUMER_KEY, str(exc)))
-                raise
-
-            app = api_key.owner
-            group = token.target
-
-            log.info("Running for group: %s", group.display_name)
-
-            cache.set(app_key, app, settings.LONG_TERM_CACHE_PERIOD)
-            cache.set(group_key, group, settings.LONG_TERM_CACHE_PERIOD)
-
-        if settings.SESSION_COOKIE_NAME is None:
-            settings.SESSION_COOKIE_NAME = "sg_%s" % group.url_id
-
-        self.app = app
-        self.group = group
-
-        return app, group
-
-    def process_request(self, request):
-        """Adds the application and group to the request."""
-
-        if request.path.find('/static/') == 0:
-            return None
-
-        app, group = self.discover_group(request)
-
-        typepadapp.models.APPLICATION = app
-        typepadapp.models.GROUP = group
-
-        request.application = app
-        request.group = group
-
-        return None
+    return cls(*args, **kwargs)
 
 
 class AuthorizationExceptionMiddleware(object):

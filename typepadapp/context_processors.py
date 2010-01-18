@@ -37,10 +37,10 @@ def settings(request):
     Django settings module (the 'safe' settings).
     """
 
-    host = request.META['HTTP_HOST'].lower()
+    host = request.get_host().lower()
     if host not in view_settings_cache:
-        view_settings_cache[host] = dict(((k.lower(), v) for (k, v) in
-                                           debug.get_safe_settings().iteritems()))
+        view_settings_cache[host] = dict(((k.lower(), v) for (k, v) in \
+            debug.get_safe_settings().iteritems()))
 
     return {
         'settings': view_settings_cache[host],

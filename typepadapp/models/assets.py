@@ -104,12 +104,11 @@ class Asset(typepad.Asset):
 
     @property
     def is_local(self):
-        """ Boolean property identifying whether the asset belongs to the
-        group assigned to typepadapp.models.GROUP. """
-        try:
-            return typepadapp.models.GROUP.id in self.groups
-        except:
-            return False
+        """ Deprecated; use ``is_local_for_group`` instead. """
+        return False
+
+    def is_local_for_group(self, group):
+        return group.id in self.groups
 
     def get_comments(self, start_index=1, max_results=None, **kwargs):
         if max_results is None:

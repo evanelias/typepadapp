@@ -27,13 +27,38 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from assets import *
-from auth import *
-from groups import *
-from users import *
-from profiles import *
+from django import template
 
-import typepadapp.signals
-import typepadapp.utils.loading
+register = template.Library()
 
-typepadapp.signals.post_start.send(None)
+
+class IfGroupAdminNode(template.Node):
+    def __init__(self, true_nodes, false_nodes, user_var):
+        self.true_nodes = true_nodes
+        self.false_nodes = false_nodes
+        self.user_var = user_var
+
+    def render(self, context):
+        user = context.get(self.user_var)
+        req = context.get('request')
+        group = req.group
+        if user.is_group_admin(group):
+            return self.true_nodes.render(context)
+        else:
+            return self.false_nodes.render(context)
+
+@register.tag
+def ifgroupadmin(parser, token):
+    try:
+        tag_name, user = token.split_contents()
+    except ValueError:
+        raise template.TemplateSyntaxError("%r tag requires one argument (user variable)" % token.contents.split()[0])
+
+    true_nodes = parser.parse(('else', 'endifgroupadmin'))
+    token = parser.next_token()
+    if token.contents == 'else':
+        false_nodes = parser.parse(('endifgroupadmin',))
+        parser.delete_first_token()
+    else:
+        false_nodes = template.NodeList()
+    return IfGroupAdminNode(true_nodes, false_nodes, user)

@@ -392,10 +392,28 @@ class TypePadView(GenericView):
                 return False, response
             if self.admin_required:
                 # additionally, user must be an admin
-                if not request.user.is_superuser:
+                if (not request.user.is_authenticated()) or \
+                    (not request.user.is_group_admin(request.group)):
                     # pretend this url doesn't exist?
                     raise http.Http404
         return True, None
+
+    def permissions_context(self, request, *args, **kwargs):
+        if not (hasattr(request, 'group') and hasattr(request, 'user')):
+            return {}
+
+        group = request.group
+        user = request.user
+        if user.is_authenticated():
+            return {
+                'permissions': {
+                    'can_post': user.can_post_to_group(group),
+                    'is_staff': user.is_group_staff(group),
+                    'is_admin': user.is_group_admin(group),
+                }
+            }
+        else:
+            return {}
 
     def typepad_request(self, request, *args, **kwargs):
         """
@@ -432,6 +450,8 @@ class TypePadView(GenericView):
             typepad.client.complete_batch()
         except typepad.TypePadObject.NotFound:
             raise http.Http404
+
+        self.context.update(self.permissions_context(request))
 
         # Page parameter assignment
         if self.paginate_by and self.object_list is not None:

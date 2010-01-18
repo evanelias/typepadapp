@@ -31,6 +31,18 @@
 import os
 import logging
 
+MULTIGROUP = False
+"""Controls whether the Django project will be handling servicing TypePad
+groups.
+
+"""
+
+APP_FOR_HOST = {}
+"""Dictionary mapping hostnames to Django application names when running
+in a multigroup configuration.
+
+"""
+
 TYPEPAD_COOKIES = {}
 """A dictionary of additional cookies (values, keyed on cookie names) to send
 when making API requests to TypePad.

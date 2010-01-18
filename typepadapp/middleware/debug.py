@@ -284,8 +284,12 @@ class DebugToolbarMiddleware(object):
             raise MiddlewareNotUsed
         else:
             # Remap typepad.client's class to TypePadClientStatTracker
-            client = typepad.client.client
-            client.__class__ = get_typepad_client(client.__class__)
+            old_factory = typepad.client_factory
+            def debug_client_factory():
+                client = old_factory()
+                client.__class__ = get_typepad_client(client.__class__)
+                return client
+            typepad.client_factory = debug_client_factory
 
     def process_request(self, request):
         """Setup the request monitor."""

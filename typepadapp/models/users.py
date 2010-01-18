@@ -75,9 +75,6 @@ class User(typepad.User):
 
     @property
     def is_superuser(self):
-        for admin in typepadapp.models.GROUP.admins():
-            if self.id == admin.target.id:
-                return True
         return False
 
     @property
@@ -86,24 +83,34 @@ class User(typepad.User):
         return settings.FEATURED_MEMBER in (self.xid,
             self.preferred_username)
 
+    def is_group_staff(self, group):
+        return self.is_group_admin(group) or self.is_featured_member
+
+    def is_group_admin(self, group):
+        for admin in group.admins():
+            if self.id == admin.target.id:
+                return True
+        return False
+
     @property
     def date_joined(self):
         return None # does this need to be a datetime?
 
     @property
     def groups(self):
-        #return self._groups
         raise NotImplementedError
 
     @property
     def can_post(self):
-        if self.is_active and self.is_staff:
+        return False
+
+    def can_post_to_group(self, group):
+        if self.is_active and self.is_group_staff(group):
             return True
         return settings.ALLOW_COMMUNITY_POSTS
 
     @property
     def user_permissions(self):
-        #return self._user_permissions
         raise NotImplementedError
 
     class Meta:
