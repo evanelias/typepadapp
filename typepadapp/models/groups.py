@@ -27,12 +27,60 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from django.core.cache import cache
+from django.conf import settings
+
 import typepad
-from typepadapp.utils.cached import cached_property
+from typepadapp.models.assets import Event
+from typepadapp import signals
+
+import time
+
 
 class Group(typepad.Group):
 
-    admin_list = []
+    admin_list = None
+    admin_list_time = 0
+
+    def __init__(self, *args, **kwargs):
+        super(Group, self).__init__(*args, **kwargs)
+        self.admin_list = None
+        self.admin_list_time = 0
 
     def admins(self):
+        # cache in-process for up to 5 minutes
+        if self.admin_list_time + settings.LONG_TERM_CACHE_PERIOD < time.time():
+            admin_list_key = self.cache_key + ':admin_list'
+
+            admin_list = cache.get(admin_list_key)
+            if admin_list is None:
+                admin_list = self.memberships.filter(admin=True, batch=False, cache=False)
+                admin_list.deliver()
+                cache.set(admin_list_key, admin_list)
+
+            self.admin_list = admin_list
+            self.admin_list_time = time.time()
+
         return self.admin_list
+
+
+### Cache support
+
+if settings.FRONTEND_CACHING:
+    from typepadapp.caching import cache_link, cache_object, invalidate_rule
+
+    # Cache population/invalidation
+    Group.get_by_url_id = cache_object(Group.get_by_url_id)
+    # invalidate with: signals.group_webhook
+
+    Group.events = cache_link(Group.events)
+    group_events_invalidator = invalidate_rule(
+        key=lambda sender, group=None, **kwargs: group and group.events,
+        signals=[signals.asset_created, signals.asset_deleted],
+        name="Group events invalidation for asset_created, asset_deleted signal")
+
+    Group.memberships = cache_link(Group.memberships)
+    memberships_invalidator = invalidate_rule(
+        key=lambda sender, group=None, **kwargs: group and group.memberships,
+        signals=[signals.member_banned, signals.member_unbanned, signals.member_joined, signals.member_left],
+        name="group memberships for member_banned, member_unbanned, member_joined, member_left signals")

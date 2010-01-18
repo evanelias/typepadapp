@@ -33,6 +33,7 @@ import sys
 from django.core.management.commands import startapp
 from django.core.management import CommandError
 
+
 def copy_helper(style, app_or_project, name, directory, other_name='', base_path=None):
     """
     Copies either a Django application layout template or a Django project
@@ -52,7 +53,6 @@ def copy_helper(style, app_or_project, name, directory, other_name='', base_path
     # other_name -- When copying an application layout, this should be the name
     #               of the project.
     import re
-    import shutil
     other = {'project': 'app', 'app': 'project'}[app_or_project]
     if not re.search(r'^[_a-zA-Z]\w*$', name): # If it's not a valid directory name.
         # Provide a smart error message, depending on the error.
@@ -88,16 +88,34 @@ def copy_helper(style, app_or_project, name, directory, other_name='', base_path
                 continue
             path_old = os.path.join(d, f)
             path_new = os.path.join(top_dir, relative_dir, f.replace('%s_name' % app_or_project, name))
-            fp_old = open(path_old, 'r')
-            fp_new = open(path_new, 'w')
-            fp_new.write(fp_old.read().replace('{{ %s_name }}' % app_or_project, name).replace('{{ %s_name }}' % other, other_name))
-            fp_old.close()
-            fp_new.close()
-            try:
-                shutil.copymode(path_old, path_new)
-                _make_writeable(path_new)
-            except OSError:
-                sys.stderr.write(style.NOTICE("Notice: Couldn't set permission bits on %s. You're probably using an uncommon filesystem setup. No problem.\n" % path_new))
+
+            replaces = {
+                app_or_project: name,
+                other: other_name,
+            }
+            duplicate_file(path_old, path_new, replaces=replaces)
+
+
+def duplicate_file(path_old, path_new, replaces=None):
+    """Duplicates one file as per the copy helper."""
+    import shutil
+    if replaces is None:
+        replaces = {}
+
+    fp_old = open(path_old, 'r')
+    fp_new = open(path_new, 'w')
+    content = fp_old.read()
+    for name, value in replaces.items():
+        content = content.replace('{{ %s_name }}' % name, value)
+    fp_new.write(content)
+    fp_old.close()
+    fp_new.close()
+    try:
+        shutil.copymode(path_old, path_new)
+        _make_writeable(path_new)
+    except OSError:
+        sys.stderr.write(style.NOTICE("Notice: Couldn't set permission bits on %s. You're probably using an uncommon filesystem setup. No problem.\n" % path_new))
+
 
 def _make_writeable(filename):
     """
@@ -114,6 +132,7 @@ def _make_writeable(filename):
         new_permissions = stat.S_IMODE(st.st_mode) | stat.S_IWUSR
         os.chmod(filename, new_permissions)
 
+
 def my_copy_helper(style, app_or_project, name, directory, other_name=''):
     # we're assuming typepadapp application is two directories above our
     # command module file.
@@ -124,6 +143,7 @@ def my_copy_helper(style, app_or_project, name, directory, other_name=''):
     # temporarily changing the location of django to our typepadapp
     # application directory where it's app project template resides.
     copy_helper(style, app_or_project, name, directory, other_name='', base_path=typeapp_path)
+
 
 class Command(startapp.Command):
 

@@ -40,6 +40,7 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from oauth import oauth
 
 from typepadapp.models import OAuthClient, Token
+from typepadapp import signals
 
 
 log = logging.getLogger('typepadapp.views.auth')
@@ -111,8 +112,16 @@ def authorize(request):
 
     # store the token key / secret in the database so we can recover
     # it later if the session expires
-    token, created = Token.objects.get_or_create(session_sync_token=request.GET['session_sync_token'], defaults={'key': access_token.key, 'secret': access_token.secret})
-    if not created:
+    token, created = Token.objects.get_or_create(
+        session_sync_token=request.GET['session_sync_token'],
+        defaults={'key': access_token.key, 'secret': access_token.secret}
+    )
+    if created:
+        # this is a new user or at least a new session sync token
+        signals.member_joined.send(sender=authorize, instance=authed_user,
+            group=request.group)
+    else:
+        # update token with current access token
         token.key = access_token.key
         token.secret = access_token.secret
         token.save()
@@ -120,8 +129,13 @@ def authorize(request):
     # oauth token in authed user session
     request.session['oauth_token'] = token
 
-    # go to next url, or home.
-    return http.HttpResponseRedirect(request.GET.get('next', HOME_URL))
+    # go to the welcome url, next url, or home.
+    abs_home_url = request.build_absolute_uri(HOME_URL)
+    next_url = request.GET.get('next', abs_home_url)
+    if settings.WELCOME_URL is not None:
+        if not next_url or next_url == abs_home_url:
+            next_url = settings.WELCOME_URL
+    return http.HttpResponseRedirect(next_url)
 
 
 class StupidDataStore(oauth.OAuthDataStore):

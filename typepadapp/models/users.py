@@ -40,39 +40,13 @@ from django.core.cache import cache
 import remoteobjects
 import typepad
 import typepadapp.models
-from typepadapp.utils.cached import cached_function
 
-USER_CACHE_PERIOD = 0
 
 class User(typepad.User):
     '''
         Mock Django User model using the TypePad API.
         The following methods override django.contrib.auth User.
     '''
-
-    if USER_CACHE_PERIOD:
-        # Django-level caching of user objects
-        @classmethod
-        def get_by_url_id(cls, url_id):
-            user = cache.get('user:%s' % url_id)
-            if user is None:
-                user = super(User, cls).get_by_url_id(url_id)
-            else:
-                loc = user['location']
-                data = user['data']
-                user = cls.from_dict(data)
-                user._location = loc
-                user._delivered = True
-            return user
-
-        def update_from_dict(self, data):
-            super(User, self).update_from_dict(data)
-            if hasattr(self, '_location') and self._location is not None:
-                user = { 'data': self._originaldata, 'location': self._location }
-                cache.set('user:%s' % self.url_id, user, USER_CACHE_PERIOD)
-                if self.username is not None:
-                    cache.set('user:%s' % self.username, user, USER_CACHE_PERIOD)
-            return self
 
     @property
     def username(self):
@@ -191,7 +165,7 @@ class User(typepad.User):
         from django.core.mail import send_mail
         send_mail(subject, message, from_email, [self.email])
 
-    @cached_function
+    # @cached_function
     def get_profile(self):
         """
         Returns site-specific profile for this user. Raises
@@ -234,37 +208,39 @@ class User(typepad.User):
         End Django User model properties and methods
     '''
 
-    assets = typepad.fields.Link(typepad.ListOf('Asset'))
+    def group_events(self, group, start_index=1, max_results=None, **kwargs):
+        if max_results is None:
+            max_results = settings.EVENTS_PER_PAGE
+        return self.events.filter(by_group=group, start_index=start_index,
+            max_results=max_results, **kwargs)
 
-    def group_events(self, group, start_index=1, max_results=settings.EVENTS_PER_PAGE):
-        return self.events.filter(by_group=group, start_index=start_index, max_results=max_results)
+    def group_memberships(self, group, **kwargs):
+        return self.memberships.filter(by_group=group, **kwargs)
 
-    def group_assets(self, group, start_index=1, max_results=settings.EVENTS_PER_PAGE, type=None):
-        args = {
-            'by_group': group,
-            'start_index': start_index,
-            'max_results': max_results,
-        }
-        if type is not None:
-            args[type] = True
-        return self.assets.filter(**args)
+    def group_notifications(self, group, start_index=1, max_results=None, **kwargs):
+        if max_results is None:
+            max_results = settings.EVENTS_PER_PAGE
+        return self.notifications.filter(by_group=group,
+            start_index=start_index, max_results=max_results, **kwargs)
 
-    def group_comments(self, group, start_index=1, max_results=settings.COMMENTS_PER_PAGE):
-        return self.comments.filter(by_group=group, start_index=start_index, max_results=max_results)
-
-    def group_notifications(self, group, start_index=1, max_results=settings.EVENTS_PER_PAGE):
-        return self.notifications.filter(by_group=group, start_index=start_index, max_results=max_results)
-
-    def following(self, group=None, start_index=1, max_results=settings.MEMBERS_PER_WIDGET):
+    def following(self, group=None, start_index=1, max_results=None, **kwargs):
+        if max_results is None:
+            max_results = settings.MEMBERS_PER_WIDGET
         if group is not None:
-            return self.relationships.filter(following=True, by_group=group, start_index=start_index, max_results=max_results)
-        return self.relationships.filter(following=True, start_index=start_index, max_results=max_results)
+            return self.relationships.filter(following=True, by_group=group,
+                start_index=start_index, max_results=max_results, **kwargs)
+        return self.relationships.filter(following=True,
+            start_index=start_index, max_results=max_results, **kwargs)
 
-    def followers(self, group=None, start_index=1, max_results=settings.MEMBERS_PER_WIDGET):
+    def followers(self, group=None, start_index=1, max_results=None, **kwargs):
+        if max_results is None:
+            max_results = settings.MEMBERS_PER_WIDGET
         if group is not None:
-            return self.relationships.filter(follower=True, by_group=group, start_index=start_index, max_results=max_results)
-        return self.relationships.filter(follower=True, start_index=start_index, max_results=max_results)
-    
+            return self.relationships.filter(follower=True, by_group=group,
+                start_index=start_index, max_results=max_results, **kwargs)
+        return self.relationships.filter(follower=True,
+            start_index=start_index, max_results=max_results, **kwargs)
+
     @property
     def edit_url(self):
         try:
@@ -288,7 +264,7 @@ class User(typepad.User):
         except (TypeError, KeyError):
             # fail silently?
             return None
-    
+
     @property
     def typepad_edit_url(self):
         try:
@@ -296,7 +272,7 @@ class User(typepad.User):
         except (TypeError, KeyError):
             # fail silently?
             return None
-    
+
     @property
     def typepad_membership_management_url(self):
         try:
@@ -304,7 +280,7 @@ class User(typepad.User):
         except (TypeError, KeyError):
             # fail silently?
             return None
-    
+
     @property
     def typepad_frame_url(self):
         return self.links['follow-frame-content'].href
@@ -320,3 +296,59 @@ class User(typepad.User):
         except NoReverseMatch:
             pass
         return None
+
+
+### Caching support
+
+if settings.FRONTEND_CACHING:
+    from typepadapp.caching import cache_link, cache_object, invalidate_rule
+    from typepadapp import signals
+
+    def make_user_alias_cache_key(self):
+        """Attempts to use a caching key of the user's username, if available."""
+        return "objectcache:%s:%s" % (self.cache_namespace, self.preferred_username or self.url_id)
+    User.cache_key = property(make_user_alias_cache_key)
+
+    User.get_by_url_id = cache_object(User.get_by_url_id)
+    user_invaldator = invalidate_rule(
+        key=lambda sender, instance=None, group=None, **kwargs: instance,
+        signals=[signals.member_banned, signals.member_unbanned],
+        name="user cache invalidation for member_banned, member_unbanned signals")
+
+    User.events = cache_link(User.events)
+    user_events_invalidator = invalidate_rule(
+        key=lambda sender, group=None, instance=None, **kwargs:
+            instance and instance.author and group and [instance.author.notifications.filter(by_group=group),
+                instance.author.preferred_username and User.get_by_url_id(instance.author.preferred_username).notifications.filter(by_group=group)],
+        signals=[signals.asset_created, signals.asset_deleted],
+        name="user notifications for group cache invalidation for asset_created, asset_deleted signals")
+
+    User.notifications = cache_link(User.notifications)
+    # signals.asset_created, signals.asset_deleted
+
+    # We can't effectively signal to invalidate these lists because
+    # follow/unfollow actions happen on typepad
+    User.memberships = cache_link(User.memberships)
+    user_memberships_invaldator = invalidate_rule(
+        key=lambda sender, instance=None, group=None, **kwargs:
+            instance and group and [instance.group_memberships(group),
+                instance.preferred_username and User.get_by_url_id(instance.preferred_username).group_memberships(group)],
+        signals=[signals.member_banned, signals.member_unbanned, signals.member_joined, signals.member_left],
+        name="user membership invalidation for member_banned, member_unbanned, member_joined, member_left signals")
+
+    User.elsewhere_accounts = cache_link(User.elsewhere_accounts)
+    # signals.profile_webhook
+
+    User.relationships = cache_link(User.relationships)
+    # signals.following_webhook, signals.member_left, signals.member_joined
+
+    # do these endpoints really work??
+    # User.comments = cache_link(User.comments)
+    # User.assets = cache_link(User.assets)
+
+    User.favorites = cache_link(User.favorites)
+    user_favorites_invalidator = invalidate_rule(
+        key=lambda sender, instance=None, **kwargs: instance and [instance.author.favorites,
+            instance.author.preferred_username and User.get_by_url_id(instance.author.preferred_username).favorites],
+        signals=[signals.favorite_created, signals.favorite_deleted],
+        name="user favorites stream for favorite created/deleted signals")

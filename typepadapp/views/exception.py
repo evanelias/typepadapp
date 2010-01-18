@@ -28,10 +28,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import logging
-from django import http
-from django.shortcuts import render_to_response
-from django.template import RequestContext
-
+from django.http import HttpResponseServerError, HttpResponseNotFound
+from django.template import RequestContext, loader
 
 def server_error(request, *args, **kwargs):
     """
@@ -47,15 +45,15 @@ def server_error(request, *args, **kwargs):
     # http://docs.python.org/lib/module-logging.html
     logging.error('Uncaught exception got through, rendering 500 page.')
     logging.exception(exception)
-
-    return render_to_response('500.html', {
-    }, context_instance=RequestContext(request))
-
+    content = loader.render_to_string('500.html', 
+                                      context_instance=RequestContext(request))
+    return HttpResponseServerError(content)
 
 def page_not_found(request, *args, **kwargs):
     """
     Custom 404 handler for logging (non-debug mode only).
     """
     logging.warning('Page not found: %s' % request.path)
-    return render_to_response('404.html', {
-    }, context_instance=RequestContext(request))
+    content = loader.render_to_string('404.html',
+                                      context_instance=RequestContext(request))
+    return HttpResponseNotFound(content)
