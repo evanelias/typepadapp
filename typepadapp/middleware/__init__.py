@@ -224,26 +224,31 @@ class AuthorizationExceptionMiddleware(object):
             raise MiddlewareNotUsed
 
     def process_exception(self, request, exception):
-        if hasattr(request, 'user') and request.user.is_authenticated() and \
-            isinstance(exception, NonBatchResponseError) and \
-            exception.status in (401, 403):
+        if not hasattr(request, 'user'):
+            return
+        if not request.user.is_authenticated():
+            return
+        if not isinstance(exception, NonBatchResponseError):
+            return
+        if exception.status not in (401, 403):
+            return
 
-            # Got a 4XX error. Log the user out (destroy session),
-            # forget their OAuth token, and 302 them back to the 
-            # current page as an anonymous user.
+        # Got a 4XX error. Log the user out (destroy session),
+        # forget their OAuth token, and 302 them back to the 
+        # current page as an anonymous user.
 
-            from django.contrib.auth import logout
-            from typepadapp.models import Token
+        from django.contrib.auth import logout
+        from typepadapp.models import Token
 
-            current_token = request.session.get('oauth_token', None)
-            logout(request)
-            if current_token is not None:
-                try:
-                    token = Token.objects.get(key=current_token.key)
-                except Token.DoesNotExist:
-                    pass
-                else:
-                    token.delete()
+        current_token = request.session.get('oauth_token', None)
+        logout(request)
+        if current_token is not None:
+            try:
+                token = Token.objects.get(key=current_token.key)
+            except Token.DoesNotExist:
+                pass
+            else:
+                token.delete()
 
-            from django.http import HttpResponseRedirect
-            return HttpResponseRedirect(request.build_absolute_uri())
+        from django.http import HttpResponseRedirect
+        return HttpResponseRedirect(request.build_absolute_uri())
