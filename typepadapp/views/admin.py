@@ -68,7 +68,7 @@ def generate_members_csv(request):
     # fetch typepad api data
     offset = 1
     typepad.client.batch_request()
-    request.user = get_user(request)
+    request.typepad_user = get_user(request)
     kwargs = {"start_index": offset, "member": True}
     if settings.FRONTEND_CACHING:
         kwargs['cache'] = False
@@ -76,7 +76,7 @@ def generate_members_csv(request):
     typepad.client.complete_batch()
 
     # verify the user is an admin
-    if request.user.is_superuser:
+    if request.typepad_user.is_superuser:
 
         # convert to user list
         ids = [member.target.id for member in members]

@@ -224,9 +224,9 @@ class AuthorizationExceptionMiddleware(object):
             raise MiddlewareNotUsed
 
     def process_exception(self, request, exception):
-        if not hasattr(request, 'user'):
+        if not hasattr(request, 'typepad_user'):
             return
-        if not request.user.is_authenticated():
+        if not request.typepad_user.is_authenticated():
             return
         if not isinstance(exception, NonBatchResponseError):
             return
