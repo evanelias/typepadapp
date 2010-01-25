@@ -33,6 +33,9 @@ from django.contrib.auth import get_user
 
 import typepad
 
+from typepadapp.views.base import _PlainUserWarningProxy
+
+
 def direct_to_template(request, template, extra_context=None, mimetype=None, **kwargs):
     """
     Render a given template with any extra URL parameters in the context as
@@ -47,13 +50,17 @@ def direct_to_template(request, template, extra_context=None, mimetype=None, **k
             dictionary[key] = value
     c = RequestContext(request, dictionary)
 
-    if not hasattr(request, 'user') or not request.user:
+    if not hasattr(request, 'typepad_user') or not request.typepad_user:
         typepad.client.batch_request()
         user = get_user(request)
         typepad.client.complete_batch()
-        request.user = user
+        request.typepad_user = user
 
-    c.update({'user': request.user, 'request':request})
+    c.update({
+        'user': _PlainUserWarningProxy(request.typepad_user),
+        'typepad_user': request.typepad_user,
+        'request': request,
+    })
 
     t = loader.get_template(template)
     return HttpResponse(t.render(c), mimetype=mimetype)
