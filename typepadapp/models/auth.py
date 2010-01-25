@@ -27,15 +27,9 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import logging
-import urllib
-
 from django.conf import settings
-from django.db import models
 
 import typepad
-import typepadapp.models
-from oauth import oauth
 
 
 class OAuthClient(typepad.OAuthClient):
@@ -49,24 +43,7 @@ class OAuthClient(typepad.OAuthClient):
         self.session_sync_url = app.session_sync_script
         self.oauth_identification_url = app.oauth_identification_page
 
-
-class Token(models.Model, oauth.OAuthToken):
-    """ Local database storage for user
-        OAuth tokens.
-    """
-    session_sync_token = models.CharField(max_length=32, unique=True)
-    key = models.CharField(max_length=32, unique=True)
-    secret = models.CharField(max_length=32)
-
-    def __unicode__(self):
-        return self.key
-
-    def to_string(self, only_key=False):
-        # so this can be used in place of an oauth.OAuthToken
-        if only_key:
-            return urllib.urlencode({'oauth_token': self.key})
-        return urllib.urlencode({'oauth_token': self.key, 'oauth_token_secret': self.secret})
-        
-    class Meta:
-        app_label = 'typepadapp'
-        db_table = 'typepadapp_token'
+if hasattr(settings, 'KEY_VALUE_STORE_BACKEND'):
+    from typepadapp.models.kv import Token
+else:
+    from typepadapp.models.db import Token
