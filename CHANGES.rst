@@ -1,6 +1,12 @@
 typepadapp Changelog
 ====================
 
+1.2
+---
+
+* Changed views to provide the signed-in TypePad member to templates as ``typepad_user`` instead of ``user``.
+
+
 1.1.1 (2009-12-16)
 ------------------
 
