@@ -43,6 +43,7 @@ a batch and provided to your view's implementation.
 
 from urlparse import urljoin
 from os import path
+import logging
 import re
 
 from django import http
@@ -273,6 +274,20 @@ class GenericView(http.HttpResponse):
         return results
 
 
+class _PlainUserWarningProxy(object):
+
+    __slots__ = ('delegate',)
+
+    def __init__(self, delegate):
+        self.delegate = delegate
+
+    def __getattr__(self, key):
+        try:
+            return getattr(self.delegate, key)
+        finally:
+            logging.getLogger(__name__).warning('Template used "user" instead of "typepad_user"')
+
+
 class TypePadView(GenericView):
 
     """
@@ -349,8 +364,12 @@ class TypePadView(GenericView):
         middleware.
         """
         from django.contrib.auth import get_user
-        request.user = get_user(request)
-        self.context.update({'user': request.user, 'request': request})
+        request.typepad_user = get_user(request)
+        self.context.update({
+            'user': _PlainUserWarningProxy(request.typepad_user),
+            'typepad_user': request.typepad_user,
+            'request': request,
+        })
 
     def select_from_typepad(self, request, *args, **kwargs):
         """
@@ -392,7 +411,7 @@ class TypePadView(GenericView):
                 return False, response
             if self.admin_required:
                 # additionally, user must be an admin
-                if not request.user.is_superuser:
+                if not request.typepad_user.is_superuser:
                     # pretend this url doesn't exist?
                     raise http.Http404
         return True, None
