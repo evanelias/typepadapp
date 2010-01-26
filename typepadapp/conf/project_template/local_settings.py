@@ -1,8 +1,6 @@
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-FRONTEND_URL = 'http://127.0.0.1:8000'
-
 # TypePad API access configuration.
 OAUTH_CONSUMER_KEY           = ''
 OAUTH_CONSUMER_SECRET        = ''
