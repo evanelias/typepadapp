@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-01-06 11:40-0800\n"
+"POT-Creation-Date: 2010-01-26 13:21-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -69,20 +69,23 @@ msgid "%(prep)s %(date)s"
 msgstr ""
 
 #: templatetags/date_filters.py:49
-msgid "day ago"
-msgid_plural "days ago"
+#, python-format
+msgid "%d day ago"
+msgid_plural "%d days ago"
 msgstr[0] ""
 msgstr[1] ""
 
 #: templatetags/date_filters.py:50
-msgid "hour ago"
-msgid_plural "hours ago"
+#, python-format
+msgid "%d hour ago"
+msgid_plural "%d hours ago"
 msgstr[0] ""
 msgstr[1] ""
 
 #: templatetags/date_filters.py:51
-msgid "minute ago"
-msgid_plural "minutes ago"
+#, python-format
+msgid "%d minute ago"
+msgid_plural "%d minutes ago"
 msgstr[0] ""
 msgstr[1] ""
 
