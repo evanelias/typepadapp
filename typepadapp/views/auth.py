@@ -75,8 +75,8 @@ def register(request):
     token = client.fetch_request_token(callback)
     request.session['request_token'] = token.to_string()
 
-    # url = client.authorize_token({ 'target_object': request.group.id })
-    url = client.authorize_token({ 'access': 'app_full' })
+    url = client.authorize_token({ 'target_object': request.group.id })
+    # url = client.authorize_token({ 'access': 'app_full' })
 
     return http.HttpResponseRedirect(url)
 
