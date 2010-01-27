@@ -22,7 +22,9 @@
             {% endif %}
             <dt>Total time</dt><dd>{{ toolbar.total_time|floatformat:4 }}s</dd>
             <dt>Request time</dt><dd>{{ toolbar.request_time|floatformat:4 }}s</dd>
+            {% if toolbar.cpu_time %}
             <dt>CPU time</dt><dd>{{ toolbar.cpu_time|floatformat:4 }}s</dd>
+            {% endif %}
             {% if toolbar.typepad_time %}
             <dt>TypePad time</dt><dd>{{ toolbar.typepad_time|floatformat:4 }}s</dd>
             {% endif %}
