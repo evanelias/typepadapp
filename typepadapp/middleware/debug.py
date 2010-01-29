@@ -182,6 +182,12 @@ client.BatchRequest = BatchRequestStatTracker
 
 
 def get_typepad_client(superclass):
+    if superclass.__name__ == 'TypePadClientStatTracker':
+        # For Google AppEngine, we have to test for this.
+        # for some reason, the DebugMiddleware was being re-init'd
+        # causing this class-wrapping to be re-applied...
+        return superclass
+
     class TypePadClientStatTracker(superclass):
         """
         Replacement for BatchClient that retains all executed requests in `self.requests`.

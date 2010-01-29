@@ -76,6 +76,7 @@ def register(request):
     request.session['request_token'] = token.to_string()
 
     url = client.authorize_token({ 'target_object': request.group.id })
+    # url = client.authorize_token({ 'access': 'app_full' })
 
     return http.HttpResponseRedirect(url)
 
@@ -112,12 +113,13 @@ def authorize(request):
 
     # store the token key / secret in the database so we can recover
     # it later if the session expires
-    token, created = Token.objects.get_or_create(
-        session_sync_token=request.GET['session_sync_token'],
-        defaults={'key': access_token.key, 'secret': access_token.secret}
-    )
-    if created:
-        # this is a new user or at least a new session sync token
+    token = Token.get(request.GET['session_sync_token'])
+    if token is None:
+        token = Token(
+            session_sync_token=request.GET['session_sync_token'],
+            key=access_token.key, secret=access_token.secret
+        )
+        token.save()
         signals.member_joined.send(sender=authorize, instance=authed_user,
             group=request.group)
     else:
@@ -218,9 +220,8 @@ def synchronize(request):
         if session_sync_token:
             # If a token was returned, create a session loggin the user
             # in with the new token. Otherwise we just log the user out.
-            try:
-                token = Token.objects.get(session_sync_token=session_sync_token)
-            except ObjectDoesNotExist:
+            token = Token.get(session_sync_token)
+            if token is None:
                 # We lost the token somehow.
                 if request.GET.get('signin', False):
                     # They clicked sign in, but we don't have the token

@@ -77,6 +77,10 @@ class ConfigurationMiddleware(object):
         return self.incomplete_configuration(request, reason='missing_keys')
 
     def check_local_database(self, request):
+        # When running under Google AppEngine, skip this step
+        if settings.DATABASE_ENGINE == 'appengine':
+            return
+
         try:
             Session.objects.count()
         except Exception, exc:
