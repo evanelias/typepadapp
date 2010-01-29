@@ -47,10 +47,10 @@ import logging
 import re
 
 from django import http
+from django.conf import settings
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.http import urlquote
-from django.contrib.auth.decorators import login_required
 from django.contrib.syndication.feeds import Feed
 from django.utils.feedgenerator import Atom1Feed
 
@@ -406,12 +406,14 @@ class TypePadView(GenericView):
         if not allowed:
             return allowed, response
         if self.login_required or self.admin_required:
-            response = login_required(lambda r: False)(request)
-            if response:
-                return False, response
+            tpuser = request.typepad_user
+            if not tpuser.is_authenticated():
+                this_url = urlquote(request.get_full_path())
+                return False, http.HttpResponseRedirect('%s?%s=%s'
+                    % (settings.LOGIN_URL, 'next', this_url))
             if self.admin_required:
                 # additionally, user must be an admin
-                if not request.typepad_user.is_superuser:
+                if not tpuser.is_superuser:
                     # pretend this url doesn't exist?
                     raise http.Http404
         return True, None
