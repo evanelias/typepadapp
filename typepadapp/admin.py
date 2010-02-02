@@ -1,4 +1,4 @@
-# Copyright (c) 2009 Six Apart Ltd.
+# Copyright (c) 2010 Six Apart Ltd.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,27 +27,17 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from django.conf import settings
+from django.contrib import admin
 
-import typepad
+from typepadapp.models.auth import Token
 
 
-class OAuthClient(typepad.OAuthClient):
+admin.site.register(Token)
 
-    def __init__(self, app):
-        self.set_consumer(settings.OAUTH_CONSUMER_KEY, secret = settings.OAUTH_CONSUMER_SECRET,)
 
-        self.request_token_url = app.oauth_request_token
-        self.access_token_url = app.oauth_access_token_endpoint
-        self.authorization_url = app.oauth_authorization_page
-        self.session_sync_url = app.session_sync_script
-        self.oauth_identification_url = app.oauth_identification_page
-
-if hasattr(settings, 'KEY_VALUE_STORE_BACKEND'):
-    from typepadapp.models.kv import Token
+try:
+    from typepadapp.models.auth import UserForTypePadUser
+except ImportError:
+    pass
 else:
-    from typepadapp.models.db import Token
-    try:
-        from typepadapp.models.db import UserForTypePadUser
-    except ImportError:
-        pass
+    admin.site.register(UserForTypePadUser)

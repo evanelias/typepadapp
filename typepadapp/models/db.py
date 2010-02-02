@@ -32,3 +32,16 @@ class Token(models.Model, oauth.OAuthToken):
     class Meta:
         app_label = 'typepadapp'
         db_table = 'typepadapp_token'
+
+
+user_model = models.get_model('auth', 'User')
+if user_model and user_model._meta.installed:
+
+    class UserForTypePadUser(models.Model):
+        user = models.ForeignKey('auth.User', related_name='typepad_map', unique=True)
+        xid = models.CharField(max_length=50, unique=True)
+        created = models.DateTimeField(auto_now_add=True)
+
+        class Meta:
+            app_label = 'typepadapp'
+            db_table = 'typepadapp_usermap'
