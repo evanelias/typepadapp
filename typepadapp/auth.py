@@ -38,6 +38,9 @@ import typepad
 from typepadapp.models import User
 
 
+TYPEPAD_SESSION_KEY = '_auth_typepad_user_id'
+
+
 class TypePadBackend(object):
     """Custom User authentication backend for
     authenticating against the TypePad API.
@@ -68,3 +71,34 @@ class TypePadBackend(object):
     def get_user(self, user_id):
         """Return the authed TypePad user"""
         return User.get_by_id(user_id)
+
+
+def authenticate(**credentials):
+    backends = (TypePadBackend(),)
+
+    for backend in backends:
+        try:
+            user = backend.authenticate(**credentials)
+        except TypeError:
+            continue
+        if user is None:
+            continue
+
+        # Remember the backend in case we accidentally use a TypePadUser as a
+        # conventional auth user.
+        user.backend = '.'.join((backend.__module__, type(backend).__name__))
+        return user
+
+    # big fat nothing!
+    return
+
+
+def get_user(request):
+    try:
+        user_id = request.session[TYPEPAD_SESSION_KEY]
+    except KeyError:
+        pass
+    else:
+        return TypePadBackend().get_user(user_id) or AnonymousUser()
+
+    return AnonymousUser()

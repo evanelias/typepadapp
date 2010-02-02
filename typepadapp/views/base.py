@@ -363,7 +363,7 @@ class TypePadView(GenericView):
         otherwise, returns the Django AnonymousUser. Replaces any authentication
         middleware.
         """
-        from django.contrib.auth import get_user
+        from typepadapp.auth import get_user
         request.typepad_user = get_user(request)
         self.context.update({
             'user': _PlainUserWarningProxy(request.typepad_user),

@@ -29,10 +29,10 @@
 
 from django.template import loader, RequestContext
 from django.http import HttpResponse, HttpResponsePermanentRedirect, HttpResponseGone
-from django.contrib.auth import get_user
 
 import typepad
 
+from typepadapp.auth import get_user
 from typepadapp.views.base import _PlainUserWarningProxy
 
 

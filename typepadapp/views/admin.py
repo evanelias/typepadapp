@@ -32,9 +32,9 @@ import StringIO
 
 from django import http
 from django.conf import settings
-from django.contrib.auth import get_user
 
 import typepad
+from typepadapp.auth import get_user
 import typepadapp.forms
 import typepadapp.templatetags.formfieldvalue
 
