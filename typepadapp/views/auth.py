@@ -107,8 +107,7 @@ def authorize(request):
     access_token = client.fetch_access_token(verifier=verifier)
 
     # authorize and login user
-    from typepadapp.auth import authenticate
-    from django.contrib.auth import login
+    from typepadapp.auth import authenticate, login
     authed_user = authenticate(oauth_client=client)
     login(request, authed_user)
 
@@ -178,8 +177,8 @@ def synchronize(request):
     oauth token key specified in the query string.
 
     """
-    from typepadapp.auth import authenticate
-    from django.contrib.auth import login, logout
+    from typepadapp.auth import authenticate, login
+    from django.contrib.auth import logout
 
     # check query string, then session for next param. default to index.
     next = request.GET.get('callback_next', HOME_URL)

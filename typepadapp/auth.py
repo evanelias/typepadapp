@@ -102,3 +102,31 @@ def get_user(request):
         return TypePadBackend().get_user(user_id) or AnonymousUser()
 
     return AnonymousUser()
+
+
+def login(request, user):
+    if TYPEPAD_SESSION_KEY in request.session:
+        if request.session[TYPEPAD_SESSION_KEY] != user.id:
+            # Make a new session like contrib.auth does in this case.
+            request.session.flush()
+    else:
+        request.session.cycle_key()
+
+    request.session[TYPEPAD_SESSION_KEY] = user.id
+    if hasattr(request, 'typepad_user'):
+        request.typepad_user = user
+
+    # Does that typepad user map to a django user?
+    try:
+        from typepadapp.models.auth import UserForTypePadUser
+    except ImportError:
+        pass
+    else:
+        import django.contrib.auth
+        try:
+            dj_user = django.contrib.auth.models.User.objects.filter(typepad_map__typepad_id=user.id)[0]
+        except IndexError:
+            pass
+        else:
+            dj_user.backend = 'django.contrib.auth.backends.ModelBackend'
+            django.contrib.auth.login(request, dj_user)
