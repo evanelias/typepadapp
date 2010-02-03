@@ -1,9 +1,11 @@
 typepadapp Changelog
 ====================
 
-1.2
----
+Unreleased
+----------
 
+* Removed the `FRONTEND_URL` setting.
+* Added support for running on Google AppEngine.
 * Changed views to provide the signed-in TypePad member to templates as ``typepad_user`` instead of ``user``.
 
 
