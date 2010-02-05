@@ -27,14 +27,18 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import logging
+import time
+
 from django.core.cache import cache
 from django.conf import settings
-
 import typepad
+
 from typepadapp.models.assets import Event
 from typepadapp import signals
 
-import time
+
+log = logging.getLogger(__name__)
 
 
 class Group(typepad.Group):
@@ -55,11 +59,16 @@ class Group(typepad.Group):
             admin_list = cache.get(admin_list_key)
             if admin_list is None:
                 admin_list = self.memberships.filter(admin=True, batch=False, cache=False)
+                log.debug('No admin list in the cache; fetching %r from server', admin_list._location)
                 admin_list.deliver()
                 cache.set(admin_list_key, admin_list)
 
             self.admin_list = admin_list
             self.admin_list_time = time.time()
+            log.debug("Yay, got admin list %r, which we're hard caching until %r",
+                admin_list, self.admin_list_time)
+        else:
+            log.debug("Using admin list %r from hard process cache", self.admin_list)
 
         return self.admin_list
 

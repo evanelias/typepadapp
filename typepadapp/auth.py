@@ -40,6 +40,8 @@ from typepadapp.models import User
 
 TYPEPAD_SESSION_KEY = '_auth_typepad_user_id'
 
+log = logging.getLogger(__name__)
+
 
 class TypePadBackend(object):
     """Custom User authentication backend for
@@ -123,10 +125,33 @@ def login(request, user):
         pass
     else:
         import django.contrib.auth
+        dj_user = None
         try:
             dj_user = django.contrib.auth.models.User.objects.filter(typepad_map__typepad_id=user.id)[0]
         except IndexError:
-            pass
-        else:
+            # Is that TypePad user an admin?
+            if log.isEnabledFor(logging.DEBUG):
+                log.debug('Is our unmapped user one of admins %r?',
+                    [x.target.xid for x in request.group.admins()])
+            for admin_rel in request.group.admins():
+                admin = admin_rel.target
+                log.debug('Is user %s also %s?', user.xid, admin.xid)
+                if admin.id == user.id:
+                    log.debug('Yes, creating a new User for tpuser %s', user.xid)
+
+                    # Create a new Django User for them.
+                    dj_user = django.contrib.auth.models.User.objects.create_user(user.xid, user.email)
+                    dj_user.is_staff = True
+                    dj_user.is_superuser = True
+                    dj_user.save()
+                    log.debug('Made a new superuser %r (%d)', dj_user, dj_user.pk)
+
+                    # And save a mapping for future use.
+                    UserForTypePadUser(user=dj_user, typepad_id=user.id).save()
+                    log.debug('Mapped new superuser %r to tpuser %s', dj_user, user.xid)
+
+                    break
+
+        if dj_user:
             dj_user.backend = 'django.contrib.auth.backends.ModelBackend'
             django.contrib.auth.login(request, dj_user)
