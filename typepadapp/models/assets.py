@@ -103,6 +103,10 @@ class Asset(typepad.Asset):
         return self.type_id == 'comment'
 
     @property
+    def commentable(self):
+        return self.type_id in ('post', 'photo', 'video', 'audio', 'link')
+
+    @property
     def is_local(self):
         """ Boolean property identifying whether the asset belongs to the
         group assigned to typepadapp.models.GROUP. """
