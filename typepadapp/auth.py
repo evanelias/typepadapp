@@ -122,8 +122,10 @@ def login(request, user):
     try:
         from typepadapp.models.auth import UserForTypePadUser
     except ImportError:
+        log.debug('Auth is not enabled, so not mapping to a django user')
         pass
     else:
+        log.debug('Auth is enabled, so checking for user maps')
         import django.contrib.auth
         dj_user = None
         try:
