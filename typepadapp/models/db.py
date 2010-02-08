@@ -39,9 +39,11 @@ if user_model and user_model._meta.installed:
 
     class UserForTypePadUser(models.Model):
         user = models.ForeignKey('auth.User', related_name='typepad_map', unique=True)
-        typepad_id = models.CharField(max_length=50, unique=True)
+        typepad_id = models.CharField(max_length=50, unique=True, verbose_name='TypePad ID')
         created = models.DateTimeField(auto_now_add=True)
 
         class Meta:
             app_label = 'typepadapp'
             db_table = 'typepadapp_usermap'
+            verbose_name = 'user for TypePad user'
+            verbose_name_plural = 'users for TypePad users'
