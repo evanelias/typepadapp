@@ -134,8 +134,9 @@ def login(request, user):
             dj_user = _create_django_user(request, user)
 
         if dj_user is not None:
-            dj_user.backend = 'django.contrib.auth.backends.ModelBackend'
-            django.contrib.auth.login(request, dj_user)
+            if dj_user.is_active:
+                dj_user.backend = 'django.contrib.auth.backends.ModelBackend'
+                django.contrib.auth.login(request, dj_user)
 
 
 def _create_django_user(request, tp_user):
