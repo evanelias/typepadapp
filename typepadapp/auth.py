@@ -177,11 +177,11 @@ def _create_django_user(request, tp_user):
         dj_user.is_staff = True
         dj_user.is_superuser = True
     dj_user.save()
-    log.debug('Made a new superuser %r (%d)', dj_user, dj_user.pk)
+    log.debug('Made a new user %r (%d)', dj_user, dj_user.pk)
 
     # And save a mapping for future use.
     from typepadapp.models.auth import UserForTypePadUser
     UserForTypePadUser(user=dj_user, typepad_id=tp_user.id).save()
-    log.debug('Mapped new superuser %r to tpuser %s', dj_user, tp_user.xid)
+    log.debug('Mapped new user %r to tpuser %s', dj_user, tp_user.xid)
 
     return dj_user
