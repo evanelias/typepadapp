@@ -84,6 +84,29 @@ This setting defaults to `None` (no special welcome page).
 
 """
 
+AUTO_CREATE_DJANGO_USERS = 'admin'
+"""Whether to create new local Django auth users when a TypePad user signs in.
+There are three levels of auto-creation you can choose:
+
+* ``'none'`` to create no new local Django users (any local users must be
+  created manually)
+
+* ``'admin'`` to create new local users for TypePad accounts that are
+  administrators of your project's TypePad group signs in
+
+* ``'all'`` to make local users for all TypePad members who sign in, even
+  regular users who have joined the group themselves
+
+When a local user is created for a group admin, the new local user is
+automatically marked as a local administrator (someone who ``is_staff`` and
+``is_superuser``), regardless of whether this setting is ``'admin'`` or
+``'all'``.
+
+By default, new Django users are created for TypePad group administrators only
+(that is, ``'admin'``).
+
+"""
+
 EVENTS_PER_PAGE = 25
 """The number of events to request from event fetching methods of
 `typepad.models.User` instances.

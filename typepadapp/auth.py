@@ -131,29 +131,56 @@ def login(request, user):
         try:
             dj_user = django.contrib.auth.models.User.objects.filter(typepad_map__typepad_id=user.id)[0]
         except IndexError:
-            # Is that TypePad user an admin?
-            if log.isEnabledFor(logging.DEBUG):
-                log.debug('Is our unmapped user one of admins %r?',
-                    [x.target.xid for x in request.group.admins()])
-            for admin_rel in request.group.admins():
-                admin = admin_rel.target
-                log.debug('Is user %s also %s?', user.xid, admin.xid)
-                if admin.id == user.id:
-                    log.debug('Yes, creating a new User for tpuser %s', user.xid)
+            dj_user = _create_django_user(request, user)
 
-                    # Create a new Django User for them.
-                    dj_user = django.contrib.auth.models.User.objects.create_user(user.xid, user.email)
-                    dj_user.is_staff = True
-                    dj_user.is_superuser = True
-                    dj_user.save()
-                    log.debug('Made a new superuser %r (%d)', dj_user, dj_user.pk)
-
-                    # And save a mapping for future use.
-                    UserForTypePadUser(user=dj_user, typepad_id=user.id).save()
-                    log.debug('Mapped new superuser %r to tpuser %s', dj_user, user.xid)
-
-                    break
-
-        if dj_user:
+        if dj_user is not None:
             dj_user.backend = 'django.contrib.auth.backends.ModelBackend'
             django.contrib.auth.login(request, dj_user)
+
+
+def _create_django_user(request, tp_user):
+    autocreate = getattr(settings, 'AUTO_CREATE_DJANGO_USERS', 'admin')
+    if not autocreate:
+        return
+    autocreate = autocreate.lower()
+
+    if autocreate not in ('none', 'admin', 'all'):
+        raise ValueError('The AUTO_CREATE_DJANGO_USERS setting is set to an '
+            ' unknown value %r; valid values are %r, %r and %r' % (autocreate,
+            'none', 'admin', 'all'))
+
+    if autocreate == 'none':
+        return
+
+    # Is that TypePad user an admin?
+    is_admin = False
+    if log.isEnabledFor(logging.DEBUG):
+        log.debug('Is our unmapped user one of admins %r?',
+            [x.target.xid for x in request.group.admins()])
+    for admin_rel in request.group.admins():
+        admin = admin_rel.target
+        log.debug('Is user %s also %s?', tp_user.xid, admin.xid)
+        if admin.id == tp_user.id:
+            is_admin = True
+            break
+
+    if autocreate == 'admin' and not is_admin:
+        return
+
+    log.debug('Yes, creating a new User for tpuser %s', tp_user.xid)
+
+    # Create a new Django User for them.
+    import django.contrib.auth
+    dj_user = django.contrib.auth.models.User.objects.create_user(tp_user.xid, tp_user.email)
+    if is_admin:
+        dj_user.is_staff = True
+        dj_user.is_superuser = True
+    dj_user.save()
+    log.debug('Made a new superuser %r (%d)', dj_user, dj_user.pk)
+
+    # And save a mapping for future use.
+    from typepadapp.models.auth import UserForTypePadUser
+    UserForTypePadUser(user=dj_user, typepad_id=tp_user.id).save()
+    log.debug('Mapped new superuser %r to tpuser %s', dj_user, tp_user.xid)
+
+    return dj_user
