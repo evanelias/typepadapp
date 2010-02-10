@@ -37,6 +37,13 @@ from profiles import *
 APPLICATION, GROUP = None, None
 
 
+import typepad
+
+
+class Blog(typepad.Blog):
+    pass
+
+
 import typepadapp.signals
 import typepadapp.utils.loading
 
