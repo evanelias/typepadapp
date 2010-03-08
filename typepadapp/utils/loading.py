@@ -134,6 +134,10 @@ def configure_typepad_client(**kwargs):
     if not settings.BATCH_REQUESTS:
         typepad.TypePadObject.batch_requests = False
 
+    proxy_info = getattr(settings, 'TYPEPAD_PROXY', None)
+    if proxy_info is not None:
+        client.proxy_info = httplib2.ProxyInfo(**proxy_info)
+
     return client
 
 typepad.client_factory = configure_typepad_client
