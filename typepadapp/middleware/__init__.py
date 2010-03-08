@@ -49,7 +49,10 @@ import typepadapp.models
 from batchhttp.client import NonBatchResponseError
 
 
-def gp_signed_url(url, params):
+log = logging.getLogger(__name__)
+
+
+def gp_signed_url(url, params, http_method='GET'):
     """
     Generate a signed URL using the applications OAuth general purpose token.
     """
@@ -58,12 +61,19 @@ def gp_signed_url(url, params):
 
     req = oauth.OAuthRequest.from_consumer_and_token(
         consumer,
-        token = token,
-        http_method = 'GET',
-        http_url = url,
-        parameters = params,
+        token=token,
+        http_method=http_method,
+        http_url=url,
+        parameters=params,
     )
-    req.sign_request(oauth.OAuthSignatureMethod_HMAC_SHA1(), consumer, token)
+
+    sign_method = oauth.OAuthSignatureMethod_HMAC_SHA1()
+    req.set_parameter('oauth_signature_method', sign_method.get_name())
+    log.debug('Signing base string %r for web request %s'
+        % (sign_method.build_signature_base_string(req, consumer, token),
+           url))
+    req.sign_request(sign_method, consumer, token)
+
     return req.to_url()
 
 
