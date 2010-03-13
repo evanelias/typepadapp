@@ -197,11 +197,13 @@ def get_typepad_client(superclass):
         def batch_request(self):
             request = super(TypePadClientStatTracker, self).batch_request()
             request.opened_stack = tidy_stacktrace(traceback.extract_stack())
+            return request
 
         def complete_batch(self):
             self.batchrequest.closed_stack = tidy_stacktrace(traceback.extract_stack())
             self.requests.append(self.batchrequest)
-            super(TypePadClientStatTracker, self).complete_batch()
+            return super(TypePadClientStatTracker, self).complete_batch()
+
     return TypePadClientStatTracker
 
 
