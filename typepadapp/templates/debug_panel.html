@@ -1,0 +1,109 @@
+{% load i18n %}
+
+<h4>{% trans "Overview" %}</h4>
+<table>
+    <tbody>
+
+        {% if toolbar.typepad_version and toolbar.typepad_revision %}
+        <tr class="{{ rowclass.next }}">
+            <th>{% trans "TypePad Version" %}</th>
+            <td>{{ toolbar.typepad_version }}-{{ toolbar.typepad_revision }}</td>
+        </tr>
+        {% endif %}
+
+        {% if toolbar.typepad_webserver %}
+        <tr class="{{ rowclass.next }}">
+            <th>{% trans "TypePad Server" %}</th>
+            <td>{{ toolbar.typepad_webserver }}</td>
+        </tr>
+        {% endif %}
+
+        <tr class="{{ rowclass.next }}">
+            <th>{% trans "Request time" %}</th>
+            <td>{% blocktrans with toolbar.request_time|floatformat:4 as time %}{{ time }} secs{% endblocktrans %}</td>
+        </tr>
+
+        {% if toolbar.typepad_time %}
+        <tr class="{{ rowclass.next }}">
+            <th>{% trans "TypePad time" %}</th>
+            <td>{% blocktrans with toolbar.typepad_time|floatformat:4 as time %}{{ time }} secs{% endblocktrans %}</td>
+        </tr>
+        {% endif %}
+
+        {% if toolbar.typepad_query_count %}
+        <tr class="{{ rowclass.next }}">
+            <th>{% trans "Database queries" %}</th>
+            <td>{{ toolbar.typepad_query_count }}</td>
+        </tr>
+        {% endif %}
+
+    </tbody>
+</table>
+
+{% for request in toolbar.requests %}
+    <h4>{% blocktrans with forloop.counter as count %}Request {{ count }}{% endblocktrans %}</h4>
+
+    <h5>{% blocktrans with request.stats.subrequests|length as subrequests and request.stats.time|stringformat:".3f" as time %}
+        {{ subrequests }} subrequests ({{ time }} secs)
+    {% endblocktrans %}</h5>
+
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Status" %}</th>
+                <th>{% trans "URI" %}</th>
+                <th>{% trans "Size" %}</th>
+                <th>{% trans "Content" %}</th>
+                <th>{% trans "Stacktrace" %}</>
+            </tr>
+        </thead>
+        <tbody>
+            {% with forloop.counter as request_count %}
+            {% for subrequest in request.stats.subrequests %}
+            <tr class="{% cycle 'djDebugEven' 'djDebugOdd' as subreq_rowclass %}">
+                <td>{{ subrequest.stats.status }}</td>
+                <td><a target="_new" href="{{ subrequest.stats.http_uri }}">{{ subrequest.stats.uri }}</a></td>
+                <td>{% blocktrans with subrequest.stats.length as bytes %}{{ bytes }} bytes{% endblocktrans %}</td>
+                <td>
+                </td>
+                <td>
+                </td>
+            </tr>
+            <tr id="djTypePadReq{{ request_count }}Sub{{ forloop.counter }}Body" class="{{ subreq_rowclass }}">
+                <td colspan="5">
+                    <pre style="white-space: pre-wrap">{{ subrequest.stats.body }}</pre>
+                </td>
+            </tr>
+            <tr id="djTypePadReq{{ request_count }}Sub{{ forloop.counter }}Trace" class="{{ subreq_rowclass }}">
+                <td colspan="5">
+                    <ul class="debug-subrequest-stacktrace">
+                        {% for trace in subrequest.opened_stack %}
+                        <li>
+                            <div><span class="debug-filename">{{ trace.0 }}</span> in <span class="debug-funcname">{{ trace.2 }}</span></div>
+                            <div class="debug-strace-line"><span class="debug-lineno">{{ trace.1 }}.</span> <span class="debug-statement">{{ trace.3 }}</span></div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+            {% endwith %}
+        </tbody>
+    </table>
+
+    <h5>{% blocktrans with request.stats.typepad_db_queries|length as queries %}{{ queries }} database queries{% endblocktrans %}</h5>
+    <table>
+        <thead>
+            <tr>
+                <th>Query</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for query in request.stats.typepad_db_queries %}
+            <tr class="{% cycle 'djDebugEven' 'djDebugOdd' %}">
+                <td>{{ query }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endfor %}

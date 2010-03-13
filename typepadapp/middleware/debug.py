@@ -27,11 +27,13 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import logging
 import os
 import SocketServer
 import traceback
 from time import time
 
+from batchhttp import client
 import django
 from django.conf import settings
 from django.utils.encoding import smart_unicode
@@ -39,9 +41,7 @@ from django.template.loader import render_to_string
 from django.template import RequestContext
 from django.core.signals import request_started
 from django.core.exceptions import MiddlewareNotUsed
-
-from batchhttp import client
-
+from django.utils.translation import ugettext_lazy as _
 import typepad
 
 from typepadapp.signals import post_start
@@ -61,6 +61,8 @@ when DEBUG is set to False in your Django settings module.
 
 """
 
+
+log = logging.getLogger(__name__)
 
 _HTML_TYPES = ('text/html', 'application/xhtml+xml')
 
@@ -310,3 +312,56 @@ class DebugToolbarMiddleware(object):
                                                        u'</body>', 
                                                        smart_unicode(request.toolbar.render_toolbar(request) + '</body>'))
         return response
+
+
+try:
+    from debug_toolbar.panels import DebugPanel
+except ImportError:
+    pass
+else:
+    def oops(fn):
+        def moops(*args, **kwargs):
+            try:
+                return fn(*args, **kwargs)
+            except Exception, exc:
+                log.exception(exc)
+                raise
+        moops.__name__ = fn.__name__
+        return moops
+
+    class TypePadDebugPanel(DebugPanel):
+
+        name = 'TypePad'
+        has_content = True
+
+        def __init__(self, context={}):
+            super(TypePadDebugPanel, self).__init__(context)
+            # Remap typepad.client's class to TypePadClientStatTracker
+            client = typepad.client.client
+            client.__class__ = get_typepad_client(client.__class__)
+
+        def process_request(self, request):
+            self.context['toolbar'] = DebugToolbar(request)
+
+        def nav_title(self):
+            return _('TypePad API')
+
+        @oops
+        def nav_subtitle(self):
+            toolbar = self.context['toolbar']
+            return '%d batch / %d sub' % (toolbar.batch_request_count(), toolbar.subrequest_count())
+
+        def title(self):
+            return _('TypePad API')
+
+        def url(self):
+            return ''
+
+        @oops
+        def content(self):
+            def cyclotron():
+                while True:
+                    yield 'djDebugOdd'
+                    yield 'djDebugEven'
+            self.context['rowclass'] = cyclotron()
+            return render_to_string('debug_panel.html', self.context)
