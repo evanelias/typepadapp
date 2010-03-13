@@ -35,7 +35,7 @@ import urllib
 from urlparse import urlparse, urlunparse
 from django import http
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ViewDoesNotExist
 from django.core.urlresolvers import reverse, NoReverseMatch
 from oauth import oauth
 
@@ -44,6 +44,8 @@ from typepadapp import signals
 
 
 log = logging.getLogger('typepadapp.views.auth')
+
+DEFAULT_PARAM = object()
 
 
 def parameterize_url(url, params):
@@ -59,7 +61,7 @@ def parameterize_url(url, params):
     return urlunparse(url)
 
 
-def register(request):
+def register(request, target_object=DEFAULT_PARAM):
     """ OAuth registration prep.
     
     Fetch request token then redirect to authorization page.
@@ -75,17 +77,33 @@ def register(request):
     token = client.fetch_request_token(callback)
     request.session['request_token'] = token.to_string()
 
-    url = client.authorize_token({ 'target_object': request.group.id })
+    if target_object is DEFAULT_PARAM:
+        target_object = request.group.id
+    if target_object is None:
+        authz_params = {}
+    else:
+        authz_params['target_object'] = target_object
+
+    url = client.authorize_token(authz_params)
     # url = client.authorize_token({ 'access': 'app_full' })
 
     return http.HttpResponseRedirect(url)
 
 
-def login(request):
+def login(request, target_object=DEFAULT_PARAM):
     """Redirect to the TypePad OAuth identification page, which 
     will redirect back to the synchronization URL after authenticating
     the user."""
-    return http.HttpResponseRedirect(request.get_oauth_identification_url(request.GET.get('next', HOME_URL)))
+    if target_object is DEFAULT_PARAM:
+        target_object = request.group.id
+    if target_object is None:
+        params = {}
+    else:
+        params = {'target_object': target_object}
+
+    home_url = request.GET.get('next', HOME_URL)
+    ident_url = request.get_oauth_identification_url(home_url, **params)
+    return http.HttpResponseRedirect(ident_url)
 
 
 def authorize(request):
@@ -266,10 +284,10 @@ def logout(request):
 
 try:
     HOME_URL = reverse('home')
-except NoReverseMatch:
+except (NoReverseMatch, ViewDoesNotExist):
     HOME_URL = '/'
     log.warning('Could not find a view "home"; using default: %s', HOME_URL)
 except Exception, exc:
-    log.error('Unexpected exception looking for "home" view: %s', str(exc))
+    log.error('Unexpected %s looking for "home" view: %s', type(exc).__name__, str(exc))
 else:
     log.debug('Successfully looked up HOME_URL: %s', HOME_URL)

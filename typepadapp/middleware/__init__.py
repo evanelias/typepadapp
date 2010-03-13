@@ -98,14 +98,14 @@ def get_session_synchronization_url(self, callback_url=None):
                            'target_object': self.group.id })
 
 
-def get_oauth_identification_url(self, next):
+def get_oauth_identification_url(self, next, **params):
     params = {
         'callback_nonce': self.session.get('callback_nonce'),
         'callback_next': self.build_absolute_uri(next),
         'signin': '1',
     }
     callback_url = '%s?%s' % (self.build_absolute_uri(reverse('synchronize')), urlencode(params))
-    params = { 'callback_url': callback_url, 'target_object': self.group.id }
+    params['callback_url'] = callback_url
     params.update(settings.TYPEPAD_IDENTIFY_PARAMS)
     return gp_signed_url(self.oauth_client.oauth_identification_url, params)
 
