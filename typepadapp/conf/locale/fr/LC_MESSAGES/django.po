@@ -1,0 +1,95 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-01-26 13:21-0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: models/assets.py:237
+msgid ""
+"You have entered a URL that is either invalid or a URL for a video that can "
+"no longer be found."
+msgstr ""
+"Vous avez entré une URL non-valide ou le fichier vidéo est introuvable."
+
+#: models/users.py:110
+msgid "user"
+msgstr "utilisateur"
+
+#: models/users.py:111
+msgid "users"
+msgstr "utilisateurs"
+
+#: templates/404.html:12
+msgid "Page not found."
+msgstr "Page introuvable"
+
+#: templates/404.html:16
+msgid "Sorry, we can&rsquo;t find that page."
+msgstr "Désolé, nous ne pouvons pas afficher cette page pour le moment."
+
+#: templates/404.html:17 templates/500.html:17
+msgid "Return to the home page."
+msgstr "Aller à la page d'accueil"
+
+#: templates/404.html:19 templates/404.html.py:20 templates/500.html:19
+#: templates/500.html.py:20
+msgid "Sad sad spacegiraffe."
+msgstr "Erreur interne au serveur (Erreur 500)."
+
+#: templates/500.html:12
+msgid "Sorry, an error occured."
+msgstr "Désolé, une erreur s'est produite."
+
+#: templates/500.html:16
+msgid "Whoops! Can you try that again?"
+msgstr "Essayez à nouveau."
+
+#: templates/baconplayer.html:3
+msgid "play"
+msgstr "lecture"
+
+#: templates/baconplayer.html:4
+msgid "pause"
+msgstr "pause"
+
+#: templatetags/date_filters.py:47 templatetags/date_filters.py:48
+#, python-format
+msgid "%(prep)s %(date)s"
+msgstr "%(prep)s %(date)s"
+
+#: templatetags/date_filters.py:49
+#, python-format
+msgid "%d day ago"
+msgid_plural "%d days ago"
+msgstr[0] "il y a %d jour"
+msgstr[1] "il y a %d jours"
+
+#: templatetags/date_filters.py:50
+#, python-format
+msgid "%d hour ago"
+msgid_plural "%d hours ago"
+msgstr[0] "il y a %d heure"
+msgstr[1] "il y a %d heures"
+
+#: templatetags/date_filters.py:51
+#, python-format
+msgid "%d minute ago"
+msgid_plural "%d minutes ago"
+msgstr[0] "il y a %d minute"
+msgstr[1] "il y a %d minutes"
+
+#: templatetags/date_filters.py:52
+msgid "just now"
+msgstr "tout à l'heure"

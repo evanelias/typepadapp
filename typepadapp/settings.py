@@ -31,6 +31,16 @@
 import os
 import logging
 
+
+BACKEND_URL = 'https://api.typepad.com'
+"""The URL of the TypePad API service to use.
+
+This setting should normally always be the default value of
+``https://api.typepad.com``, but it may be useful to send API requests
+somewhere else for development or debugging.
+
+"""
+
 TYPEPAD_COOKIES = {}
 """A dictionary of additional cookies (values, keyed on cookie names) to send
 when making API requests to TypePad.
