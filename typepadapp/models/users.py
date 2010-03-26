@@ -259,43 +259,35 @@ class User(typepad.User):
 
     @property
     def typepad_url(self):
-        try:
-            return self.links['alternate'].href
-        except (TypeError, KeyError):
-            # fail silently?
-            return None
-
-    @property
-    def typepad_edit_url(self):
-        try:
-            return self.links['profile-edit-page'].href
-        except (TypeError, KeyError):
-            # fail silently?
-            return None
-
-    @property
-    def typepad_membership_management_url(self):
-        try:
-            return self.links['membership-management-page'].href
-        except (TypeError, KeyError):
-            # fail silently?
-            return None
-
-    @property
-    def typepad_frame_url(self):
-        return self.links['follow-frame-content'].href
+        return self.profile_page_url
 
     @property
     def userpic(self):
         try:
-            return self.links['rel__avatar']['width__50'].href
-        except (TypeError, KeyError):
+            return self.avatar_link.url # fixme: select 50x50 one
+        except AttributeError:
             pass
         try:
             return reverse('static-serve', kwargs={'path': settings.DEFAULT_USERPIC_PATH})
         except NoReverseMatch:
             pass
         return None
+
+
+class UserProfile(typepad.UserProfile):
+
+    @property
+    def is_superuser(self):
+        for admin in typepadapp.models.GROUP.admins():
+            if self.id == admin.target.id:
+                return True
+        return False
+
+    @property
+    def is_featured_member(self):
+        if settings.FEATURED_MEMBER is None: return False
+        return settings.FEATURED_MEMBER in (self.id,
+            self.preferred_username)
 
 
 ### Caching support
@@ -308,12 +300,19 @@ if settings.FRONTEND_CACHING:
         """Attempts to use a caching key of the user's username, if available."""
         return "objectcache:%s:%s" % (self.cache_namespace, self.preferred_username or self.url_id)
     User.cache_key = property(make_user_alias_cache_key)
+    UserProfile.cache_key = property(make_user_alias_cache_key)
 
     User.get_by_url_id = cache_object(User.get_by_url_id)
     user_invaldator = invalidate_rule(
         key=lambda sender, instance=None, group=None, **kwargs: instance,
         signals=[signals.member_banned, signals.member_unbanned],
         name="user cache invalidation for member_banned, member_unbanned signals")
+
+    UserProfile.get_by_url_id = cache_object(UserProfile.get_by_url_id)
+    user_profile_invaldator = invalidate_rule(
+        key=lambda sender, instance=None, group=None, **kwargs: UserProfile.get_by_url_id(instance.preferred_username or instance.url_id),
+        signals=[signals.member_banned, signals.member_unbanned],
+        name="user profile cache invalidation for member_banned, member_unbanned signals")
 
     User.events = cache_link(User.events)
     user_events_invalidator = invalidate_rule(

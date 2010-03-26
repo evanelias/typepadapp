@@ -249,7 +249,7 @@ def logout(request):
     from django.contrib.auth import logout
     logout(request)
     # redirect to logout of typepad
-    url = request.application.signout_page
+    url = request.application.signout_url
     url = parameterize_url(url, { 'callback_url':
         request.build_absolute_uri(HOME_URL) })
     return http.HttpResponseRedirect(url)

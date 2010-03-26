@@ -72,11 +72,8 @@ class Asset(typepad.Asset):
             except NoReverseMatch:
                 pass
 
-        try:
-            return self.links['alternate'].href
-        except KeyError:
-            return None
-    
+        return self.permalink_url
+
     @property
     def feed_url(self):
         """URL for atom feed of entry comments."""
@@ -121,27 +118,6 @@ class Asset(typepad.Asset):
         """ An alias for the author property. """
         return self.author
 
-    def link_relation(self, relation):
-        """ A method that yields a Link object of the specified relation
-        from the asset's 'links' member.
-
-        If the relation does not exist, one is added and the empty Link
-        object is returned to be populated. """
-
-        links = self.links
-        if links is None:
-            links = typepad.LinkSet()
-            self.links = links
-
-        try:
-            return links[relation]
-        except KeyError:
-            l = typepad.Link()
-            l.rel = relation
-            l.href = ''
-            links.add(l)
-            return l
-
 
 def asset_ref_type_id(self):
     object_type = self.object_type or self.object_types[0]
@@ -185,10 +161,7 @@ class Audio(typepad.Audio, Asset):
 
     @property
     def link(self):
-        try:
-            return self.links['enclosure'].href
-        except KeyError:
-            pass
+        return self.source.permalink_url
 
     def save(self, file=None, group=None):
         # Warning - this only handles create, not update
@@ -207,18 +180,18 @@ class Video(typepad.Video, Asset):
             self.message = message
 
     def get_html(self):
-        return self.link_relation('enclosure').html
+        return self.video_link.embed_code
 
     def set_html(self, value):
-        self.link_relation('enclosure').html = value
+        self.video_link.embed_code = value
 
     html = property(get_html, set_html)
 
     def get_link(self):
-        return self.link_relation('enclosure').href
+        return self.video_link.permalink_url
 
     def set_link(self, value):
-        self.link_relation('enclosure').href = value
+        self.video_link.permalink_url = value
 
     link = property(get_link, set_link)
 
@@ -242,11 +215,10 @@ class Photo(typepad.Photo, Asset):
 
     @property
     def link(self):
-        if not self.links or not self.links['rel__enclosure']:
+        try:
+            return self.image_link.url
+        except AttributeError:
             return None
-        best = self.links['rel__enclosure'].link_by_width()
-        if not best: return None
-        return best.href
 
     def save(self, file=None, group=None):
         # Warning - this only handles create, not update
@@ -291,10 +263,10 @@ class LinkAsset(typepad.LinkAsset, Asset):
         return link
 
     def get_link(self):
-        return self.link_relation('target').href
+        return self.target_url
 
     def set_link(self, value):
-        self.link_relation('target').href = value
+        self.target_url = value
 
     link = property(get_link, set_link)
 

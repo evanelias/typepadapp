@@ -43,11 +43,11 @@ class OAuthClient(typepad.OAuthClient):
     def __init__(self, app):
         self.set_consumer(settings.OAUTH_CONSUMER_KEY, secret = settings.OAUTH_CONSUMER_SECRET,)
 
-        self.request_token_url = app.oauth_request_token
-        self.access_token_url = app.oauth_access_token_endpoint
-        self.authorization_url = app.oauth_authorization_page
-        self.session_sync_url = app.session_sync_script
-        self.oauth_identification_url = app.oauth_identification_page
+        self.request_token_url = app.oauth_request_token_url
+        self.access_token_url = app.oauth_access_token_url
+        self.authorization_url = app.oauth_authorization_url
+        self.session_sync_url = app.session_sync_script_url
+        self.oauth_identification_url = app.oauth_identification_url
 
 
 class Token(models.Model, oauth.OAuthToken):
