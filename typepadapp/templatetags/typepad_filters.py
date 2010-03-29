@@ -48,35 +48,45 @@ def morelink(entry, wordcount):
 
 
 @register.filter
-def userpicbywidth(asset, width=0):
-    try:
-        return asset.links['rel__avatar'].link_by_width(int(width))
-    except:
-        return None
+def userpicbywidth(user, width=0):
+    return user.avatar_link.by_width(int(width))
+
+
+@register.filter
+def userpicbysize(user, size=0):
+    return user.avatar_link.inscribe(int(size))
+
+
+@register.filter
+def userpicsquare(user, size=0):
+    return user.avatar_link.square(int(size))
 
 
 @register.filter
 def enclosurebywidth(asset, width=0):
-    try:
-        return asset.links['rel__enclosure'].link_by_width(int(width))
-    except:
-        return None
+    if asset.type_id == 'photo':
+        return asset.image_link.by_width(int(width))
+    elif asset.type_id == 'video':
+        return asset.video_link.by_width(int(width))
+    return None
 
 
 @register.filter
 def enclosurebysize(asset, size=0):
-    try:
-        return asset.links['rel__enclosure'].link_by_size(int(size))
-    except:
-        return None
+    if asset.type_id == 'photo':
+        return asset.image_link.inscribe(int(size))
+    elif asset.type_id == 'video':
+        return asset.video_link.by_width(int(width))
+    return None
 
 
 @register.filter
 def enclosurebymaxwidth(asset, width=0):
-    try:
-        return asset.links['rel__enclosure']['maxwidth__%d' % int(width)]
-    except:
-        return None
+    if asset.type_id == 'photo':
+        return asset.image_link.by_width(int(width))
+    elif asset.type_id == 'video':
+        return asset.video_link.by_width(int(width))
+    return None
 
 
 @register.filter
