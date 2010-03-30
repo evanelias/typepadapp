@@ -1,6 +1,12 @@
 typepadapp Changelog
 ====================
 
+1.1.2 (2009-3-30)
+-----------------
+
+* Updated for forward compatibility with the TypePad API.
+
+
 1.1.1 (2009-12-16)
 ------------------
 
