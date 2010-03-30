@@ -356,8 +356,8 @@ if settings.FRONTEND_CACHING:
         key=lambda sender, instance=None, group=None, **kwargs:
             instance and group and [instance.group_memberships(group),
                 instance.preferred_username and User.get_by_url_id(instance.preferred_username).group_memberships(group)],
-        signals=[signals.member_banned, signals.member_unbanned],
-        name="user membership invalidation for member_banned, member_unbanned signals")
+        signals=[signals.member_banned, signals.member_unbanned, signals.member_joined, signals.member_left],
+        name="user membership invalidation for member_banned, member_unbanned, member_joined, member_left signals")
 
     User.elsewhere_accounts = cache_link(User.elsewhere_accounts)
     # signals.profile_webhook
