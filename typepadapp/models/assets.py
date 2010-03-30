@@ -263,9 +263,15 @@ class LinkAsset(typepad.LinkAsset, Asset):
         return link
 
     def get_link(self):
+        import logging
+        logging.getLogger("typepadapp.models.assets").warn(
+            'LinkAsset.link is deprecated; use LinkAsset.target_url instead')
         return self.target_url
 
     def set_link(self, value):
+        import logging
+        logging.getLogger("typepadapp.models.assets").warn(
+            'LinkAsset.link is deprecated; use LinkAsset.target_url instead')
         self.target_url = value
 
     link = property(get_link, set_link)

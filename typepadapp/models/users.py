@@ -259,12 +259,36 @@ class User(typepad.User):
 
     @property
     def typepad_url(self):
+        import logging
+        logging.getLogger("typepadapp.models.users").warn(
+            'User.typepad_url is deprecated; use User.profile_page_url instead')
         return self.profile_page_url
 
     @property
+    def typepad_edit_url(self):
+        import logging
+        logging.getLogger("typepadapp.models.users").warn(
+            'User.typepad_edit_url is deprecated; use User.profile_edit_page_url instead')
+        return self.profile_edit_page_url
+
+    @property
+    def typepad_frame_url(self):
+        import logging
+        logging.getLogger("typepadapp.models.users").warn(
+            'User.typepad_frame_url is deprecated; use User.follow_frame_content_url instead')
+        return self.follow_frame_content_url
+
+    @property
     def userpic(self):
+        """Returns a URL for a userpic for the User.
+
+        The returned URL should be sized for a 50x50 square, but this
+        cannot be guaranteed. The img tag should be styled in a way
+        that bounds the presentation to 50 pixels square.
+
+        """
         try:
-            return self.avatar_link.url # fixme: select 50x50 one
+            return self.avatar_link.square(50).url
         except AttributeError:
             pass
         try:
