@@ -313,6 +313,13 @@ class UserProfile(typepad.UserProfile):
         return settings.FEATURED_MEMBER in (self.id,
             self.preferred_username)
 
+    @property
+    def typepad_frame_url(self):
+        import logging
+        logging.getLogger("typepadapp.models.users").warn(
+            'UserProfile.typepad_frame_url is deprecated; use UserProfile.follow_frame_content_url instead')
+        return self.follow_frame_content_url
+
 
 ### Caching support
 
