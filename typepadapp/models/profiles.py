@@ -31,7 +31,7 @@ from django.db import models
 from typepadapp.models.users import User
 
 
-class UserProfile(models.Model):
+class LocalProfile(models.Model):
     """
         Abstract base class for a creating a custom local
         User profile for additional site-specific profile
