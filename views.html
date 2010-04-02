@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Class-Based Views &mdash; typepadapp v1.1 documentation</title>
+    <title>Class-Based Views &mdash; typepadapp v1.1.2 documentation</title>
     <link rel="stylesheet" href="static/default.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.1',
+        VERSION:     '1.1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,7 +19,7 @@
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="typepadapp v1.1 documentation" href="index.html" />
+    <link rel="top" title="typepadapp v1.1.2 documentation" href="index.html" />
     <link rel="next" title="Local Profiles" href="localprofile.html" />
     <link rel="prev" title="Settings" href="settings.html" /> 
   </head>
@@ -39,7 +39,7 @@
         <li class="right" >
           <a href="settings.html" title="Settings"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">typepadapp v1.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">typepadapp v1.1.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -48,8 +48,268 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="class-based-views">
-<h1>Class-Based Views<a class="headerlink" href="#class-based-views" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-typepadapp.views.base">
+<h1>Class-Based Views<a class="headerlink" href="#module-typepadapp.views.base" title="Permalink to this headline">¶</a></h1>
+<p><cite>typepadapp.views.base</cite> provides a basis for building Django views that use
+TypePad API resources.</p>
+<p>As TypePad API resources are best requested in a single batch request, the
+class-based view implementation in <a title="typepadapp.views.base.TypePadView" class="reference internal" href="#typepadapp.views.base.TypePadView"><tt class="xref docutils literal"><span class="pre">TypePadView</span></tt></a> affords grouping all required
+data at once in the <cite>select_from_typepad()</cite> method, which can be retrieved in
+a batch and provided to your view&#8217;s implementation.</p>
+<dl class="class">
+<dt id="typepadapp.views.base.GenericView">
+<em class="property">
+class </em><tt class="descclassname">typepadapp.views.base.</tt><tt class="descname">GenericView</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.GenericView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class-based view.</p>
+<p>This class provides a generic framework for implementing a class-based
+view. By default it permits <tt class="docutils literal"><span class="pre">GET</span></tt> requests, and will automatically
+handle conditional requests, controlled through <tt class="docutils literal"><span class="pre">If-Modified-Since</span></tt> and
+ETag request headers.</p>
+<p>This class works by subclassing <tt class="docutils literal"><span class="pre">HttpResponse</span></tt>. When called, the view is
+instantiated with the request instance and url parameters, just like a
+Django view function. The request is handled by the initializer and the
+result of the instantiation is the response to the given request.</p>
+<dl class="method">
+<dt id="typepadapp.views.base.GenericView.conditional_dispatch">
+<tt class="descname">conditional_dispatch</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.GenericView.conditional_dispatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dispatches the request or returns an <cite>HttpResponseNotModified</cite>
+instance, as appropriate.</p>
+<p>For <tt class="docutils literal"><span class="pre">GET</span></tt>, <tt class="docutils literal"><span class="pre">HEAD</span></tt>, and <tt class="docutils literal"><span class="pre">PUT</span></tt> requests, this method calls its
+instance&#8217;s <cite>etag()</cite> and <cite>last_modified()</cite> methods, then checks
+whether a the appropriate preconditions are satisfied before
+continuing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="typepadapp.views.base.GenericView.dispatch">
+<tt class="descname">dispatch</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.GenericView.dispatch" title="Permalink to this definition">¶</a></dt>
+<dd>This method dispatches the request to the appropriate method based on
+the HTTP request method.</dd></dl>
+
+<dl class="method">
+<dt id="typepadapp.views.base.GenericView.etag">
+<tt class="descname">etag</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.GenericView.etag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a value used as the ETag for the view.</p>
+<p>To support <tt class="docutils literal"><span class="pre">If-None-Match</span></tt> ETag HTTP headers, return an appropriate
+ETag here.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="typepadapp.views.base.GenericView.get">
+<tt class="descname">get</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.GenericView.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handles <tt class="docutils literal"><span class="pre">GET</span></tt> requests.</p>
+<p>Override this method to handle <tt class="docutils literal"><span class="pre">GET</span></tt> requests, returning an
+<cite>HttpResponse</cite> instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="typepadapp.views.base.GenericView.last_modified">
+<tt class="descname">last_modified</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.GenericView.last_modified" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a value representing the last modification timestamp of the
+view.</p>
+<p>To support <tt class="docutils literal"><span class="pre">If-Modified-Since</span></tt> headers, return a timestamp
+representing the last-modified date of the view. This may be based on
+a physical file timestamp, or the last modified element of the view
+being published.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="typepadapp.views.base.GenericView.render_to_response">
+<tt class="descname">render_to_response</tt><big>(</big><em>template</em>, <em>more_context=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.GenericView.render_to_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>A shortcut method that runs the <a title="typepadapp.views.base.GenericView.render_to_response" class="reference internal" href="#typepadapp.views.base.GenericView.render_to_response"><tt class="xref docutils literal"><span class="pre">render_to_response</span></tt></a> Django shortcut.</p>
+<p>It will apply the view&#8217;s context object as the context for rendering
+the template. Additional context variables may be passed in, similar
+to the <a title="typepadapp.views.base.GenericView.render_to_response" class="reference internal" href="#typepadapp.views.base.GenericView.render_to_response"><tt class="xref docutils literal"><span class="pre">render_to_response</span></tt></a> shortcut.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="typepadapp.views.base.GenericView.setup">
+<tt class="descname">setup</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.GenericView.setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called for all invocation of the view to set up the view prior to
+dispatching to the appropriate handler.</p>
+<p>Subclasses can override this method which is invoked after the class
+has been initialized but prior to the dispatch to the <tt class="docutils literal"><span class="pre">GET</span></tt>,
+<tt class="docutils literal"><span class="pre">POST</span></tt>, etc. handler.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="typepadapp.views.base.HubbedAtom1Feed">
+<em class="property">
+class </em><tt class="descclassname">typepadapp.views.base.</tt><tt class="descname">HubbedAtom1Feed</tt><big>(</big><em>title</em>, <em>link</em>, <em>description</em>, <em>language=None</em>, <em>author_email=None</em>, <em>author_name=None</em>, <em>author_link=None</em>, <em>subtitle=None</em>, <em>categories=None</em>, <em>feed_url=None</em>, <em>feed_copyright=None</em>, <em>feed_guid=None</em>, <em>ttl=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.HubbedAtom1Feed" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <cite>SyndicationFeed</cite> with support for linking to a PubSubHubbub hub.</p>
+<p>Provide <tt class="docutils literal"><span class="pre">hub_url</span></tt> as an extra parameter to include a hub <tt class="docutils literal"><span class="pre">&lt;link</span> <span class="pre">/&gt;</span></tt> in
+the feed.</p>
+<dl class="method">
+<dt id="typepadapp.views.base.HubbedAtom1Feed.add_root_elements">
+<tt class="descname">add_root_elements</tt><big>(</big><em>handler</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.HubbedAtom1Feed.add_root_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the feed elements to the feed DOM node.</p>
+<p>In addition to the regular <cite>Atom1Feed</cite> elements, this implementation
+adds a <tt class="docutils literal"><span class="pre">&lt;link</span> <span class="pre">rel=&quot;hub&quot;</span> <span class="pre">/&gt;</span></tt> for the feed&#8217;s PubSubHubbub hub, if
+one was specified.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="typepadapp.views.base.TypePadEventFeed">
+<em class="property">
+class </em><tt class="descclassname">typepadapp.views.base.</tt><tt class="descname">TypePadEventFeed</tt><big>(</big><em>slug</em>, <em>request</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.TypePadEventFeed" title="Permalink to this definition">¶</a></dt>
+<dd>A subclass of <a title="typepadapp.views.base.TypePadFeed" class="reference internal" href="#typepadapp.views.base.TypePadFeed"><tt class="xref docutils literal"><span class="pre">TypePadFeed</span></tt></a> that handles serving <cite>Asset</cite> items.</dd></dl>
+
+<dl class="class">
+<dt id="typepadapp.views.base.TypePadFeed">
+<em class="property">
+class </em><tt class="descclassname">typepadapp.views.base.</tt><tt class="descname">TypePadFeed</tt><big>(</big><em>slug</em>, <em>request</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.TypePadFeed" title="Permalink to this definition">¶</a></dt>
+<dd><p>A subclass of the Django <cite>Feed</cite> class that handles selecting data from
+the TypePad client library.</p>
+<p>In addition to the regular <cite>Feed</cite> attributes, set a <a title="typepadapp.views.base.TypePadFeed" class="reference internal" href="#typepadapp.views.base.TypePadFeed"><tt class="xref docutils literal"><span class="pre">TypePadFeed</span></tt></a> class&#8217;s
+<tt class="docutils literal"><span class="pre">hub_url</span></tt> attribute (or supply a <tt class="docutils literal"><span class="pre">hub_url</span></tt> method) to link the feed to
+a PubSubHubbub hub.</p>
+<dl class="method">
+<dt id="typepadapp.views.base.TypePadFeed.feed_extra_kwargs">
+<tt class="descname">feed_extra_kwargs</tt><big>(</big><em>obj</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.TypePadFeed.feed_extra_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of extra keyword arguments with which to
+initialize the feed generator.</p>
+<p>This implementation provides a <tt class="docutils literal"><span class="pre">hub_url</span></tt> argument with the value of
+the <a title="typepadapp.views.base.TypePadFeed" class="reference internal" href="#typepadapp.views.base.TypePadFeed"><tt class="xref docutils literal"><span class="pre">TypePadFeed</span></tt></a> instance&#8217;s <tt class="docutils literal"><span class="pre">hub_url</span></tt> attribute (or the return
+value of its <tt class="docutils literal"><span class="pre">hub_url</span></tt> method if its <tt class="docutils literal"><span class="pre">hub_url</span></tt> attribute is
+callable).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="typepadapp.views.base.TypePadFeed.feed_type">
+<tt class="descname">feed_type</tt><a class="headerlink" href="#typepadapp.views.base.TypePadFeed.feed_type" title="Permalink to this definition">¶</a></dt>
+<dd>alias of <a title="typepadapp.views.base.HubbedAtom1Feed" class="reference internal" href="#typepadapp.views.base.HubbedAtom1Feed"><tt class="xref docutils literal"><span class="pre">HubbedAtom1Feed</span></tt></a></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="typepadapp.views.base.TypePadView">
+<em class="property">
+class </em><tt class="descclassname">typepadapp.views.base.</tt><tt class="descname">TypePadView</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.TypePadView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A subclass of the <tt class="docutils literal"><span class="pre">GenericView</span></tt> class that adds TypePad-specific
+features and behavior.</p>
+<p>This class supports several members that make it easy to handle
+forms and pagination.</p>
+<p>In particular, a special method <tt class="docutils literal"><span class="pre">select_from_typepad()</span></tt> may be declared
+for a subclass of <tt class="docutils literal"><span class="pre">TypePadView</span></tt>. When this method is present, a
+batch request is made to the TypePad API for all data elements requested
+in the <tt class="docutils literal"><span class="pre">select_from_typepad()</span></tt> method.</p>
+<p class="rubric">Class attributes:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">paginate_by</span></tt>: specify this value if the view is to support pagination
+of a list of objects. An <tt class="docutils literal"><span class="pre">object_list</span></tt> member is expected to be
+assigned in order to provide context for pagination. A template context
+variable named <tt class="docutils literal"><span class="pre">page_obj</span></tt> is also set, being an instance of
+<tt class="docutils literal"><span class="pre">FinitePaginator</span></tt>.</li>
+<li><tt class="docutils literal"><span class="pre">object_list</span></tt>: Assign to this member when the view is to paginate a
+list of objects.</li>
+<li><tt class="docutils literal"><span class="pre">offset</span></tt>: When paginating a list of objects, this member is
+automatically assigned, based on the <tt class="docutils literal"><span class="pre">page</span></tt> parameter to the view and
+the value of the <tt class="docutils literal"><span class="pre">paginate_by</span></tt> property. This value may be used to
+control the selection of rows used to populate the <tt class="docutils literal"><span class="pre">object_list</span></tt>
+member during the <cite>setup()</cite> or <cite>select_from_typepad()</cite> methods.</li>
+<li><tt class="docutils literal"><span class="pre">limit</span></tt>: Assigned as the number of rows to select for the
+<tt class="docutils literal"><span class="pre">object_list</span></tt> member. This is typically set to <tt class="docutils literal"><span class="pre">paginate_by</span></tt>.</li>
+<li><tt class="docutils literal"><span class="pre">paginate_template</span></tt>: Assign a string to control the format of next,
+previous links.</li>
+<li><tt class="docutils literal"><span class="pre">form</span></tt>: The Django form class that is to be used for any editable
+object the view is presenting. If this member is set, it is instantiated
+during the <cite>setup()</cite> method and during a <tt class="docutils literal"><span class="pre">POST</span></tt> request, the values of
+the <tt class="docutils literal"><span class="pre">POST</span></tt> are given to it. Once the form is instantiated, it is
+assigned to a <tt class="docutils literal"><span class="pre">form_instance</span></tt> instance attribute. The form is also
+assigned to the template context as <tt class="docutils literal"><span class="pre">form</span></tt>.</li>
+<li><tt class="docutils literal"><span class="pre">template_name</span></tt>: Assign the name of a Django template file to be used
+for <tt class="docutils literal"><span class="pre">GET</span></tt> requests. The value of this property is stripped of any path
+and suffix and assigned to the <tt class="docutils literal"><span class="pre">view</span></tt> template context variable.</li>
+<li><tt class="docutils literal"><span class="pre">login_required</span></tt>: If the view requires an authenticated user to run,
+set this member to True. It relies on the settings.LOGIN_URL value for
+redirecting the user to a login form.</li>
+</ul>
+<p class="rubric">Template variables:</p>
+<p>These variables are available for any <a title="typepadapp.views.base.TypePadView" class="reference internal" href="#typepadapp.views.base.TypePadView"><tt class="xref docutils literal"><span class="pre">TypePadView</span></tt></a>.</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">view</span></tt>: The basename of the <tt class="docutils literal"><span class="pre">template_name</span></tt> member, minus any file
+path and extension.</li>
+<li><tt class="docutils literal"><span class="pre">form</span></tt>: The Django <a title="(in Python v2.6)" class="reference external" href="http://docs.python.org/library/tix.html#Tix.Form"><tt class="xref docutils literal"><span class="pre">Form</span></tt></a> instance for this view, if this kind of view
+has a form.</li>
+<li><tt class="docutils literal"><span class="pre">page_obj</span></tt>: The Django <cite>Paginator</cite> instance for this view, if the view
+is paged.</li>
+</ul>
+<dl class="method">
+<dt id="typepadapp.views.base.TypePadView.dispatch">
+<tt class="descname">dispatch</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.TypePadView.dispatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dispatches requests to <a title="typepadapp.views.base.TypePadView" class="reference internal" href="#typepadapp.views.base.TypePadView"><tt class="xref docutils literal"><span class="pre">TypePadView</span></tt></a> instances.</p>
+<p>If the dispatched <tt class="docutils literal"><span class="pre">POST</span></tt> call returns <tt class="xref docutils literal"><span class="pre">None</span></tt> for a response and
+the view&#8217;s <cite>form_instance</cite> instance member is an invalid form, the
+view is re-dispatched as a <tt class="docutils literal"><span class="pre">GET</span></tt> request to display the errors and
+ask for new valid form input.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="typepadapp.views.base.TypePadView.filter_object_list">
+<tt class="descname">filter_object_list</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.TypePadView.filter_object_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filters the list of objects returned by the API according to this
+view&#8217;s requirements.</p>
+<p>This implementation does nothing, leaving the view&#8217;s <cite>object_list</cite> as
+it is.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="typepadapp.views.base.TypePadView.get">
+<tt class="descname">get</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.TypePadView.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handles a <tt class="docutils literal"><span class="pre">GET</span></tt> request.</p>
+<p>By default, the template named in the request parameters (or, if none
+is given, the view&#8217;s <tt class="docutils literal"><span class="pre">template_name</span></tt> attribute) is rendered with the
+view&#8217;s context (including resources stashed there by the view&#8217;s
+<cite>select_from_typepad()</cite> method). If no template name is available,
+this method returns an empty <cite>HttpResponse</cite> instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="typepadapp.views.base.TypePadView.select_from_typepad">
+<tt class="descname">select_from_typepad</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.TypePadView.select_from_typepad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiates the TypePad API resources to display in this view.</p>
+<p>The TypePad API resources instantiated in <cite>select_from_typepad()</cite> are
+requested <em>en masse</em> in one API batch request. Add your resources to
+the view&#8217;s <cite>context</cite> dictionary, so they will be available when
+rendering the template.</p>
+<p>This implementation does nothing, requesting no API resources.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="typepadapp.views.base.TypePadView.select_typepad_user">
+<tt class="descname">select_typepad_user</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.TypePadView.select_typepad_user" title="Permalink to this definition">¶</a></dt>
+<dd>If a session token is found, returns the authenticated TypePad user,
+otherwise, returns the Django AnonymousUser. Replaces any authentication
+middleware.</dd></dl>
+
+<dl class="method">
+<dt id="typepadapp.views.base.TypePadView.typepad_request">
+<tt class="descname">typepad_request</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.TypePadView.typepad_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Issues a single TypePad batch request to render the current view.</p>
+<p>You generally needn&#8217;t override this method; this method wraps the
+<cite>select_from_typepad()</cite> method, which itself does individual TypePad
+API subrequests necessary for the view.</p>
+<p>If a session token is present, the authed user is also fetched with
+this batch request. In addition, the pagination state is set if the
+<tt class="docutils literal"><span class="pre">paginate_by</span></tt> attribute is assigned.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="typepadapp.views.base.parse_etags">
+<tt class="descclassname">typepadapp.views.base.</tt><tt class="descname">parse_etags</tt><big>(</big><em>etag_str</em><big>)</big><a class="headerlink" href="#typepadapp.views.base.parse_etags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses ETags out of an HTTP header value.</p>
+<p>This function parses ETags out of the value of an <tt class="docutils literal"><span class="pre">If-None-Match</span></tt> or
+<tt class="docutils literal"><span class="pre">If-Match</span></tt> header according to the rules in RFC 2616. It returns a list
+of ETags without surrounding double quotes (<tt class="docutils literal"><span class="pre">&quot;</span></tt>) and with no characters
+escaped with backslashes, <tt class="docutils literal"><span class="pre">\&lt;CODE&gt;</span></tt> style.</p>
+</dd></dl>
+
 </div>
 
 
@@ -101,12 +361,12 @@
         <li class="right" >
           <a href="settings.html" title="Settings"
              >previous</a> |</li>
-        <li><a href="index.html">typepadapp v1.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">typepadapp v1.1.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2009, Six Apart.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+      &copy; Copyright 2009-2010, Six Apart.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
     </div>
   </body>
 </html>
