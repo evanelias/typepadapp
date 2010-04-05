@@ -35,7 +35,7 @@ from django.db import models
 if settings.AUTH_PROFILE_MODULE:
     auth_profile_module = models.get_model(*settings.AUTH_PROFILE_MODULE.split('.'))
 
-    class UserProfileForm(forms.ModelForm):
+    class LocalProfileForm(forms.ModelForm):
         """A form for editing a local user profile."""
 
         class Meta:

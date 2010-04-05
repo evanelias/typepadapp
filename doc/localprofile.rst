@@ -13,17 +13,17 @@ Defining the model
 
 To store local profile data, use a Django model. The necessary functions for
 linking profiles to users are provided by the
-`typepadapp.models.profiles.UserProfile` model class, so you need only
+`typepadapp.models.profiles.LocalProfile` model class, so you need only
 subclass it and add the site's additional custom fields.
 
 For example, if you're making the ``clientapp`` app, you would add a
-`UserProfile` model to the ``clientapp.models`` module::
+`LocalProfile` model to the ``clientapp.models`` module::
 
    from django.db import models
 
    import typepadapp.models.profiles
 
-   class UserProfile(typepadapp.models.profiles.UserProfile):
+   class LocalProfile(typepadapp.models.profiles.LocalProfile):
        hiphop_name = models.CharField(max_length=80)
 
 (Remember to have put ``clientapp`` in your ``INSTALLED_APPS``.) This model
@@ -37,7 +37,7 @@ Telling Django about the model
 Once you've defined a local profile model, configure it in the settings as
 your ``AUTH_PROFILE_MODULE``::
 
-   AUTH_PROFILE_MODULE = 'clientapp.UserProfile'
+   AUTH_PROFILE_MODULE = 'clientapp.LocalProfile'
 
 See the Django documentation for ``AUTH_PROFILE_MODULE`` [#apm]_ for how to
 use it. Note specifically that your ``AUTH_PROFILE_MODULE`` must be of the
@@ -61,7 +61,7 @@ have to alter the table manually, as ``syncdb`` can only make new tables.
 Customizing templates
 ---------------------
 
-Once configured, a Django form called ``typepadapp.forms.UserProfileForm``
+Once configured, a Django form called ``typepadapp.forms.LocalProfileForm``
 will be available for showing and editing the model content in templates. For
 example, once defined, the Motion profile template will use it automatically.
 
