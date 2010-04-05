@@ -57,7 +57,7 @@ def generate_members_csv(request):
     # label header row
     labels = ['xid', 'display name', 'email', 'joined', 'gender', 'location', 'about me', 'homepage', 'interests']
     if settings.AUTH_PROFILE_MODULE:
-        profile_form = typepadapp.forms.UserProfileForm()
+        profile_form = typepadapp.forms.LocalProfileForm()
         for field in profile_form:
             labels.append(field.label)
     writer.writerow(labels)
@@ -145,7 +145,7 @@ def get_members_csv(members):
 
         # member data from local profile
         if settings.AUTH_PROFILE_MODULE:
-            profile_form = typepadapp.forms.UserProfileForm(instance=member.get_profile())
+            profile_form = typepadapp.forms.LocalProfileForm(instance=member.get_profile())
             for field in profile_form:
                 value = typepadapp.templatetags.formfieldvalue.value_of_field(field)
                 row.append(value)
