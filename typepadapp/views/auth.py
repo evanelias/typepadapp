@@ -131,13 +131,12 @@ def authorize(request):
 
     # store the token key / secret in the database so we can recover
     # it later if the session expires
-    token = Token.get(request.GET['session_sync_token'])
-    if token is None:
-        token = Token(
-            session_sync_token=request.GET['session_sync_token'],
-            key=access_token.key, secret=access_token.secret
-        )
-        token.save()
+    token, created = Token.objects.get_or_create(
+        session_sync_token=request.GET['session_sync_token'],
+        defaults={'key': access_token.key, 'secret': access_token.secret}
+    )
+    if created:
+        # this is a new user or at least a new session sync token
         signals.member_joined.send(sender=authorize, instance=authed_user,
             group=request.group)
     else:
@@ -276,7 +275,7 @@ def logout(request):
     from django.contrib.auth import logout
     logout(request)
     # redirect to logout of typepad
-    url = request.application.signout_page
+    url = request.application.signout_url
     url = parameterize_url(url, { 'callback_url':
         request.build_absolute_uri(HOME_URL) })
     return http.HttpResponseRedirect(url)
