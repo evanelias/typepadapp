@@ -90,6 +90,16 @@ def enclosurebymaxwidth(asset, width=0):
 
 
 @register.filter
+def square(imagelink, size=0):
+    return imagelink.square(int(size))
+
+
+@register.filter
+def bywidth(imagelink, width=0):
+    return imagelink.by_width(int(width))
+
+
+@register.filter
 def greaterthan(num1, num2):
     try:
         return int(num1) > int(num2)
