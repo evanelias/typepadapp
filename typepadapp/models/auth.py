@@ -34,14 +34,14 @@ import typepad
 
 class OAuthClient(typepad.OAuthClient):
 
-    def __init__(self, app):
+    def __init__(self, api_key):
         self.set_consumer(settings.OAUTH_CONSUMER_KEY, secret = settings.OAUTH_CONSUMER_SECRET,)
 
-        self.request_token_url = app.oauth_request_token_url
-        self.access_token_url = app.oauth_access_token_url
-        self.authorization_url = app.oauth_authorization_url
-        self.session_sync_url = app.session_sync_script_url
-        self.oauth_identification_url = app.oauth_identification_url
+        self.request_token_url = api_key.oauth_request_token_url
+        self.access_token_url = api_key.oauth_access_token_url
+        self.authorization_url = api_key.oauth_authorization_url
+        self.session_sync_url = api_key.session_sync_script_url
+        self.oauth_identification_url = api_key.oauth_identification_url
 
 if hasattr(settings, 'KEY_VALUE_STORE_BACKEND'):
     from typepadapp.models.kv import Token

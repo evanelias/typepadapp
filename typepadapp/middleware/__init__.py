@@ -122,7 +122,7 @@ class UserAgentMiddleware(object):
         if re.match('/?static/.*', request.path):
             return None
 
-        request.oauth_client = OAuthClient(request.application)
+        request.oauth_client = OAuthClient(request.api_key)
         typepad.client.clear_credentials()
 
         # Make sure there's a nonce in the session to use
@@ -154,6 +154,7 @@ class ApplicationMiddleware(object):
     def __init__(self):
         self.app = None
         self.group = None
+        self.api_key = None
 
     def discover_group(self, request):
         log = logging.getLogger('.'.join((self.__module__, self.__class__.__name__)))
@@ -161,13 +162,15 @@ class ApplicationMiddleware(object):
         # check for a cached app/group first
         app_key = 'application:%s' % settings.OAUTH_CONSUMER_KEY
         group_key = 'group:%s' % settings.OAUTH_CONSUMER_KEY
+        api_key_key = 'api_key:%s' % settings.OAUTH_CONSUMER_KEY
 
         # we cache in-process and in cache to support both situtations
         # where a cache is unavailable (cache is dummy), and situtations
         # where the application persistence is poor (Google App Engine)
         app = self.app or cache.get(app_key)
         group = self.group or cache.get(group_key)
-        if app is None or group is None:
+        api_key = self.api_key or cache.get(api_key_key)
+        if app is None or group is None or api_key is None:
             log.info('Loading group info...')
 
             # Grab the group and app with the default credentials.
@@ -202,10 +205,11 @@ class ApplicationMiddleware(object):
         if settings.SESSION_COOKIE_NAME is None:
             settings.SESSION_COOKIE_NAME = "sg_%s" % group.url_id
 
+        self.api_key = api_key
         self.app = app
         self.group = group
 
-        return app, group
+        return app, group, api_key
 
     def process_request(self, request):
         """Adds the application and group to the request."""
@@ -213,12 +217,14 @@ class ApplicationMiddleware(object):
         if request.path.find('/static/') == 0:
             return None
 
-        app, group = self.discover_group(request)
+        app, group, api_key = self.discover_group(request)
 
         typepadapp.models.APPLICATION = app
         typepadapp.models.GROUP = group
+        typepadapp.models.API_KEY = api_key
 
         request.application = app
+        request.api_key = api_key
         request.group = group
 
         return None

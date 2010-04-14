@@ -65,7 +65,7 @@ def register(request):
     Fetch request token then redirect to authorization page.
     """
     # fetch request token
-    client = OAuthClient(request.application)
+    client = OAuthClient(request.api_key)
 
     # redirect to authorization url, next param specifies final redirect URL.
     callback = request.build_absolute_uri(reverse('authorize'))
@@ -101,7 +101,7 @@ def authorize(request):
     del request.session['request_token']
 
     # exchange request token for access token
-    client = OAuthClient(request.application)
+    client = OAuthClient(request.api_key)
     client.set_token_from_string(request_token)
     verifier = request.GET.get('oauth_verifier')
     access_token = client.fetch_access_token(verifier=verifier)
@@ -235,7 +235,7 @@ def synchronize(request):
                     # get stuck in a loop.
                     request.session['lost_session_sync_token'] = session_sync_token
                     return http.HttpResponseRedirect(next)
-            client = OAuthClient(request.application)
+            client = OAuthClient(request.api_key)
             client.token = token
 
             # Everything's copasetic. Authorize and login user.
@@ -257,7 +257,7 @@ def logout(request):
     from django.contrib.auth import logout
     logout(request)
     # redirect to logout of typepad
-    url = request.application.signout_url
+    url = request.api_key.signout_url
     url = parameterize_url(url, { 'callback_url':
         request.build_absolute_uri(HOME_URL) })
     return http.HttpResponseRedirect(url)

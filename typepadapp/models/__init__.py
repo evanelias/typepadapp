@@ -34,10 +34,25 @@ from users import *
 from profiles import *
 
 
-APPLICATION, GROUP = None, None
+APPLICATION, GROUP, API_KEY = None, None, None
 
 
 import typepadapp.signals
 import typepadapp.utils.loading
 
 typepadapp.signals.post_start.send(None)
+
+
+# These properties have moved to ApiKey, but for back-compat with old templates
+# that expect them to be on Application we monkey-patch the Application class
+# to proxy calls through to the request's global API key.
+# FIXME: Remove this once everyone's updated.
+def proxy_user_flyouts_script(app):
+    return API_KEY.user_flyouts_script
+def proxy_user_flyouts_script_url(app):
+    return API_KEY.user_flyouts_script_url
+
+typepad.Application.user_flyouts_script = property(proxy_user_flyouts_script)
+typepad.Application.user_flyouts_script_url = property(proxy_user_flyouts_script_url)
+
+
