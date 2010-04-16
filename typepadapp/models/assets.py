@@ -191,7 +191,7 @@ class Video(typepad.Video, Asset):
         return self.video_link.permalink_url
 
     def set_link(self, value):
-        self.video_link.permalink_url = value
+        self.video_link = typepad.VideoLink(permalink_url=value)
 
     link = property(get_link, set_link)
 
