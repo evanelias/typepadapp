@@ -169,8 +169,9 @@ class Audio(typepad.Audio, Asset):
         assert group, "group parameter is unassigned"
         assert file, "file parameter is unassigned"
         self.groups = [ group.id ]
-        typepad.api.browser_upload.upload(
+        resp, cont = typepad.api.browser_upload.upload(
             self, file, post_type=self.type_id, redirect_to='http://example.com/none')
+        typepad.api.browser_upload.raise_error_for_response(resp, self)
 
 
 class Video(typepad.Video, Asset):
@@ -226,8 +227,9 @@ class Photo(typepad.Photo, Asset):
         assert group, "group parameter is unassigned"
         assert file, "file parameter is unassigned"
         self.groups = [ group.id ]
-        typepad.api.browser_upload.upload(
+        resp, cont = typepad.api.browser_upload.upload(
             self, file, post_type=self.type_id, redirect_to='http://example.com/none')
+        typepad.api.browser_upload.raise_error_for_response(resp, self)
 
 
 class LinkAsset(typepad.LinkAsset, Asset):
