@@ -1,8 +1,17 @@
 typepadapp Changelog
 ====================
 
-1.1.2 (2009-3-30)
------------------
+1.1.3 (2010-04-20)
+------------------
+
+* Added a `UserProfile.get_profile()` method for finding someone's local profile model from a `UserProfile` instance.
+* Made `Photo.save()` and `Audio.save()` methods raise appropriate exceptions when failing to upload a file.
+* Changed the `Video.link` setter to create a new `VideoLink` instance when necessary.
+* Added an `http_method` parameter to the `typepadapp.middleware.gp_signed_url()` helper function.
+
+
+1.1.2 (2009-03-30)
+------------------
 
 * Updated for forward compatibility with the TypePad API.
 
