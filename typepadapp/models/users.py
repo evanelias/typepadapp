@@ -320,6 +320,9 @@ class UserProfile(typepad.UserProfile):
             'UserProfile.typepad_frame_url is deprecated; use UserProfile.follow_frame_content_url instead')
         return self.follow_frame_content_url
 
+    def get_profile(self):
+        return User.get_by_id(self.id).get_profile()
+
 
 ### Caching support
 
