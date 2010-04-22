@@ -161,7 +161,7 @@ class Audio(typepad.Audio, Asset):
 
     @property
     def link(self):
-        return self.source.permalink_url
+        return self.audio_link.url
 
     def save(self, file=None, group=None):
         # Warning - this only handles create, not update
