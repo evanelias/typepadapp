@@ -226,10 +226,7 @@ class OAuthTests(unittest.TestCase):
 
 class CacheEncodingTests(unittest.TestCase):
 
-    def setUp(self):
-        self.cache = django.core.cache.get_cache('locmem:///')
-
-    def test_cache_encoding(self):
+    def run_cache_encoding(self):
         cache = DjangoHttplib2Cache(self.cache)
 
         cache.set('hi', "plain string")
@@ -298,7 +295,7 @@ class MemcacheEncodingTests(CacheEncodingTests):
 
         self.cache = django.core.cache.get_cache('memcached://127.0.0.1:11211/')
 
-        super(MemcacheEncodingTests, self).test_cache_encoding()
+        self.run_cache_encoding()
 
         mox.Verify(self.mock_mc)
         mox.Verify(mock_cache)
