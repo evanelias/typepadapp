@@ -237,6 +237,17 @@ def ExtendsNode__render(self, context):
 
 def setup():
     "Monkeypunch!"
+    try:
+        # Only use the caching template loader if we can import it; available in
+        # Django 1.2 and later
+        import django.template.loaders.cached.Loader
+        from django.conf import settings
+        settings.TEMPLATE_LOADERS = (('django.template.loaders.cached.Loader', settings.TEMPLATE_LOADERS),)
+        return
+    except ImportError:
+        # lets do it the old-fashioned way
+        pass
+
     loader.get_template.func_code = get_template.func_code
     loader.get_template.func_globals['_template_cache'] = {}
     Context.__init__ = Context__init
