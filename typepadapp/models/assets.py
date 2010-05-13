@@ -236,7 +236,7 @@ class Photo(typepad.Photo, Asset):
         typepad.api.browser_upload.raise_error_for_response(resp, self)
 
 
-class LinkAsset(typepad.LinkAsset, Asset):
+class Link(typepad.Link, Asset):
 
     @property
     def link_title(self):
@@ -271,13 +271,13 @@ class LinkAsset(typepad.LinkAsset, Asset):
     def get_link(self):
         import logging
         logging.getLogger("typepadapp.models.assets").warn(
-            'LinkAsset.link is deprecated; use LinkAsset.target_url instead')
+            'Link.link is deprecated; use Link.target_url instead')
         return self.target_url
 
     def set_link(self, value):
         import logging
         logging.getLogger("typepadapp.models.assets").warn(
-            'LinkAsset.link is deprecated; use LinkAsset.target_url instead')
+            'Link.link is deprecated; use Link.target_url instead')
         self.target_url = value
 
     link = property(get_link, set_link)
