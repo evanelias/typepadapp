@@ -6,7 +6,9 @@ You can use Django's authentication system with `typepadapp` to let you sign in 
 
 The `typepadapp` app provides plain authentication for TypePad accounts. These accounts are required to join your TypePad group in order to sign in for the first time, after which they are available as your group's `memberships` list. These users are available in your application code as `TypePadUser` instances.
 
-As your TypePad application is also a Django app, you can use Django's authentication system to sign in local users too. This is most useful for having local administrator accounts that can operate other Django apps that aren't aware of TypePad.
+As your TypePad application is also a Django app, you can use Django's authentication system to sign in local users too. This is most useful for having local administrator accounts that can operate other Django apps (such as `flatpages`_) that aren't aware of TypePad.
+
+.. _flatpages: http://docs.djangoproject.com/en/1.1/ref/contrib/flatpages/
 
 Enabling auth and the admin
 ===========================
