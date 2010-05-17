@@ -79,9 +79,7 @@ class Asset(typepad.Asset):
 
     @property
     def type_id(self):
-        object_type = self.primary_object_type() or self.object_type
-        if object_type is None: return None
-        return object_type.split(':')[2].lower()
+        return self.object_type.lower()
 
     @property
     def type_label(self):
@@ -118,9 +116,7 @@ class Asset(typepad.Asset):
 
 
 def asset_ref_type_id(self):
-    object_type = self.object_type or self.object_types[0]
-    if object_type is None: return None
-    return object_type.split(':')[2].lower()
+    return self.object_type.lower()
 
 def asset_ref_type_label(self):
     return _(self.type_id)
