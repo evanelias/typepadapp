@@ -293,25 +293,18 @@ class Link(typepad.Link, Asset):
 class Event(typepad.Event):
 
     @property
-    def verb(self):
-        try:
-            return self.verbs[0]
-        except IndexError:
-            # No verbs
-            return None
-
-    @property
     def is_new_asset(self):
-        return self.verb == 'tag:api.typepad.com,2009:NewAsset'
+        return self.verb == 'NewAsset'
 
     @property
     def is_added_favorite(self):
-        return self.verb == 'tag:api.typepad.com,2009:AddedFavorite'
+        return self.verb == 'AddedFavorite'
 
     @property
     def is_local_asset(self):
         return self.object and isinstance(self.object, Asset) \
             and self.object.is_local
+
 
 ### Cache support
 
