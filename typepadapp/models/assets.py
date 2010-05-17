@@ -58,12 +58,6 @@ ListObject.__bases__ = (ListObjectSignalDispatcher,) + ListObject.__bases__
 # Additional methods for all asset models:
 class Asset(typepad.Asset):
 
-    def __unicode__(self):
-        return self.title or self.content
-
-    def __str__(self):
-        return self.__unicode__()
-
     def get_absolute_url(self):
         """Relative url to the asset permalink page."""
         if self.is_local:
