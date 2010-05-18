@@ -58,12 +58,6 @@ ListObject.__bases__ = (ListObjectSignalDispatcher,) + ListObject.__bases__
 # Additional methods for all asset models:
 class Asset(typepad.Asset):
 
-    def __unicode__(self):
-        return self.title or self.content
-
-    def __str__(self):
-        return self.__unicode__()
-
     def get_absolute_url(self):
         """Relative url to the asset permalink page."""
         if self.is_local:
@@ -85,9 +79,7 @@ class Asset(typepad.Asset):
 
     @property
     def type_id(self):
-        object_type = self.primary_object_type() or self.object_type
-        if object_type is None: return None
-        return object_type.split(':')[2].lower()
+        return self.object_type.lower()
 
     @property
     def type_label(self):
@@ -124,9 +116,7 @@ class Asset(typepad.Asset):
 
 
 def asset_ref_type_id(self):
-    object_type = self.object_type or self.object_types[0]
-    if object_type is None: return None
-    return object_type.split(':')[2].lower()
+    return self.object_type.lower()
 
 def asset_ref_type_label(self):
     return _(self.type_id)
@@ -236,7 +226,7 @@ class Photo(typepad.Photo, Asset):
         typepad.api.browser_upload.raise_error_for_response(resp, self)
 
 
-class LinkAsset(typepad.LinkAsset, Asset):
+class Link(typepad.Link, Asset):
 
     @property
     def link_title(self):
@@ -271,13 +261,13 @@ class LinkAsset(typepad.LinkAsset, Asset):
     def get_link(self):
         import logging
         logging.getLogger("typepadapp.models.assets").warn(
-            'LinkAsset.link is deprecated; use LinkAsset.target_url instead')
+            'Link.link is deprecated; use Link.target_url instead')
         return self.target_url
 
     def set_link(self, value):
         import logging
         logging.getLogger("typepadapp.models.assets").warn(
-            'LinkAsset.link is deprecated; use LinkAsset.target_url instead')
+            'Link.link is deprecated; use Link.target_url instead')
         self.target_url = value
 
     link = property(get_link, set_link)
@@ -293,25 +283,18 @@ class LinkAsset(typepad.LinkAsset, Asset):
 class Event(typepad.Event):
 
     @property
-    def verb(self):
-        try:
-            return self.verbs[0]
-        except IndexError:
-            # No verbs
-            return None
-
-    @property
     def is_new_asset(self):
-        return self.verb == 'tag:api.typepad.com,2009:NewAsset'
+        return self.verb == 'NewAsset'
 
     @property
     def is_added_favorite(self):
-        return self.verb == 'tag:api.typepad.com,2009:AddedFavorite'
+        return self.verb == 'AddedFavorite'
 
     @property
     def is_local_asset(self):
         return self.object and isinstance(self.object, Asset) \
             and self.object.is_local
+
 
 ### Cache support
 
