@@ -52,8 +52,8 @@ To enable the admin interface, you'll also need to add it to your urlconf. In yo
    admin.autodiscover()
 
    urlpatterns = patterns('',
-       (r'^', include('motion.urls')),
        (r'^', include('typepadapp.urls')),
+       (r'^', include('motion.urls')),
        (r'^admin/', include(admin.site.urls)),
    )
 
@@ -86,8 +86,8 @@ Group admins vs local superusers
 
 When the admins of your configured group sign in, the local accounts `typepadapp` creates for them are marked as local superuser accounts. These superuser accounts can use the admin to edit any local content accessible with the Django admin. (If you don't want your TypePad group's administrators to have local superuser access, disable local user creation by setting `AUTO_CREATE_DJANGO_USERS` to ``'none'``.)
 
-You can use the same system to grant privileged local access to another TypePad user who has joined your group. Create a new local `User` account through the admin, then add a `UserForTypePadUser` mapping for it. Put the user's TypePad user ID in the "TypePad ID" field. This TypePad user ID looks like::
+You can use the same system to grant privileged local access to another TypePad user who has joined your group. Create a new local `User` account through the admin, then add a `UserForTypePadUser` mapping for it. Put the user's TypePad user `url_id` in the "TypePad ID" field. This TypePad user ID looks like::
 
-   tag:api.typepad.com,2009:6p0128757b667b970c
+   6p00d83451ce6b69e2
 
-and can be found in the API responses related to that user. Once the `UserForTypePadUser` mapping is created, that TypePad user will be signed in as the associated local user when they sign in with their TypePad account--so you can make them a local superuser by making their local user account a local superuser manually.
+and can be found in the API responses related to that user. Once the `UserForTypePadUser` mapping is created, that TypePad user will be signed in as the associated local user when they sign in with their TypePad account—so you can make them a local superuser by making their local user account a local superuser manually.
