@@ -67,8 +67,6 @@ class Group(typepad.Group):
             self.admin_list_time = time.time()
             log.debug("Yay, got admin list %r, which we're hard caching until %r",
                 admin_list, self.admin_list_time)
-        else:
-            log.debug("Using admin list %r from hard process cache", self.admin_list)
 
         return self.admin_list
 
