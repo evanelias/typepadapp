@@ -268,6 +268,8 @@ class GenericView(http.HttpResponse):
         if more_context:
             self.context.push()
             self.context.update(more_context)
+        if self.context.get('mobile'):
+            template = ('mobile/' + template, template)
         results = render_to_response(template, context_instance=self.context, **kwargs)
         if more_context:
             self.context.pop()

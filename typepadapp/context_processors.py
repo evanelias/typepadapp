@@ -50,7 +50,7 @@ def mobile(request):
     """
     agent = request.META['HTTP_USER_AGENT']
     mobile = False
-    if (('AppleWebKit' in agent) and (('Mobile' in agent) or ('Pre' in agent))) or ('Opera Mini' in agent):
+    if (('AppleWebKit' in agent) and ('Mobile' in agent or 'Pre' in agent or 'webOS' in agent)) or ('Opera Mini' in agent):
         if 'iPad' not in agent: # but not the iPad
             mobile = True
     return {
