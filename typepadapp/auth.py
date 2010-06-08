@@ -158,15 +158,18 @@ def _create_django_user(request, tp_user):
 
     # Is that TypePad user an admin?
     is_admin = False
-    if log.isEnabledFor(logging.DEBUG):
-        log.debug('Is our unmapped user one of admins %r?',
-            [x.target.url_id for x in request.group.admins()])
-    for admin_rel in request.group.admins():
-        admin = admin_rel.target
-        log.debug('Is user %s also %s?', tp_user.url_id, admin.url_id)
-        if admin.url_id == tp_user.url_id:
-            is_admin = True
-            break
+    if request.group is not None:
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug('Is our unmapped user one of admins %r?',
+                [x.target.url_id for x in request.group.admins()])
+        for admin_rel in request.group.admins():
+            admin = admin_rel.target
+            log.debug('Is user %s also %s?', tp_user.url_id, admin.url_id)
+            if admin.url_id == tp_user.url_id:
+                is_admin = True
+                break
+    # TODO: if we can determine owner of a non-group application, we should create a
+    # local admin user for them too?
 
     if autocreate == 'admin' and not is_admin:
         log.debug('Only admins are auto-created and %s is not an admin; not creating', tp_user.url_id)

@@ -93,21 +93,23 @@ def get_session_synchronization_url(self, callback_url=None):
     else:
         current_token = self.session.get('lost_session_sync_token', '')
 
-    return gp_signed_url(self.oauth_client.session_sync_url,
-                         { 'callback_url': callback_url, 'session_sync_token': current_token,
-                           'target_object': self.group.id })
+    params = { 'callback_url': callback_url, 'session_sync_token': current_token }
+    if self.group:
+        params['target_object'] = self.group.id
+         
+    return gp_signed_url(self.oauth_client.session_sync_url, params)
 
 
-def get_oauth_identification_url(self, next):
+def get_oauth_identification_url(self, next, **signed_url_params):
     params = {
         'callback_nonce': self.session.get('callback_nonce'),
         'callback_next': self.build_absolute_uri(next),
         'signin': '1',
     }
     callback_url = '%s?%s' % (self.build_absolute_uri(reverse('synchronize')), urlencode(params))
-    params = { 'callback_url': callback_url, 'target_object': self.group.id }
-    params.update(settings.TYPEPAD_IDENTIFY_PARAMS)
-    return gp_signed_url(self.oauth_client.oauth_identification_url, params)
+    signed_url_params['callback_url'] = callback_url
+    signed_url_params.update(settings.TYPEPAD_IDENTIFY_PARAMS)
+    return gp_signed_url(self.oauth_client.oauth_identification_url, signed_url_params)
 
 
 class UserAgentMiddleware(object):
@@ -167,8 +169,8 @@ class ApplicationMiddleware(object):
         # where the application persistence is poor (Google App Engine)
         app = self.app or cache.get(app_key)
         group = self.group or cache.get(group_key)
-        if app is None or group is None:
-            log.info('Loading group info...')
+        if app is None:
+            log.info('Initializing TypePad application info...')
 
             # Grab the group and app with the default credentials.
             consumer = oauth.OAuthConsumer(settings.OAUTH_CONSUMER_KEY,
@@ -180,27 +182,31 @@ class ApplicationMiddleware(object):
             typepad.client.add_credentials(consumer, token, domain=backend[1])
 
             typepad.client.batch_request()
+            app = None
+            group = None
             try:
-                api_key = typepad.ApiKey.get_by_api_key(
-                    settings.OAUTH_CONSUMER_KEY)
-                token = typepad.AuthToken.get_by_key_and_token(
-                    settings.OAUTH_CONSUMER_KEY,
-                    settings.OAUTH_GENERAL_PURPOSE_KEY)
+                app = typepad.Application.get_by_url_id(
+                    settings.APPLICATION_ID)
+                if hasattr(settings, 'GROUP_ID'):
+                    group = typepad.Group.get_by_url_id(
+                        settings.GROUP_ID)
                 typepad.client.complete_batch()
             except Exception, exc:
                 log.error('Error loading Application %s: %s' % (settings.OAUTH_CONSUMER_KEY, str(exc)))
                 raise
 
-            app = api_key.owner
-            group = token.target
-
-            log.info("Running for group: %s", group.display_name)
+            app.url_id = settings.APPLICATION_ID
+            log.info("Running for application: %s (%s)" % (app.name,
+                app.url_id))
 
             cache.set(app_key, app, settings.LONG_TERM_CACHE_PERIOD)
-            cache.set(group_key, group, settings.LONG_TERM_CACHE_PERIOD)
+            if group is not None:
+                log.info("Running for group: %s (%s)" % (group.display_name,
+                    group.url_id))
+                cache.set(group_key, group, settings.LONG_TERM_CACHE_PERIOD)
 
         if settings.SESSION_COOKIE_NAME is None:
-            settings.SESSION_COOKIE_NAME = "sg_%s" % group.url_id
+            settings.SESSION_COOKIE_NAME = "sg_%s" % app.url_id
 
         self.app = app
         self.group = group
