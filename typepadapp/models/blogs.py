@@ -67,6 +67,12 @@ class Blog(typepad.Blog):
         post.update_from_response(url, response, json.dumps(content_obj['asset']))
         return post
     
-### todo: implement frontend caching
-    
-    
+### Cache support
+### TODO: implement cache invalidation
+if settings.FRONTEND_CACHING:
+    from typepadapp.caching import cache_link, cache_object, invalidate_rule
+
+    # Cache population/invalidation
+    Blog.get_by_url_id = cache_object(Blog.get_by_url_id)
+
+    # invalidation not yet implemented!
