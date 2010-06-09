@@ -373,6 +373,21 @@ class TypePadView(GenericView):
             'request': request,
         })
 
+    def select_typepad_blog(self, request):
+        """
+        If the TYPEPAD_BLOG setting is used (for applications that always
+        work in the context of one particular blog), the specified blog is
+        fetched and put into the context.
+        """
+        if not hasattr(settings, 'TYPEPAD_BLOG') or not settings.TYPEPAD_BLOG:
+            return
+        from typepadapp.models.blogs import Blog
+        request.typepad_blog = Blog.get_by_url_id(settings.TYPEPAD_BLOG)
+        self.context.update({
+            'typepad_blog': request.typepad_blog,
+            'request':      request,
+        })
+
     def select_from_typepad(self, request, *args, **kwargs):
         """
         Instantiates the TypePad API resources to display in this view.
@@ -432,6 +447,9 @@ class TypePadView(GenericView):
         this batch request. In addition, the pagination state is set if the
         ``paginate_by`` attribute is assigned.
 
+        If the TYPEPAD_BLOG setting is used (for applications that always
+        work in the context of one particular blog), the specified blog is
+        also fetched in the aforementioned batch request.
         """
         # Pagination setup
         if self.paginate_by:
@@ -442,6 +460,7 @@ class TypePadView(GenericView):
 
         typepad.client.batch_request()
 
+        self.select_typepad_blog(request)
         self.select_typepad_user(request)
         # Issue this check here, since this is the earliest that
         # we have a user context available

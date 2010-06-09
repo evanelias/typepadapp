@@ -168,8 +168,6 @@ def _create_django_user(request, tp_user):
             if admin.url_id == tp_user.url_id:
                 is_admin = True
                 break
-    # TODO: if we can determine owner of a non-group application, we should create a
-    # local admin user for them too?
 
     if autocreate == 'admin' and not is_admin:
         log.debug('Only admins are auto-created and %s is not an admin; not creating', tp_user.url_id)

@@ -209,7 +209,6 @@ class ApplicationMiddleware(object):
 
         self.app = app
         self.group = group
-
         return app, group
 
     def process_request(self, request):
