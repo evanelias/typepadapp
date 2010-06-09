@@ -157,7 +157,7 @@ class ApplicationMiddleware(object):
         self.app = None
         self.group = None
 
-    def discover_group(self, request):
+    def discover_app_and_group(self, request):
         log = logging.getLogger('.'.join((self.__module__, self.__class__.__name__)))
 
         # check for a cached app/group first
@@ -182,31 +182,30 @@ class ApplicationMiddleware(object):
             typepad.client.add_credentials(consumer, token, domain=backend[1])
 
             typepad.client.batch_request()
-            app = None
-            group = None
             try:
-                app = typepad.Application.get_by_url_id(
-                    settings.APPLICATION_ID)
-                if hasattr(settings, 'GROUP_ID'):
-                    group = typepad.Group.get_by_url_id(
-                        settings.GROUP_ID)
+                api_key = typepad.ApiKey.get_by_api_key(
+                    settings.OAUTH_CONSUMER_KEY)
+                token = typepad.AuthToken.get_by_key_and_token(
+                    settings.OAUTH_CONSUMER_KEY,
+                    settings.OAUTH_GENERAL_PURPOSE_KEY)
                 typepad.client.complete_batch()
             except Exception, exc:
                 log.error('Error loading Application %s: %s' % (settings.OAUTH_CONSUMER_KEY, str(exc)))
                 raise
 
-            app.url_id = settings.APPLICATION_ID
-            log.info("Running for application: %s (%s)" % (app.name,
-                app.url_id))
-
+            app = api_key.owner
             cache.set(app_key, app, settings.LONG_TERM_CACHE_PERIOD)
-            if group is not None:
-                log.info("Running for group: %s (%s)" % (group.display_name,
-                    group.url_id))
+
+            if token.target_object and isinstance(token.target_object, typepadapp.models.groups.Group):
+                group = token.target_object
                 cache.set(group_key, group, settings.LONG_TERM_CACHE_PERIOD)
+                log.info("Running for app \"%s\" (%s), group \"%s\" (%s)" % (app.name, app.id, group.display_name, group.url_id))
+            else:
+                group = None
+                log.info("Running for app \"%s\" (%s), no group" % (app.name, app.id))
 
         if settings.SESSION_COOKIE_NAME is None:
-            settings.SESSION_COOKIE_NAME = "sg_%s" % app.url_id
+            settings.SESSION_COOKIE_NAME = "sg_%s" % app.id
 
         self.app = app
         self.group = group
@@ -219,7 +218,7 @@ class ApplicationMiddleware(object):
         if request.path.find('/static/') == 0:
             return None
 
-        app, group = self.discover_group(request)
+        app, group = self.discover_app_and_group(request)
 
         typepadapp.models.APPLICATION = app
         typepadapp.models.GROUP = group
