@@ -31,41 +31,40 @@ import logging
 import time
 import simplejson as json
 import httplib2
+from urlparse import urljoin
 
 from django.core.cache import cache
 from django.conf import settings
-import typepad
-
-from typepadapp.models.assets import Event, Post
+from typepadapp.models.assets import Event, Post, Comment
 from typepadapp import signals
-
+import typepad
 
 log = logging.getLogger(__name__)
 
 
 class Blog(typepad.Blog):
 
-    # A bit low-level for this lib... might be better to move this into
-    # python-typepad-api, if possible.
-    def discover_external_post_asset(self, permalink=''):
+    def discover_external_post_asset(self, permalink):
         """ Support for the /blogs/<id>/discover-external-post-asset endpoint.
-        Takes a permalink string and returns a typepadapp.models.assets.Post. """
-        
-        assert permalink, "permalink parameter is unassigned"
-        
-        # Hit the endpoint manually
-        url = '%s/blogs/%s/discover-external-post-asset.json' % (settings.BACKEND_URL, self.url_id)
-        request_body = json.dumps({ 'permalinkUrl': permalink })
-        response, content = typepad.client.request(url, method='POST', body=request_body)
-        
-        # Convert the "asset" part of the response into a real typepadapp.models.assets.Post
-        # object.  But to do so, we need to hack in a content-location header which specifies
-        # the independent location of the asset, since this endpoint does not supply one.
-        content_obj = json.loads(content)
-        response['content-location'] = '%s/assets/%s.json' % (settings.BACKEND_URL, content_obj['asset']['urlId'])
-        post = Post()
-        post.update_from_response(url, response, json.dumps(content_obj['asset']))
-        return post
+        Takes a permalink string and returns a Post. """
+
+        body = json.dumps({ 'permalinkUrl': permalink })
+        headers = {'content-type': self.content_types[0]}
+        url = urljoin(typepad.client.endpoint, '/blogs/%s/discover-external-post-asset.json' % self.url_id)
+        request = self.get_request(url=url, method='POST', body=body, headers=headers)
+        response, content = typepad.client.request(**request)
+
+        class ExternalPostAsset(typepad.TypePadObject):
+            asset = typepad.fields.Object('Post')
+        obj = ExternalPostAsset()
+        obj.update_from_response(url, response, content)
+        return obj.asset
+
+
+class AnonymousComment(Comment):
+    name = typepad.fields.Field()
+    email = typepad.fields.Field()
+
     
 ### Cache support
 ### TODO: implement cache invalidation
