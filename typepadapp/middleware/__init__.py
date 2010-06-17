@@ -96,6 +96,8 @@ def get_session_synchronization_url(self, callback_url=None):
     params = { 'callback_url': callback_url, 'session_sync_token': current_token }
     if self.group:
         params['target_object'] = self.group.id
+    elif hasattr(settings, 'TYPEPAD_ACCESS') and settings.TYPEPAD_ACCESS:
+        params['access'] = settings.TYPEPAD_ACCESS
          
     return gp_signed_url(self.oauth_client.session_sync_url, params)
 

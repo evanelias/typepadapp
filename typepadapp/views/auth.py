@@ -83,9 +83,12 @@ def register(request, target_object=DEFAULT_PARAM):
         else:
             target_object = None
     if target_object is None:
-        authz_params = {}
+        if hasattr(settings, 'TYPEPAD_ACCESS') and settings.TYPEPAD_ACCESS:
+            authz_params = {'access': settings.TYPEPAD_ACCESS}
+        else:
+            authz_params = {}
     else:
-        authz_params['target_object'] = target_object
+        authz_params = {'target_object': target_object}
 
     url = client.authorize_token(authz_params)
     # url = client.authorize_token({ 'access': 'app_full' })
@@ -103,7 +106,10 @@ def login(request, target_object=DEFAULT_PARAM):
         else:
             target_object = None
     if target_object is None:
-        params = {}
+        if hasattr(settings, 'TYPEPAD_ACCESS') and settings.TYPEPAD_ACCESS:
+            params = {'access': settings.TYPEPAD_ACCESS}
+        else:
+            params = {}
     else:
         params = {'target_object': target_object}
 
