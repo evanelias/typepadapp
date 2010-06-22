@@ -36,7 +36,7 @@ favorite_created = Signal(providing_args=["instance", "group", "parent"])
 favorite_deleted = Signal(providing_args=["instance", "group", "parent"])
 
 # membership signals
-member_joined = Signal(providing_args=["instance", "group"])
+member_joined = Signal(providing_args=["instance", "group", "token"])
 member_left = Signal(providing_args=["instance", "group"])
 member_banned = Signal(providing_args=["instance", "group"])
 member_unbanned = Signal(providing_args=["instance", "group"])

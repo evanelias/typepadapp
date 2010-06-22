@@ -130,7 +130,7 @@ def authorize(request):
     if created:
         # this is a new user or at least a new session sync token
         signals.member_joined.send(sender=authorize, instance=authed_user,
-            group=request.group)
+            group=request.group, token=token)
     else:
         # update token with current access token
         token.key = access_token.key
