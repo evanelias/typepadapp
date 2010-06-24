@@ -175,9 +175,8 @@ def _create_django_user(request, tp_user):
 
     log.debug('Yes, creating a new User for tpuser %s', tp_user.url_id)
 
-    # Create a new Django User for them. Note that email might be unavailable in the case of
-    # a non-group application.
-    user_email = tp_user.email and tp_user.email or ''
+    # Create a new Django User for them. 
+    user_email = tp_user.email or ''
     import django.contrib.auth
     dj_user = django.contrib.auth.models.User.objects.create_user(tp_user.url_id, user_email)
     if is_admin:
