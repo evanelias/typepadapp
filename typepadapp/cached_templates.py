@@ -239,7 +239,7 @@ def ExtendsNode__render(self, context):
 def setup():
     "Monkeypunch!"
 
-    if not os.environ('DJANGO_SETTINGS_MODULE'):
+    if 'DJANGO_SETTINGS_MODULE' not in os.environ:
         return
 
     try:
