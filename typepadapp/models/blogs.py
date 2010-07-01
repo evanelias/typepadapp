@@ -43,22 +43,8 @@ log = logging.getLogger(__name__)
 
 
 class Blog(typepad.Blog):
+    pass
 
-    def discover_external_post_asset(self, permalink):
-        """ Support for the /blogs/<id>/discover-external-post-asset endpoint.
-        Takes a permalink string and returns a Post. """
-
-        body = json.dumps({ 'permalinkUrl': permalink })
-        headers = {'content-type': self.content_types[0]}
-        url = urljoin(typepad.client.endpoint, '/blogs/%s/discover-external-post-asset.json' % self.url_id)
-        request = self.get_request(url=url, method='POST', body=body, headers=headers)
-        response, content = typepad.client.request(**request)
-
-        class ExternalPostAsset(typepad.TypePadObject):
-            asset = typepad.fields.Object('Post')
-        obj = ExternalPostAsset()
-        obj.update_from_response(url, response, content)
-        return obj.asset
 
 
 class AnonymousComment(Comment):
