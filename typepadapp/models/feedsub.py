@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2010 Six Apart Ltd.
+# Copyright (c) 2010 Six Apart Ltd.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,18 +27,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from typepadapp.models.assets import *
-from typepadapp.models.auth import *
-from typepadapp.models.groups import *
-from typepadapp.models.users import *
-from typepadapp.models.profiles import *
-from typepadapp.models.feedsub import *
+from django.conf import settings
 
-
-APPLICATION, GROUP = None, None
-
-
-import typepadapp.signals
-import typepadapp.utils.loading
-
-typepadapp.signals.post_start.send(None)
+if not hasattr(settings, 'KEY_VALUE_STORE_BACKEND'):
+    from typepadapp.models.db import Subscription

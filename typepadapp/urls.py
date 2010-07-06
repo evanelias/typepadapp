@@ -49,6 +49,10 @@ urlpatterns += patterns('typepadapp.views.admin',
     url(r'^admin/export/members/?$', 'export_members', name='export_members'),
 )
 
+urlpatterns += patterns('typepadapp.views.feedsub',
+    url(r'^feedsub/callback/(?P<sub_id>.*)$', 'callback', name='callback'),
+)
+
 urlpatterns += patterns('',
     url(r'^static/typepadapp/(?P<path>.*)/?$', 'django.views.static.serve',
         kwargs={ 'document_root': media_dir }),

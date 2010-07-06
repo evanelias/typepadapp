@@ -76,3 +76,26 @@ if user_model and user_model._meta.installed:
             db_table = 'typepadapp_usermap'
             verbose_name = 'user for TypePad user'
             verbose_name_plural = 'users for TypePad users'
+
+
+class Subscription(models.Model):
+    """Model for holding a local reference to a TypePad feed subscription.
+
+    """
+    name = models.CharField(max_length=200)
+    url_id = models.CharField(max_length=200, verbose_name='URL ID')
+    feeds = models.TextField(help_text='The feed identifiers associated with this subscription, one per line')
+    filters = models.TextField(blank=True, help_text='The filters associated with this subscription, one per line')
+    secret = models.CharField(max_length=200, blank=True)
+    verified = models.BooleanField(help_text='Whether TypePad verified this subscription yet')
+    verify_token = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name or self.url_id
+
+    def __unicode__(self):
+        return self.name or self.url_id
+
+    class Meta:
+        app_label = 'typepadapp'
+        db_table = 'typepadapp_subscription'
