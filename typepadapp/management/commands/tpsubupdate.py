@@ -29,18 +29,20 @@
 
 import os
 import sys
+import random
+from string import ascii_letters, digits
 import hashlib
 from oauth import oauth
-from urlparse import urlparse
+from urlparse import urlparse, urlunsplit
 
 from optparse import make_option
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.core.urlresolvers import reverse
 
 import typepad
 
 from typepadapp.management.base import ExtendOption
-from typepadapp.models.feedsub import Subscription
 
 
 class Command(BaseCommand):
@@ -125,6 +127,7 @@ class Command(BaseCommand):
         sub = typepad.ExternalFeedSubscription.get_by_url_id(sub_id)
         typepad.client.complete_batch()
 
+        from typepadapp.models.feedsub import Subscription
         if not group:
             # Create a new Subscription object; keep a record of the feeds and filters defined
             try:
@@ -179,9 +182,11 @@ class Command(BaseCommand):
 
         # update callback: for non-group based subscriptions
         if not group and options['domain']:
+            domain = options['domain']
             callback_path = reverse('typepadapp.views.feedsub.callback', kwargs={'sub_id': str(s.id)})
             callback_url = urlunsplit(('http', domain, callback_path, '', ''))
 
+            verify_token = ''.join(random.choice(ascii_letters+digits) for x in xrange(0,20))
             s.verify_token = verify_token
             s.verified = False
             s.save()
