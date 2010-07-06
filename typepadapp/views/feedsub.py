@@ -40,10 +40,12 @@ except ImportError:
     from elementtree import ElementTree
 
 from django.contrib.csrf.middleware import csrf_exempt
+from django.http import HttpResponse, HttpResponseForbidden
 from iso8601 import iso8601
 import simplejson as json
 
 from typepadapp.models.feedsub import Subscription
+from typepadapp import signals
 
 
 log = logging.getLogger(__name__)
@@ -172,7 +174,7 @@ def receive(request, sub_id):
         data = json.loads(payload)
         items = data['items']
 
-    feedsub_content.send(subscription=subscription, items=items, sender=save_updates)
+    signals.feedsub_content.send(subscription=subscription, items=items, sender=receive)
     return HttpResponse('', status=200, content_type='text/plain')
 
 
