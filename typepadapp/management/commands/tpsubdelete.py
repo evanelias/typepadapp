@@ -37,7 +37,6 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 import typepad
-from typepadapp.models.feedsub import Subscription
 
 
 class Command(BaseCommand):
@@ -82,6 +81,7 @@ class Command(BaseCommand):
             subscription = typepad.ExternalFeedSubscription.get_by_url_id(sub_id).delete()
             typepad.client.complete_batch()
 
+            from typepadapp.models.feedsub import Subscription
             try:
                 s = Subscription.objects.get(url_id=sub_id)
                 s.delete()
