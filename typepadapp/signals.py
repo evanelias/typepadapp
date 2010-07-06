@@ -66,3 +66,5 @@ profile_webhook = Signal(providing_args=["instance", "group"])
 # issued when group metadata and administrator list is modified on typepad
 group_webhook = Signal(providing_args=["group"])
 """Reserved for future use."""
+
+feedsub_content = Signal(providing_args=["entries", "subscription"])

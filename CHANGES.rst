@@ -1,12 +1,14 @@
 typepadapp Changelog
 ====================
 
-Unreleased
-----------
+1.2 (tbd)
+---------
 
-* Removed the `FRONTEND_URL` setting.
+* Added commands and views to support TypePad feed subscriptions.
 * Added support for running on Google AppEngine.
 * Changed views to provide the signed-in TypePad member to templates as ``typepad_user`` instead of ``user``.
+* Renamed ``typepadapp`` management command to ``tpappcreate``.
+* Removed the ``FRONTEND_URL`` setting.
 
 
 1.1.3 (2010-04-20)

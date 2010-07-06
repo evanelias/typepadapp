@@ -39,7 +39,7 @@ except Exception:
 
 setup(
     name='typepadapp',
-    version='1.1.3',
+    version='1.2',
     description='A helper Django app for making TypePad applications',
     author='Six Apart',
     author_email='python@sixapart.com',
@@ -63,6 +63,6 @@ setup(
     provides=['typepadapp'],
     include_package_data=True,
     zip_safe=False,
-    requires=['Django(>=1.1.1)', 'typepad(==2.0)', 'FeedParser'],
-    install_requires=['Django>=1.1.1', 'typepad==2.0', 'FeedParser'],
+    requires=['Django(>=1.1.1)', 'typepad(==2.0)', 'FeedParser', 'iso8601'],
+    install_requires=['Django>=1.1.1', 'typepad==2.0', 'FeedParser', 'iso8601'],
 )
