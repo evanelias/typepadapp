@@ -30,8 +30,21 @@
 from django.contrib import admin
 
 from typepadapp.models.auth import Token
+from typepadapp.models.feedsub import Subscription
 
 
+class SubscriptionAdmin(admin.ModelAdmin):
+
+    model = Subscription
+    list_display = ('name', 'url_id', 'feeds_list', 'verified')
+    readonly_fields = ('feeds', 'filters')
+
+    def feeds_list(self, obj):
+        return ', '.join(obj.feeds.split('\n'))
+    feeds_list.short_description = 'Feeds'
+
+
+admin.site.register(Subscription, SubscriptionAdmin)
 admin.site.register(Token)
 
 
