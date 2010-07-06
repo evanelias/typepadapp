@@ -55,7 +55,7 @@ def generate_members_csv(request):
     writer = csv.writer(mfile)
 
     # label header row
-    labels = ['xid', 'display name', 'email', 'joined', 'gender', 'location', 'about me', 'homepage', 'interests']
+    labels = ['id', 'display name', 'email', 'joined', 'gender', 'location', 'about me', 'homepage', 'interests']
     if settings.AUTH_PROFILE_MODULE:
         profile_form = typepadapp.forms.LocalProfileForm()
         for field in profile_form:
@@ -69,7 +69,7 @@ def generate_members_csv(request):
     offset = 1
     typepad.client.batch_request()
     request.typepad_user = get_user(request)
-    kwargs = {"start_index": offset, "member": True}
+    kwargs = {"start_index": offset, "member": True, "batch": False}
     members = request.group.memberships.filter(**kwargs)
     typepad.client.complete_batch()
 
@@ -92,10 +92,8 @@ def generate_members_csv(request):
             offset = new_offset
 
             # fetch typepad api data
-            typepad.client.batch_request()
             kwargs['start_index'] = offset
             more = request.group.memberships.filter(**kwargs)
-            typepad.client.complete_batch()
 
             # stop if the result is an empty list
             if not more.entries:
@@ -126,15 +124,17 @@ def get_members_csv(members):
         member_types = membership.created
         join_date = None
         for member_type in member_types:
-            if member_type == "tag:api.typepad.com,2009:Member":
+            if member_type.endswith('Member'):
                 join_date = str(member_types[member_type])
 
+        member_profile = typepad.UserProfile.get_by_url_id(member.url_id, batch=False)
+
         # member data from typepad
-        member_data = [member.xid,
+        member_data = [member.url_id,
             member.display_name, member.email,
             join_date,
-            member.gender, member.location, member.about_me,
-            member.homepage, ', '.join(member.interests)]
+            member_profile.gender, member_profile.location, member_profile.about_me,
+            member_profile.homepage, ', '.join(member_profile.interests)]
         row = []
         for item in member_data:
             if item:
