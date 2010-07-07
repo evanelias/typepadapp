@@ -61,7 +61,7 @@ def callback(request, *args, **kwargs):
         # No mode means it's feed content from TypePad.
         return receive(request, *args, **kwargs)
     elif mode == 'subscribe':
-        return subscribe(*args, **kwargs)
+        return subscribe(request, *args, **kwargs)
 
     return HttpResponse('Unknown hub.mode %r' % mode, status=400, content_type='text/plain')
 
