@@ -192,3 +192,8 @@ By default, the ``remoteobjects.http``, ``batchhttp.client``, and
 important messages.
 
 """
+
+AUTH_PROFILE_MODULE = None
+"""Defines a model module for storing local user profiles.
+
+"""

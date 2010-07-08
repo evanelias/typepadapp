@@ -32,8 +32,6 @@ from os.path import basename, dirname, join
 
 from django.core.management.base import BaseCommand
 
-from typepadapp import duplicate_file
-
 
 class Command(BaseCommand):
 
@@ -52,4 +50,5 @@ class Command(BaseCommand):
         project_name = basename(directory)
         path_new = join(directory, 'app.wsgi')
 
+        from typepadapp import duplicate_file
         duplicate_file(path_old, path_new, replaces={'project': project_name})

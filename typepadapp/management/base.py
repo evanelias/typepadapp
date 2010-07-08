@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2010 Six Apart Ltd.
+# Copyright (c) 2010 Six Apart Ltd.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,16 +27,20 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""
+from optparse import Option
 
-typepadapp provides a basis for TypePad API applications built with Django.
 
-"""
+class ExtendOption(Option):
 
-__version__ = '1.2'
-__date__ = '8 July 2010'
-__author__ = 'Six Apart Ltd.'
-__credits__ = """Brad Choate
-Leah Culver
-Mike Malone
-Mark Paschal"""
+    ACTIONS = Option.ACTIONS + ("extend",)
+    STORE_ACTIONS = Option.STORE_ACTIONS + ("extend",)
+    TYPED_ACTIONS = Option.TYPED_ACTIONS + ("extend",)
+    ALWAYS_TYPED_ACTIONS = Option.ALWAYS_TYPED_ACTIONS + ("extend",)
+
+    def take_action(self, action, dest, opt, value, values, parser):
+        if action == "extend":
+            lvalue = value.split(",")
+            values.ensure_value(dest, []).extend(lvalue)
+        else:
+            Option.take_action(
+                self, action, dest, opt, value, values, parser)

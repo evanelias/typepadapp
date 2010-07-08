@@ -27,25 +27,29 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from django_kvstore import models
+# necessary test in the event that kvstore isn't in use;
+# Django tries to load all modules under 'models', so
+# we must abort this module if we're not using the kvstore
+from django.conf import settings
+if hasattr(settings, 'KEY_VALUE_STORE_BACKEND'):
+    from django_kvstore import models
 
-import urllib
-from oauth import oauth
+    import urllib
+    from oauth import oauth
 
+    class Token(models.Model, oauth.OAuthToken):
+        """ Local database storage for user
+            OAuth tokens.
+        """
+        session_sync_token = models.Field(pk=True)
+        key = models.Field()
+        secret = models.Field()
 
-class Token(models.Model, oauth.OAuthToken):
-    """ Local database storage for user
-        OAuth tokens.
-    """
-    session_sync_token = models.Field(pk=True)
-    key = models.Field()
-    secret = models.Field()
+        def __unicode__(self):
+            return self.key
 
-    def __unicode__(self):
-        return self.key
-
-    def to_string(self, only_key=False):
-        # so this can be used in place of an oauth.OAuthToken
-        if only_key:
-            return urllib.urlencode({'oauth_token': self.key})
-        return urllib.urlencode({'oauth_token': self.key, 'oauth_token_secret': self.secret})
+        def to_string(self, only_key=False):
+            # so this can be used in place of an oauth.OAuthToken
+            if only_key:
+                return urllib.urlencode({'oauth_token': self.key})
+            return urllib.urlencode({'oauth_token': self.key, 'oauth_token_secret': self.secret})

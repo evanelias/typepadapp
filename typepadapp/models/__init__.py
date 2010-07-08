@@ -27,11 +27,12 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from assets import *
-from auth import *
-from groups import *
-from users import *
-from profiles import *
+from typepadapp.models.assets import *
+from typepadapp.models.auth import *
+from typepadapp.models.groups import *
+from typepadapp.models.users import *
+from typepadapp.models.profiles import *
+from typepadapp.models.feedsub import *
 
 
 APPLICATION, GROUP = None, None

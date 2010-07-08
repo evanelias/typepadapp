@@ -113,14 +113,24 @@ def authorize(request):
 
     # store the token key / secret in the database so we can recover
     # it later if the session expires
-    token, created = Token.objects.get_or_create(
-        session_sync_token=request.GET['session_sync_token'],
-        defaults={'key': access_token.key, 'secret': access_token.secret}
-    )
+    # store the token key / secret in the database so we can recover
+    # it later if the session expires
+    sst = request.GET['session_sync_token']
+    token = Token.get(sst)
+    if token is None:
+        token = Token()
+        token.session_sync_token = sst
+        token.key = access_token.key
+        token.secret = access_token.secret
+        token.save()
+        created = True
+    else:
+        created = False
+
     if created:
         # this is a new user or at least a new session sync token
         signals.member_joined.send(sender=authorize, instance=authed_user,
-            group=request.group)
+            group=request.group, token=token)
     else:
         # update token with current access token
         token.key = access_token.key

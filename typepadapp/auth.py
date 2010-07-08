@@ -28,7 +28,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import logging
-from urlparse import urlparse
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -57,9 +56,7 @@ class TypePadBackend(object):
         http = typepad.client
         http.clear_credentials()
 
-        backend = urlparse(settings.BACKEND_URL)
-        http.add_credentials(oauth_client.consumer, oauth_client.token,
-            domain=backend[1])
+        http.add_credentials(oauth_client.consumer, oauth_client.token)
 
         typepad.client.batch_request()
         u = User.get_self(http=http)
