@@ -29,7 +29,10 @@
 
 import logging
 
-from settings import INSTALLED_APPS
+try:
+    from settings import INSTALLED_APPS
+except ImportError:
+    INSTALLED_APPS = ()
 
 INSTALLED_APPS = INSTALLED_APPS + ('typepadapp',)
 
