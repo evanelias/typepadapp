@@ -32,6 +32,19 @@ import os
 import logging
 
 
+INSTALLED_APPS = (
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'typepadapp',
+)
+"""A list of INSTALLED_APPS for Django.
+
+This assignment makes the base ``typepadapp`` management commands usable. Use this
+command to list available commands::
+
+    django-admin.py help --settings=typepadapp.settings
+"""
+
 BACKEND_URL = 'https://api.typepad.com'
 """The URL of the TypePad API service to use.
 
