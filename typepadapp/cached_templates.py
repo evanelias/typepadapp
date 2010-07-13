@@ -239,15 +239,10 @@ def ExtendsNode__render(self, context):
 def setup():
     "Monkeypunch!"
 
-    if 'DJANGO_SETTINGS_MODULE' not in os.environ:
-        return
-
     try:
-        # Only use the caching template loader if we can import it; available in
-        # Django 1.2 and later
+        # If we're attempting to import with a Django
+        # that has the caching template loader, abort
         import django.template.loaders.cached
-        from django.conf import settings
-        settings.TEMPLATE_LOADERS = (('django.template.loaders.cached.Loader', settings.TEMPLATE_LOADERS),)
         return
     except ImportError:
         # lets do it the old-fashioned way
