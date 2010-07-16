@@ -5,6 +5,7 @@ typepadapp Changelog
 ------------------
 
 * Fixed a bug affecting the ``typepadproject`` management command.
+* Fixed an incompatibility with Django 1.2 when DEBUG setting and the `typepadapp.cached_templates` module were used together.
 
 
 1.2 (2010-07-08)
