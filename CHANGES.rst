@@ -1,7 +1,13 @@
 typepadapp Changelog
 ====================
 
-1.2 (2008-07-08)
+1.2.1 (2010-07-16)
+------------------
+
+* Fixed a bug affecting the ``typepadproject`` management command.
+
+
+1.2 (2010-07-08)
 ----------------
 
 * Added commands and views to support TypePad feed subscriptions.
