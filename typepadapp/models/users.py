@@ -364,7 +364,7 @@ if settings.FRONTEND_CACHING:
     User.memberships = cache_link(User.memberships)
     user_memberships_invalidator = invalidate_rule(
         key=lambda sender, instance=None, group=None, **kwargs:
-            instance and group and [instance.group_memberships(group),
+            instance and group and [User.get_by_url_id(instance.url_id).group_memberships(group),
                 instance.preferred_username and User.get_by_url_id(instance.preferred_username).group_memberships(group)],
         signals=[signals.member_banned, signals.member_unbanned, signals.member_joined, signals.member_left],
         name="user membership invalidation for member_banned, member_unbanned, member_joined, member_left signals")
