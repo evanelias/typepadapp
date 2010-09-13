@@ -41,6 +41,7 @@ app starts up. A good place to do this setup is in your project's settings.py.
 
 """
 
+import os
 from django.template import loader, loader_tags, NodeList, Template, TemplateDoesNotExist, TemplateSyntaxError
 from django.template.context import Context
 from django.utils.safestring import mark_safe
@@ -237,12 +238,11 @@ def ExtendsNode__render(self, context):
 
 def setup():
     "Monkeypunch!"
+
     try:
-        # Only use the caching template loader if we can import it; available in
-        # Django 1.2 and later
-        import django.template.loaders.cached.Loader
-        from django.conf import settings
-        settings.TEMPLATE_LOADERS = (('django.template.loaders.cached.Loader', settings.TEMPLATE_LOADERS),)
+        # If we're attempting to import with a Django
+        # that has the caching template loader, abort
+        import django.template.loaders.cached
         return
     except ImportError:
         # lets do it the old-fashioned way

@@ -32,7 +32,6 @@ import os
 from django.core.management.commands import startproject
 from django.core.management.base import copy_helper
 
-from typepadapp import my_copy_helper
 
 class Command(startproject.Command):
 
@@ -40,6 +39,7 @@ class Command(startproject.Command):
 
     def handle_label(self, project_name, **options):
         helper = startproject.copy_helper
+        from typepadapp.management.commands.tpappcreate import my_copy_helper
         startproject.copy_helper = my_copy_helper
         try:
             super(Command, self).handle_label(project_name, **options)

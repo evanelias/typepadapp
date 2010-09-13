@@ -1,12 +1,25 @@
 typepadapp Changelog
 ====================
 
-Unreleased
-----------
+1.2.1 (2010-07-16)
+------------------
 
-* Removed the `FRONTEND_URL` setting.
+* Fixed a bug affecting the ``typepadproject`` management command.
+* Fixed an incompatibility with Django 1.2 when DEBUG setting and the `typepadapp.cached_templates` module were used together.
+
+
+1.2 (2010-07-08)
+----------------
+
+* Added commands and views to support TypePad feed subscriptions.
 * Added support for running on Google AppEngine.
 * Changed views to provide the signed-in TypePad member to templates as ``typepad_user`` instead of ``user``.
+* Added mobile user agent detection (supports iPhone/iPod touch, webOS, Android, Opera Mini).
+* typepadapp can now run alongside the Django admin console.
+* The `LinkAsset` model was renamed to `Link`.
+* Fixed incompatibility in `typepadapp.cached_templates` with Django 1.2.
+* Renamed ``typepadapp`` management command to ``tpappcreate``.
+* Removed the ``FRONTEND_URL`` setting.
 
 
 1.1.3 (2010-04-20)

@@ -72,7 +72,7 @@ class SanitizeTestsMeta(type):
 
             def tester(filepath):
                 def test(self):
-                    self.run_feedparser_test(filepath)
+                    self.run_feedparser(filepath)
                 test.__name__ = testname
                 return test
 
@@ -88,7 +88,7 @@ class SanitizeTestsMeta(type):
 
             def tester(given, expected):
                 def test(self):
-                    self.run_test(given, expected)
+                    self.runTest(given, expected)
                 test.__name__ = testname
                 return test
 
@@ -143,7 +143,7 @@ class SanitizeTests(unittest.TestCase):
         ),
     }
 
-    def run_test(self, given, expected):
+    def runTest(self, given, expected):
         # Build our testing template with the given HTML.
         context = Context({'testcode': given})
         built = self.template.render(context)
@@ -151,7 +151,7 @@ class SanitizeTests(unittest.TestCase):
         # Check that the result is sanitized.
         self.assertEquals(built, expected)
 
-    def run_feedparser_test(self, filepath):
+    def run_feedparser(self, filepath):
         # Read the file normally to find what we expect.
         testfile = file(filepath)
         for x in testfile.xreadlines():
@@ -167,7 +167,7 @@ class SanitizeTests(unittest.TestCase):
         testcode = ''.join([n.data for n in content.childNodes
                             if n.nodeType == Node.TEXT_NODE])
 
-        self.run_test(testcode, expected)
+        self.runTest(testcode, expected)
 
     # These feedparser tests are about sanitizing content when the HTML is
     # encoded differently in the XML, so don't bother doing them.

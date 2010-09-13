@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2010 Six Apart Ltd.
+# Copyright (c) 2010 Six Apart Ltd.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,18 +27,20 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from typepadapp.models.assets import *
-from typepadapp.models.auth import *
-from typepadapp.models.groups import *
-from typepadapp.models.users import *
-from typepadapp.models.profiles import *
-from typepadapp.models.feedsub import *
+from optparse import Option
 
 
-APPLICATION, GROUP = None, None
+class ExtendOption(Option):
 
+    ACTIONS = Option.ACTIONS + ("extend",)
+    STORE_ACTIONS = Option.STORE_ACTIONS + ("extend",)
+    TYPED_ACTIONS = Option.TYPED_ACTIONS + ("extend",)
+    ALWAYS_TYPED_ACTIONS = Option.ALWAYS_TYPED_ACTIONS + ("extend",)
 
-import typepadapp.signals
-import typepadapp.utils.loading
-
-typepadapp.signals.post_start.send(None)
+    def take_action(self, action, dest, opt, value, values, parser):
+        if action == "extend":
+            lvalue = value.split(",")
+            values.ensure_value(dest, []).extend(lvalue)
+        else:
+            Option.take_action(
+                self, action, dest, opt, value, values, parser)

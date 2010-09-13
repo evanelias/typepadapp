@@ -30,26 +30,41 @@
 from django.dispatch import Signal
 
 asset_created = Signal(providing_args=["instance", "group", "parent"])
+"""Signal fired when a new group asset is created on TypePad."""
 asset_deleted = Signal(providing_args=["instance", "group", "parent"])
+"""Signal fired when a group asset is deleted from TypePad."""
 
 favorite_created = Signal(providing_args=["instance", "group", "parent"])
+"""Signal fired when a post is favorited by a user."""
 favorite_deleted = Signal(providing_args=["instance", "group", "parent"])
+"""Signal fired when a post is unfavorited by a user."""
 
 # membership signals
-member_joined = Signal(providing_args=["instance", "group"])
+member_joined = Signal(providing_args=["instance", "group", "token"])
+"""Signal fired when a TypePad user joins the group."""
 member_left = Signal(providing_args=["instance", "group"])
+"""Signal fired when a TypePad user leaves the group (note: this is reserved and unsupported at this time)."""
 member_banned = Signal(providing_args=["instance", "group"])
+"""Signal fired when a member is banned from the group."""
 member_unbanned = Signal(providing_args=["instance", "group"])
+"""Signal fired when a banned member is unbanned."""
 
 post_save = Signal(providing_args=["instance"])
+"""Signal fired upon saving an object to TypePad."""
 
 # issued when app is starting up
 post_start = Signal(providing_args=[])
+"""Signal fired upon launching the Django application."""
 
 # signals for forthcoming webhooks
 # issued when a relationship change occurs on typepad for a member in this group
 following_webhook = Signal(providing_args=["instance", "group"])
+"""Reserved for future use."""
 # issued when user edits their profile on typepad
 profile_webhook = Signal(providing_args=["instance", "group"])
+"""Reserved for future use."""
 # issued when group metadata and administrator list is modified on typepad
 group_webhook = Signal(providing_args=["group"])
+"""Reserved for future use."""
+
+feedsub_content = Signal(providing_args=["entries", "subscription"])

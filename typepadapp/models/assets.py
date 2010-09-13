@@ -79,7 +79,7 @@ class Asset(typepad.Asset):
 
     @property
     def type_id(self):
-        return self.object_type.lower()
+        return (self.object_type or self._class_object_type).lower()
 
     @property
     def type_label(self):

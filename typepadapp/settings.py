@@ -32,6 +32,19 @@ import os
 import logging
 
 
+INSTALLED_APPS = (
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'typepadapp',
+)
+"""A list of INSTALLED_APPS for Django.
+
+This assignment makes the base ``typepadapp`` management commands usable. Use this
+command to list available commands::
+
+    django-admin.py help --settings=typepadapp.settings
+"""
+
 BACKEND_URL = 'https://api.typepad.com'
 """The URL of the TypePad API service to use.
 
@@ -199,5 +212,10 @@ inherit the level of the ``batchhttp.client`` logger (if set).
 By default, the ``remoteobjects.http``, ``batchhttp.client``, and
 ``typepad.oauthclient`` loggers are set to display `WARNING` and more
 important messages.
+
+"""
+
+AUTH_PROFILE_MODULE = None
+"""Defines a model module for storing local user profiles.
 
 """
