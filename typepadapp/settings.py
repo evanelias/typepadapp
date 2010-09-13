@@ -74,6 +74,15 @@ request. By default, no additional parameters are sent.
 
 """
 
+TYPEPAD_BLOG = ''
+"""A string specifying the urlId of a blog to put in context on every TypePadView-
+handled request.
+
+Use this setting if you're building a non-community (non-group) application that
+always interacts with a particular blog.
+
+"""
+
 BATCH_REQUESTS = not os.getenv('TYPEPAD_BATCHLESS')
 """Whether to use batch requests in TypePad API requests.
 

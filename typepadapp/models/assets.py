@@ -150,7 +150,6 @@ class Post(typepad.Post, Asset):
         posts = group.post_assets
         posts.post(self)
 
-
 class Audio(typepad.Audio, Asset):
 
     @property

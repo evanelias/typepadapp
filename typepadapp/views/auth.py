@@ -45,6 +45,8 @@ from typepadapp import signals
 
 log = logging.getLogger('typepadapp.views.auth')
 
+DEFAULT_PARAM = object()
+
 
 def parameterize_url(url, params):
     """
@@ -59,7 +61,7 @@ def parameterize_url(url, params):
     return urlunparse(url)
 
 
-def register(request):
+def register(request, target_object=DEFAULT_PARAM):
     """ OAuth registration prep.
     
     Fetch request token then redirect to authorization page.
@@ -75,17 +77,45 @@ def register(request):
     token = client.fetch_request_token(callback)
     request.session['request_token'] = token.to_string()
 
-    url = client.authorize_token({ 'target_object': request.group.id })
+    if target_object is DEFAULT_PARAM:
+        if request.group:
+            target_object = request.group.id
+        else:
+            target_object = None
+    if target_object is None:
+        if hasattr(settings, 'TYPEPAD_ACCESS') and settings.TYPEPAD_ACCESS:
+            authz_params = {'access': settings.TYPEPAD_ACCESS}
+        else:
+            authz_params = {}
+    else:
+        authz_params = {'target_object': target_object}
+
+    url = client.authorize_token(authz_params)
     # url = client.authorize_token({ 'access': 'app_full' })
 
     return http.HttpResponseRedirect(url)
 
 
-def login(request):
+def login(request, target_object=DEFAULT_PARAM):
     """Redirect to the TypePad OAuth identification page, which 
     will redirect back to the synchronization URL after authenticating
     the user."""
-    return http.HttpResponseRedirect(request.get_oauth_identification_url(request.GET.get('next', HOME_URL)))
+    if target_object is DEFAULT_PARAM:
+        if request.group:
+            target_object = request.group.id
+        else:
+            target_object = None
+    if target_object is None:
+        if hasattr(settings, 'TYPEPAD_ACCESS') and settings.TYPEPAD_ACCESS:
+            params = {'access': settings.TYPEPAD_ACCESS}
+        else:
+            params = {}
+    else:
+        params = {'target_object': target_object}
+
+    home_url = request.GET.get('next', HOME_URL)
+    ident_url = request.get_oauth_identification_url(home_url, **params)
+    return http.HttpResponseRedirect(ident_url)
 
 
 def authorize(request):

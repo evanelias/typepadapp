@@ -93,21 +93,25 @@ def get_session_synchronization_url(self, callback_url=None):
     else:
         current_token = self.session.get('lost_session_sync_token', '')
 
-    return gp_signed_url(self.oauth_client.session_sync_url,
-                         { 'callback_url': callback_url, 'session_sync_token': current_token,
-                           'target_object': self.group.id })
+    params = { 'callback_url': callback_url, 'session_sync_token': current_token }
+    if self.group:
+        params['target_object'] = self.group.id
+    elif hasattr(settings, 'TYPEPAD_ACCESS') and settings.TYPEPAD_ACCESS:
+        params['access'] = settings.TYPEPAD_ACCESS
+         
+    return gp_signed_url(self.oauth_client.session_sync_url, params)
 
 
-def get_oauth_identification_url(self, next):
+def get_oauth_identification_url(self, next, **signed_url_params):
     params = {
         'callback_nonce': self.session.get('callback_nonce'),
         'callback_next': self.build_absolute_uri(next),
         'signin': '1',
     }
     callback_url = '%s?%s' % (self.build_absolute_uri(reverse('synchronize')), urlencode(params))
-    params = { 'callback_url': callback_url, 'target_object': self.group.id }
-    params.update(settings.TYPEPAD_IDENTIFY_PARAMS)
-    return gp_signed_url(self.oauth_client.oauth_identification_url, params)
+    signed_url_params['callback_url'] = callback_url
+    signed_url_params.update(settings.TYPEPAD_IDENTIFY_PARAMS)
+    return gp_signed_url(self.oauth_client.oauth_identification_url, signed_url_params)
 
 
 class UserAgentMiddleware(object):
@@ -155,7 +159,7 @@ class ApplicationMiddleware(object):
         self.app = None
         self.group = None
 
-    def discover_group(self, request):
+    def discover_app_and_group(self, request):
         log = logging.getLogger('.'.join((self.__module__, self.__class__.__name__)))
 
         # check for a cached app/group first
@@ -167,8 +171,8 @@ class ApplicationMiddleware(object):
         # where the application persistence is poor (Google App Engine)
         app = self.app or cache.get(app_key)
         group = self.group or cache.get(group_key)
-        if app is None or group is None:
-            log.info('Loading group info...')
+        if app is None:
+            log.info('Initializing TypePad application info...')
 
             # Grab the group and app with the default credentials.
             consumer = oauth.OAuthConsumer(settings.OAUTH_CONSUMER_KEY,
@@ -192,19 +196,21 @@ class ApplicationMiddleware(object):
                 raise
 
             app = api_key.owner
-            group = token.target
-
-            log.info("Running for group: %s", group.display_name)
-
             cache.set(app_key, app, settings.LONG_TERM_CACHE_PERIOD)
-            cache.set(group_key, group, settings.LONG_TERM_CACHE_PERIOD)
+
+            if token.target_object and isinstance(token.target_object, typepadapp.models.groups.Group):
+                group = token.target_object
+                cache.set(group_key, group, settings.LONG_TERM_CACHE_PERIOD)
+                log.info("Running for app \"%s\" (%s), group \"%s\" (%s)" % (app.name, app.id, group.display_name, group.url_id))
+            else:
+                group = None
+                log.info("Running for app \"%s\" (%s), no group" % (app.name, app.id))
 
         if settings.SESSION_COOKIE_NAME is None:
-            settings.SESSION_COOKIE_NAME = "sg_%s" % group.url_id
+            settings.SESSION_COOKIE_NAME = "sg_%s" % app.id
 
         self.app = app
         self.group = group
-
         return app, group
 
     def process_request(self, request):
@@ -213,7 +219,7 @@ class ApplicationMiddleware(object):
         if request.path.find('/static/') == 0:
             return None
 
-        app, group = self.discover_group(request)
+        app, group = self.discover_app_and_group(request)
 
         typepadapp.models.APPLICATION = app
         typepadapp.models.GROUP = group

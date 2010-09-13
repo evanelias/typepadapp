@@ -155,15 +155,16 @@ def _create_django_user(request, tp_user):
 
     # Is that TypePad user an admin?
     is_admin = False
-    if log.isEnabledFor(logging.DEBUG):
-        log.debug('Is our unmapped user one of admins %r?',
-            [x.target.url_id for x in request.group.admins()])
-    for admin_rel in request.group.admins():
-        admin = admin_rel.target
-        log.debug('Is user %s also %s?', tp_user.url_id, admin.url_id)
-        if admin.url_id == tp_user.url_id:
-            is_admin = True
-            break
+    if request.group is not None:
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug('Is our unmapped user one of admins %r?',
+                [x.target.url_id for x in request.group.admins()])
+        for admin_rel in request.group.admins():
+            admin = admin_rel.target
+            log.debug('Is user %s also %s?', tp_user.url_id, admin.url_id)
+            if admin.url_id == tp_user.url_id:
+                is_admin = True
+                break
 
     if autocreate == 'admin' and not is_admin:
         log.debug('Only admins are auto-created and %s is not an admin; not creating', tp_user.url_id)
@@ -171,9 +172,10 @@ def _create_django_user(request, tp_user):
 
     log.debug('Yes, creating a new User for tpuser %s', tp_user.url_id)
 
-    # Create a new Django User for them.
+    # Create a new Django User for them. 
+    user_email = tp_user.email or ''
     import django.contrib.auth
-    dj_user = django.contrib.auth.models.User.objects.create_user(tp_user.url_id, tp_user.email)
+    dj_user = django.contrib.auth.models.User.objects.create_user(tp_user.url_id, user_email)
     if is_admin:
         dj_user.is_staff = True
         dj_user.is_superuser = True
