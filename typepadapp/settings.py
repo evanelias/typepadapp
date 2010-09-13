@@ -74,13 +74,24 @@ request. By default, no additional parameters are sent.
 
 """
 
-TYPEPAD_BLOG = ''
+TYPEPAD_BLOG = None
 """A string specifying the urlId of a blog to put in context on every TypePadView-
 handled request.
 
 Use this setting if you're building a non-community (non-group) application that
 always interacts with a particular blog.
 
+"""
+
+TYPEPAD_ACCESS = None
+"""A string specifying the value of the "access" parameter provided in the URL
+for the OAuth authorization page. For more information, please see
+http://www.typepad.com/services/apidocs/authentication#authentication_for_typepad-powered_sites
+
+If you are building a non-group application that is tied to a particular blog,
+and the application only needs to act on behalf of users within the context of
+this blog, set TYPEPAD_ACCESS to 'app_full'.  In all other cases, including all
+group (community) applications, leave it as None.
 """
 
 BATCH_REQUESTS = not os.getenv('TYPEPAD_BATCHLESS')
