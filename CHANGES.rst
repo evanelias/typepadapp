@@ -1,6 +1,13 @@
 typepadapp Changelog
 ====================
 
+1.3 (2014-02-13)
+------------------
+
+* fix git link in requirements.txt of remoteobjects.
+* add remoteobjects to install require needed to run the test
+
+
 1.2.1 (2010-07-16)
 ------------------
 
