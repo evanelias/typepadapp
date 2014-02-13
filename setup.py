@@ -63,6 +63,6 @@ setup(
     provides=['typepadapp'],
     include_package_data=True,
     zip_safe=False,
-    requires=['Django(>=1.1.1)', 'typepad(==2.0)', 'FeedParser', 'iso8601'],
-    install_requires=['Django>=1.1.1', 'typepad==2.0', 'FeedParser', 'iso8601'],
+    requires=['Django(>=1.1.1)', 'remoteobjects>=1.1.1', 'typepad(==2.0)', 'FeedParser', 'iso8601'],
+    install_requires=['Django>=1.1.1', 'remoteobjects>=1.1.1', 'typepad==2.0', 'FeedParser', 'iso8601'],
 )

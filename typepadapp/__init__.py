@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2010 Six Apart Ltd.
+# Copyright (c) 2009-2014 Six Apart Ltd.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,8 +33,8 @@ typepadapp provides a basis for TypePad API applications built with Django.
 
 """
 
-__version__ = '1.2.1'
-__date__ = '16 July 2010'
+__version__ = '1.3'
+__date__ = '13 July 2014'
 __author__ = 'Six Apart Ltd.'
 __credits__ = """Brad Choate
 Leah Culver
